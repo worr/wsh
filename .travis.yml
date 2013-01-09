@@ -1,11 +1,11 @@
 language: c
 compiler:
-	- clang
-	- gcc
+   - clang
+   - gcc
 
 before_install:
-	- sudo apt-get install cmake
-	- sudo apt-get install protobuf-c-compiler libprotobuf-c0-dev libprotobuf-c0
-	- sudo apt-get install libglib2.0-dev
+   - sudo apt-get install cmake
+   - sudo apt-get install protobuf-c-compiler libprotobuf-c0-dev libprotobuf-c0
+   - sudo apt-get install libglib2.0-dev
 
 script: cd build; cmake ..; make

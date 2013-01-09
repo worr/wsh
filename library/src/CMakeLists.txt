@@ -1,12 +1,13 @@
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
-set( WSH_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c )
+set( WSH_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
 add_library( wsh ${WSH_SOURCES} )
 
 # Find protoc-c compiler
 find_program( PROTO_C protoc-c )
 set( PROTOC_C_C_OUT_FLAG --c_out )
+set( PROTOC_C_PROTO_PATH --proto_path )
 
 # Grabs all .proto files in current dir
 file( GLOB PROTO_INPUT RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.proto )

@@ -1,5 +1,9 @@
+import "auth.proto";
+
 message CommandRequest {
 	required string command = 1;
+	optional AuthInfo auth = 2;
+	repeated string env = 3;
 }
 
 message CommandReply {

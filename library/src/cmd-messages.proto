@@ -1,0 +1,9 @@
+message CommandRequest {
+	required string command = 1;
+}
+
+message CommandReply {
+	required string stdout = 1;
+	required string stderr = 2;
+	required int64 ret_code = 3;
+}

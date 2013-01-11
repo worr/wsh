@@ -35,6 +35,11 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	flags |= G_SPAWN_SEARCH_PATH;
 #endif
 
+	/* Older versions of glib do not include G_SPAWN_SEARCH_PATH_FROM_ENVP
+	 * flag. To get around this, we detect what version of glib we're running,
+	 * copy the user-defined path into the current path, run the command and restore the
+	 * old path.
+	 */
 	if (glib_check_version(2, 34, 0)) {
 		old_path = g_strdup(g_getenv("PATH"));
 		g_setenv(g_environ_getenv(req->env, "PATH"), "PATH", TRUE);
@@ -61,6 +66,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		return EXIT_FAILURE;
 	}
 
+	// Restoring old path
 	if (glib_check_version(2, 34, 0)) {
 		g_setenv("PATH", old_path, TRUE);
 		g_free(old_path);

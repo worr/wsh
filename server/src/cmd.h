@@ -4,19 +4,23 @@
 #include <glib.h>
 
 #define MAX_CMD_ARGS 255
+#define SUDO_CMD "sudo -u "
 
 struct cmd_req {
 	gchar** env;
 	gchar* cmd_string;
+	gchar* username;
+	gchar* password;
+	gchar* cwd;
 	gint in_fd;
 	gboolean sudo;
 };
 
 struct cmd_res {
+	GError* err;
+	gint exit_status;
 	gint out_fd;
 	gint err_fd;
-	gint exit_status;
-	GError* err;
 };
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req);

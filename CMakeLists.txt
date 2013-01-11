@@ -5,6 +5,8 @@ option( BUILD_SERVER "Build wsh server" ON )
 option( BUILD_CLIENT "Build wsh client" ON )
 option( BUILD_TESTS  "Build wsh unit tests" OFF )
 
+set( CMAKE_C_FLAGS -g )
+
 set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules )
 
 set( CMAKE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build )
@@ -32,7 +34,7 @@ endif()
 add_subdirectory( library/src )
 
 if( BUILD_TESTS )
-	add_subdirectory( library/test )
+	#add_subdirectory( library/test )
 
 	# enable testing for whole project
 	enable_testing()

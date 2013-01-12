@@ -63,7 +63,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		&res->err_fd, // stderr
 		&res->err); // Gerror
 
-	if (res->err->code != 0) {
+	if (res->err != NULL) {
 		ret = EXIT_FAILURE;
 		goto run_cmd_error;
 	}

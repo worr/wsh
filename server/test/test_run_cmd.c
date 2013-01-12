@@ -13,23 +13,20 @@ static void test_run_exit_code(gconstpointer envp) {
 	req.in_fd = -1;
 	req.env = *((char***)envp);
 	req.cwd = "/var/empty";
-	res.err = g_new0(GError, 1);
 	res.exit_status = -1;
 
 	req.cmd_string = "/bin/bash -c 'exit 0'";
 	run_cmd(&res, &req);
-	if (res.err->code != 0) {
-		g_test_message("Error %d: %s\n", res.err->code, res.err->message);
-		g_free(res.err);
+	if (res.err != NULL) {
+		g_printerr("Error %d: %s\n", res.err->code, res.err->message);
 		return g_test_fail();
 	}
 	g_assert(res.exit_status == 0);
 
 	req.cmd_string = "bash -c 'exit 1'";
 	run_cmd(&res, &req);
-	if (res.err->code != 0) {
-		g_test_message("Error %d: %s\n", res.err->code, res.err->message);
-		g_free(res.err);
+	if (res.err != NULL) {
+		g_printerr("Error %d: %s\n", res.err->code, res.err->message);
 		return g_test_fail();
 	}
 	g_assert(res.exit_status == 1);

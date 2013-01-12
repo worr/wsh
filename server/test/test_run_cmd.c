@@ -90,6 +90,28 @@ static void test_run_stderr(gpointer fixture, gconstpointer user_data) {
 	g_assert_cmpstr(buf, ==, "");
 }
 
+static void test_run_err(gpointer fixture, gconstpointer user_data) {
+	struct cmd_req* req = ((struct test_run_cmd_data*)user_data)->req;
+	struct cmd_res* res = ((struct test_run_cmd_data*)user_data)->res;
+
+	// Not going to test every error - just going to test that the functions
+	// that produce GError's handle them appropriately
+	req->cmd_string = "/bin/sh -c 'echo fail";
+	run_cmd(res, req);
+	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_BAD_QUOTING);
+
+	res->err = NULL;
+	req->cmd_string = "/blob/foobarbazzle";
+	run_cmd(res, req);
+	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_NOENT);
+
+	res->err = NULL;
+	req->cmd_string = "/bin/sh -c 'exit -0'";
+	req->cwd = "/foobarbaz";
+	run_cmd(res, req);
+	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_CHDIR);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -99,6 +121,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/TestRunCmd/ExitCode", void, &data, setup, test_run_exit_code, teardown);
 	g_test_add("/TestRunCmd/Stdout", void, &data, setup, test_run_stdout, teardown);
 	g_test_add("/TestRunCmd/Stderr", void, &data, setup, test_run_stderr, teardown);
+	g_test_add("/TestRunCmd/Errors", void, &data, setup, test_run_err, teardown);
 
 	return g_test_run();
 }

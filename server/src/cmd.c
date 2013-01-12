@@ -46,7 +46,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		g_setenv(g_environ_getenv(req->env, "PATH"), "PATH", TRUE);
 	}
 
-	if (! g_shell_parse_argv(cmd, &argcp, &argcv, NULL)) {
+	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &res->err)) {
 		ret = EXIT_FAILURE;
 		goto run_cmd_error;
 	}

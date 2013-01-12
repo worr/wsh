@@ -1,10 +1,8 @@
 #include "cmd.h"
 
 #include <glib.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include <sys/wait.h>
 
 // retval should be g_free'd
 static gchar* construct_sudo_cmd(const struct cmd_req* req) {

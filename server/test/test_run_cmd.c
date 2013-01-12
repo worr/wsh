@@ -67,6 +67,29 @@ static void test_run_stdout(gpointer fixture, gconstpointer user_data) {
 	g_assert_cmpstr(buf, ==, "");
 }
 
+static void test_run_stderr(gpointer fixture, gconstpointer user_data) {
+	struct cmd_req* req = ((struct test_run_cmd_data*)user_data)->req;
+	struct cmd_res* res = ((struct test_run_cmd_data*)user_data)->res;
+
+	req->cmd_string = "/bin/sh -c 'echo foo 1>&2'";
+	run_cmd(res, req);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 0);
+	
+	char* buf = g_malloc0(strlen("foo\n") + 1);
+	g_assert(read(res->err_fd, buf, strlen("foo\n")) == strlen("foo\n"));
+	g_assert_cmpstr(buf, ==, "foo\n");
+
+	req->cmd_string = "/bin/sh -c 'exit 0'";
+	run_cmd(res, req);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 0);
+	
+	memset(buf, 0, strlen("foo"));
+	g_assert(read(res->err_fd, buf, 0) == 0);
+	g_assert_cmpstr(buf, ==, "");
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -75,6 +98,7 @@ int main(int argc, char** argv, char** env) {
 
 	g_test_add("/TestRunCmd/ExitCode", void, &data, setup, test_run_exit_code, teardown);
 	g_test_add("/TestRunCmd/Stdout", void, &data, setup, test_run_stdout, teardown);
+	g_test_add("/TestRunCmd/Stderr", void, &data, setup, test_run_stderr, teardown);
 
 	return g_test_run();
 }

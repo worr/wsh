@@ -81,13 +81,14 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		goto run_cmd_error;
 	}
 
+run_cmd_error:
+
 	// Restoring old path
 	if (glib_check_version(2, 34, 0)) {
 		g_setenv("PATH", old_path, TRUE);
 		g_free(old_path);
 	}
 
-run_cmd_error:
 	g_free(cmd);
 	g_free(res->err);
 	g_free(err);

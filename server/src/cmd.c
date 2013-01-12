@@ -28,10 +28,6 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = construct_sudo_cmd(req);
 
-	GError* err = NULL;
-	if (res->err != NULL)
-		res->err = NULL;
-
 // sorry Russ...
 #if GLIB_CHECK_VERSION ( 2, 34, 0 )
 	flags |= G_SPAWN_SEARCH_PATH_FROM_ENVP;
@@ -49,7 +45,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		g_setenv(g_environ_getenv(req->env, "PATH"), "PATH", TRUE);
 	}
 
-	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &err)) {
+	if (! g_shell_parse_argv(cmd, &argcp, &argcv, NULL)) {
 		ret = EXIT_FAILURE;
 		goto run_cmd_error;
 	}
@@ -67,7 +63,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		&res->err_fd, // stderr
 		&res->err); // Gerror
 
-	if (res->err != NULL) {
+	if (res->err->code != 0) {
 		ret = EXIT_FAILURE;
 		goto run_cmd_error;
 	}
@@ -82,7 +78,6 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	}
 
 run_cmd_error:
-
 	// Restoring old path
 	if (glib_check_version(2, 34, 0)) {
 		g_setenv("PATH", old_path, TRUE);

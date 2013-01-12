@@ -1,5 +1,5 @@
 #include <glib.h>
-#include <stdio.h>
+#include <string.h>
 
 #include <cmd.h>
 
@@ -7,17 +7,31 @@ static void test_run_exit_code(gconstpointer envp) {
 	struct cmd_req req;
 	struct cmd_res res;
 
+	memset(&req, 0, sizeof(struct cmd_req));
+	memset(&res, 0, sizeof(struct cmd_res));
+
 	req.in_fd = -1;
-	req.sudo = 0;
 	req.env = *((char***)envp);
 	req.cwd = "/var/empty";
+	res.err = g_new0(GError, 1);
+	res.exit_status = -1;
 
 	req.cmd_string = "/bin/bash -c 'exit 0'";
-	g_assert(run_cmd(&res, &req) == 0);
+	run_cmd(&res, &req);
+	if (res.err->code != 0) {
+		g_test_message("Error %d: %s\n", res.err->code, res.err->message);
+		g_free(res.err);
+		return g_test_fail();
+	}
 	g_assert(res.exit_status == 0);
 
 	req.cmd_string = "bash -c 'exit 1'";
-	g_assert(run_cmd(&res, &req) == 0);
+	run_cmd(&res, &req);
+	if (res.err->code != 0) {
+		g_test_message("Error %d: %s\n", res.err->code, res.err->message);
+		g_free(res.err);
+		return g_test_fail();
+	}
 	g_assert(res.exit_status == 1);
 }
 

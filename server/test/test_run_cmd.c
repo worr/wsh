@@ -1,40 +1,80 @@
 #include <glib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
 #include <cmd.h>
 
-static void test_run_exit_code(gconstpointer envp) {
-	struct cmd_req req;
-	struct cmd_res res;
+struct test_run_cmd_data {
+	struct cmd_req* req;
+	struct cmd_res* res;
+	char** envp;
+};
 
-	memset(&req, 0, sizeof(struct cmd_req));
-	memset(&res, 0, sizeof(struct cmd_res));
+static void setup(gpointer fixture, gconstpointer user_data) {
+	struct test_run_cmd_data* data = (struct test_run_cmd_data*)user_data;
+	data->req = g_new0(struct cmd_req, 1);
+	data->res = g_new0(struct cmd_res, 1);
 
-	req.in_fd = -1;
-	req.env = *((char***)envp);
-	req.cwd = "/tmp";
-	res.exit_status = -1;
+	data->req->in_fd = -1;
+	data->req->env = data->envp;
+	data->req->cwd = "/tmp";
+}
 
-	req.cmd_string = "/bin/bash -c 'exit 0'";
-	run_cmd(&res, &req);
-	if (res.err != NULL) {
-		g_printerr("Error %d: %s\n", res.err->code, res.err->message);
-		return g_test_fail();
-	}
-	g_assert(res.exit_status == 0);
+static void teardown(gpointer fixture, gconstpointer user_data) {
+	struct test_run_cmd_data* data = (struct test_run_cmd_data*)user_data;
 
-	req.cmd_string = "bash -c 'exit 1'";
-	run_cmd(&res, &req);
-	if (res.err != NULL) {
-		g_printerr("Error %d: %s\n", res.err->code, res.err->message);
-		return g_test_fail();
-	}
-	g_assert(res.exit_status == 1);
+	g_free(data->req);
+	g_free(data->res);
+}
+
+static void test_run_exit_code(gpointer fixture, gconstpointer user_data) {
+	struct cmd_req* req = ((struct test_run_cmd_data*)user_data)->req;
+	struct cmd_res* res = ((struct test_run_cmd_data*)user_data)->res;
+
+	req->cmd_string = "/bin/sh -c 'exit 0'";
+	g_assert(run_cmd(res, req) == 0);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 0);
+
+	req->cmd_string = "/bin/sh -c 'exit 1'";
+	g_assert(run_cmd(res, req) == 0);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 1);
+}
+
+static void test_run_stdout(gpointer fixture, gconstpointer user_data) {
+	struct cmd_req* req = ((struct test_run_cmd_data*)user_data)->req;
+	struct cmd_res* res = ((struct test_run_cmd_data*)user_data)->res;
+
+	req->cmd_string = "/bin/sh -c 'echo foo'";
+	run_cmd(res, req);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 0);
+	
+	char* buf = g_malloc0(strlen("foo\n") + 1);
+	g_assert(read(res->out_fd, buf, strlen("foo\n")) == strlen("foo\n"));
+	g_assert_cmpstr(buf, ==, "foo\n");
+
+	req->cmd_string = "/bin/sh -c 'exit 0'";
+	run_cmd(res, req);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 0);
+	
+	memset(buf, 0, strlen("foo"));
+	g_assert(read(res->out_fd, buf, 0) == 0);
+	g_assert_cmpstr(buf, ==, "");
 }
 
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
-	g_test_add_data_func("/TestRunCmd/ExitCode", &env, test_run_exit_code);
+
+	struct test_run_cmd_data data;
+	data.envp = env;
+
+	g_test_add("/TestRunCmd/ExitCode", void, &data, setup, test_run_exit_code, teardown);
+	g_test_add("/TestRunCmd/Stdout", void, &data, setup, test_run_stdout, teardown);
 
 	return g_test_run();
 }

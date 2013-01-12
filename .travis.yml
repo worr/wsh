@@ -6,4 +6,4 @@ compiler:
 before_install:
    - sudo apt-get install protobuf-c-compiler libprotobuf-c0-dev libprotobuf-c0
 
-script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON .. && make && make test
+script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON .. && make && ctest -V

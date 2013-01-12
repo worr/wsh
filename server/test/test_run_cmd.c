@@ -12,7 +12,7 @@ static void test_run_exit_code(gconstpointer envp) {
 
 	req.in_fd = -1;
 	req.env = *((char***)envp);
-	req.cwd = "/var/empty";
+	req.cwd = "/tmp";
 	res.exit_status = -1;
 
 	req.cmd_string = "/bin/bash -c 'exit 0'";

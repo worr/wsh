@@ -90,8 +90,6 @@ run_cmd_error:
 	}
 
 	g_free(cmd);
-	g_free(res->err);
-	g_free(err);
 
 	return ret;
 }

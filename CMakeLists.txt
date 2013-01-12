@@ -12,7 +12,7 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/bin )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 
-set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen )
+set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_OUTPUT_DIRECTORY}/include )
 set( WSH_LIBRARIES wsh)
 
 # Global deps
@@ -41,7 +41,7 @@ endif( BUILD_TESTS )
 if( BUILD_SERVER )
 	add_subdirectory( server/src )
 	if( BUILD_TESTS )
-		#add_subdirectory( server/test )
+		add_subdirectory( server/test )
 	endif( BUILD_TESTS )
 endif( BUILD_SERVER )
 

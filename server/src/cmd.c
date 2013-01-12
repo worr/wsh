@@ -21,12 +21,18 @@ static gchar* construct_sudo_cmd(const struct cmd_req* req) {
 }
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
-	gchar* cmd = construct_sudo_cmd(req);
 	gchar* old_path;
-	res->err = g_new0(GError, 1);
 	pid_t pid;
-	gint stat;
+	gint stat, argcp;
+	gchar** argcv;
+	gint ret = EXIT_SUCCESS;
+
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
+	gchar* cmd = construct_sudo_cmd(req);
+
+	GError* err = NULL;
+	if (res->err != NULL)
+		res->err = NULL;
 
 // sorry Russ...
 #if GLIB_CHECK_VERSION ( 2, 34, 0 )
@@ -45,9 +51,14 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		g_setenv(g_environ_getenv(req->env, "PATH"), "PATH", TRUE);
 	}
 
+	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &err)) {
+		ret = EXIT_FAILURE;
+		goto run_cmd_error;
+	}
+
 	g_spawn_async_with_pipes(
 		req->cwd,  // working dir
-		g_strsplit_set(cmd, " \t\n\r", MAX_CMD_ARGS), // argv
+		argcv, // argv
 		req->env, // env
 		flags, // flags
 		NULL, // child setup
@@ -58,12 +69,18 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		&res->err_fd, // stderr
 		&res->err); // Gerror
 
+	if (res->err != NULL) {
+		ret = EXIT_FAILURE;
+		goto run_cmd_error;
+	}
+
 	// wait()s to get status of called function, so we can report it back to
 	// the user and so we don't blow away path or anything
 	if (waitpid(pid, &stat, 0) != -1) {
 		res->exit_status = WEXITSTATUS(stat);
 	} else {
-		return EXIT_FAILURE;
+		ret = EXIT_FAILURE;
+		goto run_cmd_error;
 	}
 
 	// Restoring old path
@@ -72,17 +89,10 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		g_free(old_path);
 	}
 
-	gchar* out = g_malloc0(1024);
-	read(res->out_fd, out, 1024);
-	printf("%s", out);
-	printf("%d\n", res->exit_status);
-	if (res->err != NULL) {
-		printf("%d\n", res->err->code);
-		printf("%s\n", res->err->message);
-	}
-
+run_cmd_error:
 	g_free(cmd);
 	g_free(res->err);
+	g_free(err);
 
-	return EXIT_SUCCESS;
+	return ret;
 }

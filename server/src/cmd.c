@@ -2,10 +2,14 @@
 
 #include <glib.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
 
 // retval should be g_free'd
-static gchar* construct_sudo_cmd(const struct cmd_req* req) {
+gchar* construct_sudo_cmd(const struct cmd_req* req) {
+	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
+		return NULL;
+
 	// If not sudo, don't actually construct the command
 	if (! req->sudo)
 		return g_strdup(req->cmd_string);
@@ -15,18 +19,14 @@ static gchar* construct_sudo_cmd(const struct cmd_req* req) {
 	// enough for now
 
 	// Thanks to glib this is basically a single function call
-	return g_strconcat(SUDO_CMD, req->username, req->cmd_string, NULL);
+	if (req->username != NULL)
+		return g_strconcat(SUDO_CMD, req->username, " ", req->cmd_string, NULL);
+
+	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
 }
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	gint ret = EXIT_SUCCESS;
-
-	if (req->cmd_string == NULL) {
-		ret = EXIT_FAILURE;
-
-		res->err = g_error_new(G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING, "Invalid NULL command");
-		goto run_cmd_error_nofree;
-	}
 
 	gchar* old_path;
 	pid_t pid;
@@ -35,6 +35,13 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = construct_sudo_cmd(req);
+
+	if (cmd == NULL) {
+		ret = EXIT_FAILURE;
+
+		res->err = g_error_new(G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING, "Invalid NULL command");
+		goto run_cmd_error_nofree;
+	}
 
 // sorry Russ...
 #if GLIB_CHECK_VERSION ( 2, 34, 0 )

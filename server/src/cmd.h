@@ -24,5 +24,6 @@ struct cmd_res {
 };
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req);
+gchar* construct_sudo_cmd(const struct cmd_req* req);
 
 #endif

@@ -127,12 +127,40 @@ static void test_run_null_cmd(gpointer fixture, gconstpointer user_data) {
 	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING);
 }
 
+static void test_construct_sudo_cmd(gpointer fixture, gconstpointer user_data) {
+	struct cmd_req* req = ((struct test_run_cmd_data*)user_data)->req;
+
+	req->cmd_string = "/bin/ls";
+	gchar* res = construct_sudo_cmd(req);
+	g_assert_cmpstr(res, ==, "/bin/ls");
+	g_free(res);
+
+	req->sudo = TRUE;
+	res = construct_sudo_cmd(req);
+	g_assert_cmpstr(res, ==, "sudo -u root /bin/ls");
+	g_free(res);
+
+	req->username = "worr";
+	res = construct_sudo_cmd(req);
+	g_assert_cmpstr(res, ==, "sudo -u worr /bin/ls");
+	g_free(res);
+
+	req->cmd_string = "";
+	res = construct_sudo_cmd(req);
+	g_assert(res == NULL);
+
+	req->cmd_string = NULL;
+	res = construct_sudo_cmd(req);
+	g_assert(res == NULL);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
 	struct test_run_cmd_data data;
 	data.envp = env;
 
+	g_test_add("/TestRunCmd/ConstructSudoCmd", void, &data, setup, test_construct_sudo_cmd, teardown);
 	g_test_add("/TestRunCmd/ExitCode", void, &data, setup, test_run_exit_code, teardown);
 	g_test_add("/TestRunCmd/Stdout", void, &data, setup, test_run_stdout, teardown);
 	g_test_add("/TestRunCmd/Stderr", void, &data, setup, test_run_stderr, teardown);

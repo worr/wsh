@@ -15,6 +15,8 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_OUTPUT_DIRECTORY}/include )
 set( WSH_LIBRARIES wsh)
 
+add_definitions( -std=c99 )
+
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake
 set( GLIB2_FIND_REQUIRED ON )

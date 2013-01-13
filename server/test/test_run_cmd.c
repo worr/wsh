@@ -25,6 +25,8 @@ static void setup(gpointer fixture, gconstpointer user_data) {
 static void teardown(gpointer fixture, gconstpointer user_data) {
 	struct test_run_cmd_data* data = (struct test_run_cmd_data*)user_data;
 
+	if (data->res->err != NULL)
+		g_error_free(data->res->err);
 	g_free(data->req);
 	g_free(data->res);
 }
@@ -112,6 +114,19 @@ static void test_run_err(gpointer fixture, gconstpointer user_data) {
 	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_CHDIR);
 }
 
+static void test_run_null_cmd(gpointer fixture, gconstpointer user_data) {
+	struct cmd_req* req = ((struct test_run_cmd_data*)user_data)->req;
+	struct cmd_res* res = ((struct test_run_cmd_data*)user_data)->res;
+
+	req->cmd_string = "";
+	run_cmd(res, req);
+	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING);
+
+	req->cmd_string = NULL;
+	run_cmd(res, req);
+	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -122,6 +137,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/TestRunCmd/Stdout", void, &data, setup, test_run_stdout, teardown);
 	g_test_add("/TestRunCmd/Stderr", void, &data, setup, test_run_stderr, teardown);
 	g_test_add("/TestRunCmd/Errors", void, &data, setup, test_run_err, teardown);
+	g_test_add("/TestRunCmd/NullCmd", void, &data, setup, test_run_null_cmd, teardown);
 
 	return g_test_run();
 }

@@ -19,11 +19,19 @@ static gchar* construct_sudo_cmd(const struct cmd_req* req) {
 }
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
+	gint ret = EXIT_SUCCESS;
+
+	if (req->cmd_string == NULL) {
+		ret = EXIT_FAILURE;
+
+		res->err = g_error_new(G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING, "Invalid NULL command");
+		goto run_cmd_error_nofree;
+	}
+
 	gchar* old_path;
 	pid_t pid;
 	gint stat, argcp;
 	gchar** argcv;
-	gint ret = EXIT_SUCCESS;
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = construct_sudo_cmd(req);
@@ -86,6 +94,8 @@ run_cmd_error:
 	}
 
 	g_free(cmd);
+
+run_cmd_error_nofree:
 
 	return ret;
 }

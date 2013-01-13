@@ -33,7 +33,10 @@
 #
 #------------------------------------------------------------------------------
 
-set(PROTOBUF_FOUND TRUE)
+if(PROTOBUF_LIBRARIES AND PROTOBUF_INCLUDE_DIR)
+	set(PROTOBUF_FOUND TRUE)
+else(PROTOBUF_LIBRARIES AND PROTOBUF_INCLUDE_DIR)
+	set(PROTOBUF_FOUND TRUE)
 
 # search for header
 
@@ -100,7 +103,7 @@ endif (PROTOBUF_FOUND)
 if (PROTOBUF_FOUND)
 
     if (NOT PROTOBUF_FIND_QUIETLY)
-        message(STATUS "PROTOBUF-C")
+        message(STATUS "Found protobuf-c: ${PROTOBUF_LIBRARIES} ${PROTOBUF_INCLUDE_DIR}")
     endif (NOT PROTOBUF_FIND_QUIETLY)
 
     mark_as_advanced(PROTOBUF_INCLUDE_DIR
@@ -114,3 +117,4 @@ else (PROTOBUF_FOUND)
     endif (PROTOBUF_FIND_REQUIRED)
 
 endif (PROTOBUF_FOUND)
+endif (PROTOBUF_LIBRARIES AND PROTOBUF_INCLUDE_DIR)

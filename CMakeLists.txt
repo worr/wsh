@@ -17,13 +17,14 @@ set( WSH_LIBRARIES wsh)
 
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake
+set( GLIB2_FIND_REQUIRED ON )
 find_package( GLIB2 )
 if( NOT GLIB2_FOUND )
 	message( FATAL_ERROR "Could not find GLIB2" )
 endif()
 
 # https://github.com/Pronghorn/pronghorn/blob/master/FindPROTOBUF-C.cmake
-set( PROTOBUF_FIND_QUIETLY ON )
+set( PROTOBUF_FIND_REQUIRED ON )
 find_package( PROTOBUF-C )
 if( NOT PROTOBUF_FOUND )
 	message( FATAL_ERROR "Could not find protobuf-c" )

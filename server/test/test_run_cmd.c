@@ -145,6 +145,16 @@ static void test_construct_sudo_cmd(gpointer fixture, gconstpointer user_data) {
 	g_assert_cmpstr(res, ==, "sudo -u worr /bin/ls");
 	g_free(res);
 
+	req->username = "";
+	res = construct_sudo_cmd(req);
+	g_assert_cmpstr(res, ==, "sudo -u root /bin/ls");
+	g_free(res);
+
+	req->username = " ";
+	res = construct_sudo_cmd(req);
+	g_assert_cmpstr(res, ==, "sudo -u root /bin/ls");
+	g_free(res);
+
 	req->cmd_string = "";
 	res = construct_sudo_cmd(req);
 	g_assert(res == NULL);

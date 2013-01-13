@@ -18,9 +18,18 @@ gchar* construct_sudo_cmd(const struct cmd_req* req) {
 	// Should probably get away from relying explicitly on sudo, but it's good
 	// enough for now
 
-	// Thanks to glib this is basically a single function call
-	if (req->username != NULL)
-		return g_strconcat(SUDO_CMD, req->username, " ", req->cmd_string, NULL);
+	if (req->username != NULL && strlen(req->username) != 0) {
+		gboolean clean = FALSE;
+		for (gint i = 0; i < strlen(req->username); i++) {
+			if (g_ascii_isalnum((req->username)[i])) {
+				clean = TRUE;
+				break;
+			}
+		}
+
+		if (clean)
+			return g_strconcat(SUDO_CMD, req->username, " ", req->cmd_string, NULL);
+	}
 
 	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
 }

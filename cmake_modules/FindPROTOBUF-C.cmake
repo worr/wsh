@@ -51,7 +51,7 @@ find_path(PROTOBUF_INCLUDE_DIR
 
 if (PROTOBUF_INCLUDE_DIR)
 
-    set(PROTOBUF_INCLUDE_DIR "${PROTOBUF_INCLUDE_DIR}/google/protobuf-c")
+    #set(PROTOBUF_INCLUDE_DIR "${PROTOBUF_INCLUDE_DIR}/google/protobuf-c")
 
     # search for library
 

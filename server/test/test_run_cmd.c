@@ -18,7 +18,7 @@ static void setup(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	data->res = g_new0(struct cmd_res, 1);
 
 	data->req->in_fd = -1;
-	data->req->env = data->envp;
+	data->req->env = g_listenv();
 	data->req->cwd = "/tmp";
 }
 
@@ -180,9 +180,6 @@ static void g_environ_getenv_override_fail(struct test_run_cmd_data* fixture, gc
 
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
-
-	struct test_run_cmd_data data;
-	data.envp = env;
 
 	g_test_add("/TestRunCmd/ConstructSudoCmd", struct test_run_cmd_data, NULL, setup, test_construct_sudo_cmd, teardown);
 	g_test_add("/TestRunCmd/ExitCode", struct test_run_cmd_data, NULL, setup, test_run_exit_code, teardown);

@@ -5,6 +5,24 @@
 #include <string.h>
 #include <sys/wait.h>
 
+#if GLIB_CHECK_VERSION( 2, 32, 0 )
+#else
+inline const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
+	return g_environ_getenv_ov(envp, variable);
+}
+#endif
+
+// This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
+// close enough.
+// This is a separate function to make testing easier.
+const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable) {
+	for (gchar* var = *envp; var != NULL; var = *(envp++)) {
+		if (strstr(var, variable) == var)
+			return strchr(var, '=') + 1;
+	}
+	return NULL;
+}
+
 // retval should be g_free'd
 gchar* construct_sudo_cmd(const struct cmd_req* req) {
 	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
@@ -115,3 +133,4 @@ run_cmd_error_nofree:
 
 	return ret;
 }
+

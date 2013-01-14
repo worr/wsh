@@ -25,5 +25,10 @@ struct cmd_res {
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req);
 gchar* construct_sudo_cmd(const struct cmd_req* req);
+const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable); 
+
+#if GLIB_CHECK_VERSION( 2, 30, 0 )
+const gchar* g_environ_getenv(gchar** envp, const gchar* variable); 
+#endif
 
 #endif

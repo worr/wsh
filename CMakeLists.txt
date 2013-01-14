@@ -16,6 +16,7 @@ set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_OUTPUT_DIRECTORY}/in
 set( WSH_LIBRARIES wsh)
 
 add_definitions( -std=c99 )
+add_definitions( -Wall -Werror -pedantic )
 
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake

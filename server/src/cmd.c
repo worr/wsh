@@ -3,11 +3,12 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
-inline const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
+const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 	return g_environ_getenv_ov(envp, variable);
 }
 #endif

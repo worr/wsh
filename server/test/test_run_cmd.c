@@ -178,6 +178,13 @@ static void g_environ_getenv_override_fail(struct test_run_cmd_data* fixture, gc
 	g_assert(horkus == NULL);
 }
 
+static void g_environ_getenv_override_mid(struct test_run_cmd_data* fixture, gconstpointer user_data) {
+	gchar* envp[] = { "USER=will", "PATH=/bin:/usr/bin", NULL };
+
+	const gchar* path = g_environ_getenv_ov(envp, "PATH");
+	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -189,6 +196,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/TestRunCmd/NullCmd", struct test_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
 	g_test_add("/TestRunCmd/EnvironGetEnvOverride", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
 	g_test_add("/TestRunCmd/EnvironGetEnvOverrideFail", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
+	g_test_add("/TestRunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 
 	return g_test_run();
 }

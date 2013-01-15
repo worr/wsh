@@ -84,9 +84,11 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	 * old path.
 	 */
 	if (glib_check_version(2, 34, 0)) {
+		const gchar* new_path;
 		old_path = g_strdup(g_getenv("PATH"));
-		// TODO: Implement my own version of g_environ_getenv() for old glib
-		g_setenv(g_environ_getenv(req->env, "PATH"), "PATH", TRUE);
+
+		if ((new_path = g_environ_getenv(req->env, "PATH")) != NULL)
+			g_setenv(new_path, "PATH", TRUE);
 	}
 
 	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &res->err)) {

@@ -1,8 +1,9 @@
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
-set( WSH_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
-add_library( wsh ${WSH_SOURCES} )
+set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
+set( WSH_SOURCES log.c )
+add_library( wsh ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
 
 # Find protoc-c compiler
 find_program( PROTO_C protoc-c )
@@ -26,7 +27,7 @@ add_custom_command(
 	DEPENDS ${PROTO_C}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set_source_files_properties( ${WSH_SOURCES} PROPERTIES GENERATED TRUE )
+set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )
 
 include_directories( ${GLIB2_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR} )
 target_link_libraries( wsh ${GLIB2_LIBRARIES} ${PROTOBUF_LIBRARIES} )

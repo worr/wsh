@@ -4,7 +4,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#include <cmd.h>
+#include "cmd.h"
 
 struct test_run_cmd_data {
 	struct cmd_req* req;

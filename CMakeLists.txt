@@ -36,10 +36,10 @@ endif()
 add_subdirectory( library/src )
 
 if( BUILD_TESTS )
-	#add_subdirectory( library/test )
-
 	# enable testing for whole project
 	enable_testing()
+
+	add_subdirectory( library/test )
 endif( BUILD_TESTS )
 
 if( BUILD_SERVER )

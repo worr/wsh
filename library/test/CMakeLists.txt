@@ -2,8 +2,8 @@ set( TEST_EXECUTABLES test_log )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
-include_directories( ${CMAKE_SOURCE_DIR}/library/src ${GLIB2_INCLUDE_DIRS} )
-set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/log.c )
+include_directories( ${CMAKE_SOURCE_DIR}/library/src ${CMAKE_SOURCE_DIR}/library/test/mock ${GLIB2_INCLUDE_DIRS} )
+set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/log.c ${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 	add_executable( ${TEST_EXECUTABLE} ${TEST_EXECUTABLE}.c ${SOURCES} )

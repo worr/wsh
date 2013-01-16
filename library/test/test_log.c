@@ -15,6 +15,8 @@
  * - void log_server_message(gchar* user, gchar* command, gchar* src)
  */
 
+static gint expected_syslog_count;
+
 static void test_init_logger(void) {
 	gchar* test_ident = "wsh";
 	gint recv_logopt;
@@ -39,17 +41,41 @@ static void test_log_message_from_client(void) {
 	gchar* recv_message = g_malloc0(strlen(test_message) + 9);
 	gint recv_priority;
 
+	init_logger(CLIENT);
+
 	log_message(test_message);
 
 	// Expected result
 	test_message = "CLIENT: this is a test message";
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == 1);
+	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
+
+	exit_logger();
+
+	g_free(recv_message);
 }
 
-//static void test_log_message_
+static void test_log_message_from_server(void) {
+	gchar* test_message = "this is a test message";
+	gchar* recv_message = g_malloc0(strlen(test_message) + 9);
+	gint recv_priority;
+
+	init_logger(SERVER);
+
+	log_message(test_message);
+
+	test_message = "SERVER: this is a test message";
+	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
+
+	g_assert_cmpstr(recv_message, ==, test_message);
+	g_assert(recv_priority == LOG_INFO);
+
+	exit_logger();
+
+	g_free(recv_message);
+}
 
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
@@ -57,6 +83,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Logging/InitLogger", test_init_logger);
 	g_test_add_func("/Library/Logging/ExitLogger", test_exit_logger);
 	g_test_add_func("/Library/Logging/LogMessageFromClient", test_log_message_from_client);
+	g_test_add_func("/Library/Logging/LogMessageFromServer", test_log_message_from_server);
 
 	return g_test_run();
 }

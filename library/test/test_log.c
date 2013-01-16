@@ -78,7 +78,7 @@ static void test_error_log_from_client(void) {
 
 	log_error(0, test_message);
 
-	test_message = "CLIENT ERROR 1: TEST ERROR: this is an error";
+	test_message = "CLIENT ERROR 0: TEST ERROR: this is an error";
 	gchar* recv_message = g_malloc0(strlen(test_message) + 1);
 
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Logging/ExitLogger", test_exit_logger);
 	g_test_add_func("/Library/Logging/LogMessageFromClient", test_log_message_from_client);
 	g_test_add_func("/Library/Logging/LogMessageFromServer", test_log_message_from_server);
+	g_test_add_func("/Library/Logging/LogErrorFromClient", test_error_log_from_client);
 
 	return g_test_run();
 }

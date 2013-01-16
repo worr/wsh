@@ -35,17 +35,21 @@ static void test_exit_logger(void) {
 }
 
 static void test_log_message_from_client(void) {
-	gchar* test_message = "CLIENT: %s";
-	gchar* recv_message = g_malloc0(strlen(test_message) + 1);
+	gchar* test_message = "this is a test message";
+	gchar* recv_message = g_malloc0(strlen(test_message) + 9);
 	gint recv_priority;
 
 	log_message(test_message);
 
+	// Expected result
+	test_message = "CLIENT: this is a test message";
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == 1);
 
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
 }
+
+//static void test_log_message_
 
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
@@ -56,3 +60,4 @@ int main(int argc, char** argv) {
 
 	return g_test_run();
 }
+

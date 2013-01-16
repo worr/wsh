@@ -1,6 +1,7 @@
 #include "syslog.h"
 
 #include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -78,15 +79,19 @@ int setlogmask(int maskpri) {
 }
 
 void syslog(int priority, const char* message, ...) {
+	va_list args;
 	free(syslog_message);
 
-	if ((syslog_message = malloc(strlen(message) + 1)) == NULL) {
+	if ((syslog_message = malloc(1024)) == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
 
-	strncpy(syslog_message, message, strlen(message));
-	syslog_message[strlen(message)] = '\0';
+	memset(syslog_message, 0, 1024);
+
+	va_start(args, message);
+	vsnprintf(syslog_message, 1024, message, args);
+	va_end(args);
 
 	syslog_priority = priority;
 

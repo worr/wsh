@@ -3,6 +3,7 @@
 
 #define LOG_DAEMON (3<<3)
 
+#define LOG_ERR (3)
 #define LOG_INFO (6)
 
 #define LOG_PID (0x01)

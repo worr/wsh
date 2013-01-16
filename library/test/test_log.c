@@ -8,13 +8,6 @@
 #include "log.h"
 #include <syslog.h> // This is the mock syslog
 
-/*
- * Tests
- * - void log_message(enum type, ghcar* message)
- * - void log_client_message(gchar* user, gchar* command, gchar* src, gchar* dest_pattern)
- * - void log_server_message(gchar* user, gchar* command, gchar* src)
- */
-
 static gint expected_syslog_count;
 
 static void test_init_logger(void) {
@@ -71,6 +64,27 @@ static void test_log_message_from_server(void) {
 
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
+
+	exit_logger();
+
+	g_free(recv_message);
+}
+
+static void test_error_log_from_client(void) {
+	gchar* test_message = "this is an error";
+	gint recv_priority;
+
+	init_logger(CLIENT);
+
+	log_error(0, test_message);
+
+	test_message = "CLIENT ERROR 1: TEST ERROR: this is an error";
+	gchar* recv_message = g_malloc0(strlen(test_message) + 1);
+
+	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
+
+	g_assert_cmpstr(recv_message, ==, test_message);
+	g_assert(recv_priority == LOG_ERR);
 
 	exit_logger();
 

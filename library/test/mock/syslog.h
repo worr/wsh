@@ -1,6 +1,12 @@
 #ifndef MOCK_SYSLOG_H
 #define MOCK_SYSLOG_H
 
+#define LOG_DAEMON (3<<3)
+
+#define LOG_INFO (6)
+
+#define LOG_PID (0x01)
+
 #include <sys/types.h>
 
 // These are the functions we're mocking...

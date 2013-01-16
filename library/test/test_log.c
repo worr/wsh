@@ -15,8 +15,8 @@
  * - void log_server_message(gchar* user, gchar* command, gchar* src)
  */
 
-static void test_log_message(void) {
-	gchar* test_message = "this is a test message";
+static void test_log_message_from_client(void) {
+	gchar* test_message = "CLIENT: %s";
 	gchar* test_ident = "wsh";
 
 	log_message(CLIENT, test_message);
@@ -43,7 +43,7 @@ static void test_log_message(void) {
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add_func("/Library/Logging/LogMessage", test_log_message);
+	g_test_add_func("/Library/Logging/LogMessageFromClient", test_log_message_from_client);
 
 	return g_test_run();
 }

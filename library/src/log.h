@@ -10,6 +10,8 @@ enum log_type {
 	SERVER,
 };
 
-void log_message(enum log_type type, const gchar* message);
+void init_logger(enum log_type t);
+void exit_logger(void);
+void log_message(const gchar* message);
 
 #endif

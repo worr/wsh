@@ -164,6 +164,8 @@ static void test_construct_sudo_cmd(struct test_run_cmd_data* fixture, gconstpoi
 	g_assert(res == NULL);
 }
 
+#if GLIB_CHECK_VERSION( 2, 32, 0)
+#else
 static void g_environ_getenv_override(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
 
@@ -184,6 +186,7 @@ static void g_environ_getenv_override_mid(struct test_run_cmd_data* fixture, gco
 	const gchar* path = g_environ_getenv_ov(envp, "PATH");
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
+#endif
 
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
@@ -194,9 +197,12 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/TestRunCmd/Stderr", struct test_run_cmd_data, NULL, setup, test_run_stderr, teardown);
 	g_test_add("/TestRunCmd/Errors", struct test_run_cmd_data, NULL, setup, test_run_err, teardown);
 	g_test_add("/TestRunCmd/NullCmd", struct test_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
+#if GLIB_CHECK_VERSION(2, 32, 0)
+#else
 	g_test_add("/TestRunCmd/EnvironGetEnvOverride", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
 	g_test_add("/TestRunCmd/EnvironGetEnvOverrideFail", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
 	g_test_add("/TestRunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
+#endif
 
 	return g_test_run();
 }

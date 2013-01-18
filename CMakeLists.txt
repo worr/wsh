@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.6 )
-project( wsh )
+project( wsh C )
 
 option( BUILD_SERVER "Build wsh server" ON )
 option( BUILD_CLIENT "Build wsh client" ON )

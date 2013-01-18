@@ -1,10 +1,13 @@
 #include <glib.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
 #include "cmd.h"
+
+extern char** environ;
 
 struct test_run_cmd_data {
 	struct cmd_req* req;
@@ -18,7 +21,7 @@ static void setup(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	data->res = g_new0(struct cmd_res, 1);
 
 	data->req->in_fd = -1;
-	data->req->env = g_listenv();
+	data->req->env = environ;
 	data->req->cwd = "/tmp";
 }
 

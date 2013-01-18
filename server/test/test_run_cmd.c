@@ -167,6 +167,15 @@ static void test_construct_sudo_cmd(struct test_run_cmd_data* fixture, gconstpoi
 	g_assert(res == NULL);
 }
 
+static void test_run_cmd_path(struct test_run_cmd_data* fixture, gconstpointer user_data) {
+	struct cmd_req* req = fixture->req;
+	struct cmd_res* res = fixture->res;
+
+	req->cmd_string = "ls";
+	run_cmd(res, req);
+	g_assert(res->exit_status == 0);
+}
+
 static void g_environ_getenv_override(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
 
@@ -200,6 +209,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverride", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideFail", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
+	g_test_add("/Server/RunCmd/Path", struct test_run_cmd_data, NULL, setup, test_run_cmd_path, teardown);
 
 	return g_test_run();
 }

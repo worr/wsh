@@ -19,23 +19,9 @@ void exit_logger(void) {
 }
 
 void log_message(const gchar* message) {
-	switch (type) {
-		case CLIENT:
-			syslog(LOG_INFO, "CLIENT: %s", message);
-			break;
-		case SERVER:
-			syslog(LOG_INFO, "SERVER: %s", message);
-			break;
-	}
+	syslog(LOG_INFO, "%s: %s", type == CLIENT ? "CLIENT" : "SERVER", message);
 }
 
 void log_error(gint msg_num, gchar* message) {
-	switch (type) {
-		case CLIENT:
-			syslog(LOG_ERR, "CLIENT ERROR %d: %s: %s", msg_num, err_messages[msg_num], message);
-			break;
-		case SERVER:
-			syslog(LOG_ERR, "SERVER ERROR %d: %s: %s", msg_num, err_messages[msg_num], message);
-			break;
-	}
+	syslog(LOG_ERR, "%s ERROR %d: %s: %s", type == CLIENT ? "CLIENT" : "SERVER", msg_num, err_messages[msg_num], message);
 }

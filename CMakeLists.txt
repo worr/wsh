@@ -30,9 +30,11 @@ find_package( Threads REQUIRED )
 # This is a hack to get around problems with the custom cmake libs I found
 if( IS_DIRECTORY /usr/local/lib )
 	link_directories( /usr/local/lib )
-elseif( IS_DIRECTORY /usr/pkg/lib )
-	link_directories( /usr/pkg/lib )
 endif( IS_DIRECTORY /usr/local/lib )
+
+if( IS_DIRECTORY /usr/pkg/lib )
+	link_directories( /usr/pkg/lib )
+endif( IS_DIRECTORY /usr/pkg/lib )
 
 add_subdirectory( library/src )
 

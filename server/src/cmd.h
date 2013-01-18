@@ -28,7 +28,7 @@ gchar* construct_sudo_cmd(const struct cmd_req* req);
 
 # if GLIB_CHECK_VERSION( 2, 32, 0 )
 # else
-const gchar* g_environ_getenv(gchar** envp, gchar* variable); 
+const gchar* g_environ_getenv(gchar** envp, const gchar* variable); 
 # endif
 
 #endif

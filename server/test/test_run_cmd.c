@@ -191,15 +191,15 @@ static void g_environ_getenv_override_mid(struct test_run_cmd_data* fixture, gco
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add("/TestRunCmd/ConstructSudoCmd", struct test_run_cmd_data, NULL, setup, test_construct_sudo_cmd, teardown);
-	g_test_add("/TestRunCmd/ExitCode", struct test_run_cmd_data, NULL, setup, test_run_exit_code, teardown);
-	g_test_add("/TestRunCmd/Stdout", struct test_run_cmd_data, NULL, setup, test_run_stdout, teardown);
-	g_test_add("/TestRunCmd/Stderr", struct test_run_cmd_data, NULL, setup, test_run_stderr, teardown);
-	g_test_add("/TestRunCmd/Errors", struct test_run_cmd_data, NULL, setup, test_run_err, teardown);
-	g_test_add("/TestRunCmd/NullCmd", struct test_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
-	g_test_add("/TestRunCmd/EnvironGetEnvOverride", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
-	g_test_add("/TestRunCmd/EnvironGetEnvOverrideFail", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
-	g_test_add("/TestRunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
+	g_test_add("/Server/RunCmd/ConstructSudoCmd", struct test_run_cmd_data, NULL, setup, test_construct_sudo_cmd, teardown);
+	g_test_add("/Server/RunCmd/ExitCode", struct test_run_cmd_data, NULL, setup, test_run_exit_code, teardown);
+	g_test_add("/Server/RunCmd/Stdout", struct test_run_cmd_data, NULL, setup, test_run_stdout, teardown);
+	g_test_add("/Server/RunCmd/Stderr", struct test_run_cmd_data, NULL, setup, test_run_stderr, teardown);
+	g_test_add("/Server/RunCmd/Errors", struct test_run_cmd_data, NULL, setup, test_run_err, teardown);
+	g_test_add("/Server/RunCmd/NullCmd", struct test_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
+	g_test_add("/Server/RunCmd/EnvironGetEnvOverride", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
+	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideFail", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
+	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 
 	return g_test_run();
 }

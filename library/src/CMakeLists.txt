@@ -30,4 +30,4 @@ add_custom_command(
 set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )
 
 include_directories( ${GLIB2_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR} )
-target_link_libraries( wsh ${GLIB2_LIBRARIES} ${PROTOBUF_LIBRARIES} )
+target_link_libraries( wsh ${GLIB2_LIBRARIES} ${PROTOBUF_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} )

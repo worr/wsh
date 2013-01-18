@@ -20,18 +20,13 @@ add_definitions( -Wall -Werror -pedantic )
 
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake
-set( GLIB2_FIND_REQUIRED ON )
-find_package( GLIB2 )
-if( NOT GLIB2_FOUND )
-	message( FATAL_ERROR "Could not find GLIB2" )
-endif()
+find_package( GLIB2 REQUIRED )
 
 # https://github.com/Pronghorn/pronghorn/blob/master/FindPROTOBUF-C.cmake
-set( PROTOBUF_FIND_REQUIRED ON )
-find_package( PROTOBUF-C )
-if( NOT PROTOBUF_FOUND )
-	message( FATAL_ERROR "Could not find protobuf-c" )
-endif()
+find_package( PROTOBUF-C REQUIRED )
+
+find_package( Threads REQUIRED )
+link_directories( /usr/local/lib )
 
 add_subdirectory( library/src )
 

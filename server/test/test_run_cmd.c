@@ -169,21 +169,21 @@ static void test_construct_sudo_cmd(struct test_run_cmd_data* fixture, gconstpoi
 static void g_environ_getenv_override(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
 
-	const gchar* path = g_environ_getenv_ov(envp, "PATH");
+	const gchar* path = g_environ_getenv(envp, "PATH");
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
 
 static void g_environ_getenv_override_fail(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
 
-	const gchar* horkus = g_environ_getenv_ov(envp, "HORKUS");
+	const gchar* horkus = g_environ_getenv(envp, "HORKUS");
 	g_assert(horkus == NULL);
 }
 
 static void g_environ_getenv_override_mid(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	gchar* envp[] = { "USER=will", "PATH=/bin:/usr/bin", NULL };
 
-	const gchar* path = g_environ_getenv_ov(envp, "PATH");
+	const gchar* path = g_environ_getenv(envp, "PATH");
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
 #endif

@@ -14,7 +14,7 @@
 const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 	for (gchar* var = *envp; var != NULL; var = *(envp++)) {
 		if (strstr(var, variable) == var)
-			return strchr(var, '=') + 1;
+			return var + strchr(var, '=') + 1;
 	}
 	return NULL;
 }

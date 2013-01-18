@@ -8,17 +8,21 @@
 
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
+const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
+	return g_environ_getenv_ov(envp, variable);
+}
+#endif
+
 // This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
 // close enough.
 // This is a separate function to make testing easier.
-const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
+const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable) {
 	for (gchar* var = *envp; var != NULL; var = *(envp++)) {
 		if (strstr(var, variable) == var)
-			return var + strchr(var, '=') + 1;
+			return strchr(var, '=') + 1;
 	}
 	return NULL;
 }
-#endif
 
 // retval should be g_free'd
 gchar* construct_sudo_cmd(const struct cmd_req* req) {

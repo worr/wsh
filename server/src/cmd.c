@@ -98,7 +98,10 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		goto run_cmd_error;
 	}
 
-	log_server_cmd(argcv, req->username, req->dest, req->rcwd);
+	gchar* log_cmd = g_strjoinv(" ", argcv);
+	log_server_cmd(log_cmd, req->username, req->host, req->cwd);
+	g_free(log_cmd);
+
 	g_spawn_async_with_pipes(
 		req->cwd,  // working dir
 		argcv, // argv

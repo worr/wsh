@@ -48,6 +48,9 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 			goto sudo_authenticate_error;
 
 		ret = TRUE;
+		// Look at prompt a second time to verify results
+	} else {
+		ret = TRUE;
 	}
 
 sudo_authenticate_error:

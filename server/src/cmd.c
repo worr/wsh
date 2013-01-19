@@ -16,6 +16,53 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 }
 #endif
 
+gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
+	GIOChannel* in, * out;
+	const gchar* prompt = "Password: ";
+	gchar* buf = g_slice_alloc0(strlen(prompt) + 1);
+	gsize bytes_read, bytes_written;
+	GIOStatus stat;
+	gboolean ret = FALSE;
+
+	in = g_io_channel_unix_new(req->in_fd);
+	out = g_io_channel_unix_new(res->out_fd);
+
+	stat = g_io_channel_read_chars(out, buf, strlen(prompt), &bytes_read, &res->err);
+	switch (stat) {
+		case G_IO_STATUS_ERROR:
+			goto sudo_authenticate_error;
+		case G_IO_STATUS_EOF:
+			return TRUE;
+		default:
+			break;
+	}
+
+	// First time looking at prompt
+	if (g_strcmp0(buf, prompt) == 0) {
+		stat = g_io_channel_write_chars(in, req->password, -1, &bytes_written, &res->err);
+		if (stat != G_IO_STATUS_NORMAL)
+			goto sudo_authenticate_error;
+
+		stat = g_io_channel_write_chars(in, "\n", -1, &bytes_written, &res->err);
+		if (stat != G_IO_STATUS_NORMAL)
+			goto sudo_authenticate_error;
+
+		ret = TRUE;
+	}
+
+sudo_authenticate_error:
+
+	g_io_channel_shutdown(in, TRUE, &res->err);
+	if (res->err != NULL)
+		goto sudo_authenticate_error_noshut;
+
+	g_io_channel_shutdown(out, FALSE, &res->err);
+
+sudo_authenticate_error_noshut:
+	g_slice_free1(strlen(prompt) + 1, buf);
+	return ret;
+}
+
 // This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
 // close enough.
 // This is a separate function to make testing easier.

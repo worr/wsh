@@ -27,6 +27,7 @@ struct cmd_res {
 gint run_cmd(struct cmd_res* res, struct cmd_req* req);
 gchar* construct_sudo_cmd(const struct cmd_req* req);
 const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable); 
+gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req);
 
 # if GLIB_CHECK_VERSION( 2, 32, 0 )
 # else

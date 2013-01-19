@@ -1,4 +1,5 @@
 #include <glib.h>
+#include <glib-unix.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -26,6 +27,7 @@ static void setup(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	data->req->cwd = "/tmp";
 	data->req->host = "127.0.0.1";
 	data->req->username = "root";
+	data->req->password = "test";
 
 	init_logger(SERVER);
 }
@@ -203,6 +205,45 @@ static void g_environ_getenv_override_mid(struct test_run_cmd_data* fixture, gco
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
 
+static void test_authenticate(struct test_run_cmd_data* fixture, gconstpointer user_data) {
+	struct cmd_req* req = fixture->req;
+	struct cmd_res* res = fixture->res;
+	const gchar* password_prompt = "Password: ";
+	gchar* ret;
+	gsize ret_len;
+	gsize writ;
+
+	gint inpipe[2], outpipe[2];
+	GIOChannel* in, * out;
+
+	g_unix_open_pipe(inpipe, 0, NULL);
+	g_unix_open_pipe(outpipe, 0, NULL);
+
+	req->in_fd = inpipe[1];
+	res->out_fd = outpipe[0];
+
+	in = g_io_channel_unix_new(inpipe[0]);
+	out = g_io_channel_unix_new(outpipe[1]);
+
+	g_io_channel_write_chars(out, password_prompt, strlen(password_prompt), &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	g_assert(sudo_authenticate(res, req) == TRUE);
+	g_assert_no_error(res->err);
+
+	g_io_channel_read_line(in, &ret, &ret_len, NULL, NULL);
+	close(inpipe[1]);
+	close(outpipe[0]);
+
+	g_io_channel_shutdown(in, FALSE, NULL);
+	g_io_channel_shutdown(out, FALSE, NULL);
+	close(inpipe[0]);
+	close(outpipe[1]);
+
+	g_assert_cmpstr(g_strchomp(ret), ==, req->password);
+	g_free(ret);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -216,6 +257,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideFail", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 	g_test_add("/Server/RunCmd/Path", struct test_run_cmd_data, NULL, setup, test_run_cmd_path, teardown);
+	g_test_add("/Server/RunCmd/Auth", struct test_run_cmd_data, NULL, setup, test_authenticate, teardown);
 
 	return g_test_run();
 }

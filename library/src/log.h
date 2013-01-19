@@ -21,3 +21,4 @@ void log_server_cmd(const gchar* command, const gchar* user, const gchar* source
 void log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd);
 
 #endif
+

@@ -12,6 +12,7 @@ struct cmd_req {
 	gchar* username;
 	gchar* password;
 	gchar* cwd;
+	gchar* host; // put here mostly for logging purposes
 	gint in_fd;
 	gboolean sudo;
 };

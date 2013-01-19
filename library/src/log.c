@@ -75,3 +75,4 @@ void log_client_cmd(const gchar* command, const gchar* user, gchar** dests, cons
 	g_free(hosts);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
+

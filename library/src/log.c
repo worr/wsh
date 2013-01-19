@@ -20,6 +20,9 @@ static const gchar* cmd_client_template =
 static const gchar* cmd_server_status_template =
 	"SERVER: command `%s` run as user `%s` in dir `%s` from host `%s` exited with code `%d`";
 
+static const gchar* cmd_client_status_template =
+	"CLIENT: command `%s` run as user `%s` in dir `%s` exited with code `%d` on hosts `%s`";
+
 void init_logger(enum log_type t) {
 	type = t;
 	openlog(WSH_IDENT, LOG_PID, LOG_DAEMON);
@@ -95,5 +98,29 @@ void log_server_cmd_status(const gchar* command, const gchar* user, const gchar*
 
 	syslog(LOG_INFO, "%s", msg);
 	g_slice_free1(strlen(msg) + 1, msg);
+}
+
+void log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status) {
+	g_assert(type != SERVER);
+
+	gsize attempted;
+	gsize str_len = strlen(cmd_client_status_template) + strlen(command) + strlen(user) + strlen(cwd) + 3;
+	gchar* msg = g_slice_alloc0(str_len + 1);
+
+	for (gint i = 0; dests[i] != NULL; i++)
+		str_len += strlen(dests[i]);
+	
+	gchar* hosts = g_strjoinv(", ", dests);
+
+	if ((attempted = g_snprintf(msg, str_len, cmd_client_status_template, command, user, cwd, status, hosts)) > str_len) {
+		g_slice_free1(str_len + 1, msg);
+
+		msg = g_slice_alloc0(attempted);
+		g_snprintf(msg, attempted, cmd_client_status_template, command, user, cwd, status, hosts);
+	}
+
+	syslog(LOG_INFO, "%s", msg);
+	g_slice_free1(strlen(msg) + 1, msg);
+	g_free(hosts);
 }
 

@@ -1,5 +1,6 @@
 #include "cmd.h"
 
+#include <errno.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -125,6 +126,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		res->exit_status = WEXITSTATUS(stat);
 		log_server_cmd_status(log_cmd, req->username, req->host, req->cwd, res->exit_status);
 	} else {
+		log_error(COMMAND_FAILED, strerror(errno));
 		ret = EXIT_FAILURE;
 		goto run_cmd_error;
 	}
@@ -142,6 +144,9 @@ run_cmd_error_no_log_cmd:
 	g_free(cmd);
 
 run_cmd_error_nofree:
+
+	if (res->err != NULL)
+		log_error(COMMAND_FAILED, res->err->message);
 
 	return ret;
 }

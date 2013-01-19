@@ -5,8 +5,8 @@
 
 #define WSH_IDENT "wsh"
 
-#define TEST_ERROR (0);
-#define COMMAND_FAILED (1);
+#define TEST_ERROR (0)
+#define COMMAND_FAILED (1)
 
 enum log_type {
 	CLIENT,

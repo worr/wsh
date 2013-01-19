@@ -17,7 +17,7 @@ static void test_init_logger(void) {
 
 	init_logger(CLIENT);
 
-	gchar* recv_ident = g_malloc0(strlen(test_ident) + 1);
+	gchar* recv_ident = g_slice_alloc0(strlen(test_ident) + 1);
 	g_assert(openlog_called(recv_ident, strlen(test_ident) + 1, &recv_logopt, &recv_facility) == 1);
 	g_assert_cmpstr(recv_ident, ==, test_ident);
 	g_assert(recv_logopt == LOG_PID);
@@ -31,7 +31,7 @@ static void test_exit_logger(void) {
 
 static void test_log_message_from_client(void) {
 	gchar* test_message = "this is a test message";
-	gchar* recv_message = g_malloc0(strlen(test_message) + 9);
+	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 9);
 	gint recv_priority;
 
 	init_logger(CLIENT);
@@ -47,12 +47,12 @@ static void test_log_message_from_client(void) {
 
 	exit_logger();
 
-	g_free(recv_message);
+	g_slice_free1(strlen(test_message) + 1, recv_message);
 }
 
 static void test_log_message_from_server(void) {
 	gchar* test_message = "this is a test message";
-	gchar* recv_message = g_malloc0(strlen(test_message) + 9);
+	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 9);
 	gint recv_priority;
 
 	init_logger(SERVER);
@@ -67,7 +67,7 @@ static void test_log_message_from_server(void) {
 
 	exit_logger();
 
-	g_free(recv_message);
+	g_slice_free1(strlen(test_message) + 1, recv_message);
 }
 
 static void test_error_log_from_client(void) {
@@ -79,7 +79,7 @@ static void test_error_log_from_client(void) {
 	log_error(0, test_message);
 
 	test_message = "CLIENT ERROR 0: TEST ERROR: this is an error";
-	gchar* recv_message = g_malloc0(strlen(test_message) + 1);
+	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 1);
 
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
 
@@ -88,7 +88,7 @@ static void test_error_log_from_client(void) {
 
 	exit_logger();
 
-	g_free(recv_message);
+	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
 
 static void test_log_run_command_from_server(void) {
@@ -98,7 +98,7 @@ static void test_log_run_command_from_server(void) {
 	gchar* test_cwd = "/usr/home/will";
 	gchar* expected_message = "SERVER: running command `ls` as user `will` in dir `/usr/home/will` from host `127.0.0.1`";
 
-	gchar* recv_message = g_malloc0(strlen(expected_message) + 1);
+	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
 	init_logger(SERVER);
@@ -110,7 +110,7 @@ static void test_log_run_command_from_server(void) {
 	g_assert(recv_priority == LOG_INFO);
 
 	exit_logger();
-	g_free(recv_message);
+	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
 
 int main(int argc, char** argv) {

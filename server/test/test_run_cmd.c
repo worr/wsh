@@ -17,8 +17,8 @@ struct test_run_cmd_data {
 
 static void setup(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	struct test_run_cmd_data* data = fixture;
-	data->req = g_new0(struct cmd_req, 1);
-	data->res = g_new0(struct cmd_res, 1);
+	data->req = g_slice_new0(struct cmd_req);
+	data->res = g_slice_new0(struct cmd_res);
 
 	data->req->in_fd = -1;
 	data->req->env = environ;
@@ -30,8 +30,8 @@ static void teardown(struct test_run_cmd_data* fixture, gconstpointer user_data)
 
 	if (data->res->err != NULL)
 		g_error_free(data->res->err);
-	g_free(data->req);
-	g_free(data->res);
+	g_slice_free(struct cmd_req, data->req);
+	g_slice_free(struct cmd_res, data->res);
 }
 
 static void test_run_exit_code(struct test_run_cmd_data* fixture, gconstpointer user_data) {
@@ -58,7 +58,7 @@ static void test_run_stdout(struct test_run_cmd_data* fixture, gconstpointer use
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 	
-	char* buf = g_malloc0(strlen("foo\n") + 1);
+	char* buf = g_slice_alloc0(strlen("foo\n") + 1);
 	g_assert(read(res->out_fd, buf, strlen("foo\n")) == strlen("foo\n"));
 	g_assert_cmpstr(buf, ==, "foo\n");
 
@@ -81,7 +81,7 @@ static void test_run_stderr(struct test_run_cmd_data* fixture, gconstpointer use
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 	
-	char* buf = g_malloc0(strlen("foo\n") + 1);
+	char* buf = g_slice_alloc0(strlen("foo\n") + 1);
 	g_assert(read(res->err_fd, buf, strlen("foo\n")) == strlen("foo\n"));
 	g_assert_cmpstr(buf, ==, "foo\n");
 

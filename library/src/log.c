@@ -38,12 +38,12 @@ void log_cmd(const gchar* command, const gchar* user, const gchar* source, const
 	gchar* msg = g_slice_alloc0(str_len);
 
 	if ((attempted = g_snprintf(msg, str_len, cmd_template, msg_type, command, user, cwd, source)) > str_len) {
-		g_free(msg);
+		g_slice_free1(str_len + 1, msg);
 
 		msg = g_slice_alloc0(attempted);
 		g_snprintf(msg, attempted, cmd_template, msg_type, command, user, cwd, source);
 	}
 
 	syslog(LOG_INFO, "%s", msg);
-	g_free(msg);
+	g_slice_free1(strlen(msg) + 1, msg);
 }

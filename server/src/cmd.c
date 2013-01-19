@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "log.h"
+
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
 const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {

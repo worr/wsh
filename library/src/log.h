@@ -6,6 +6,7 @@
 #define WSH_IDENT "wsh"
 
 #define TEST_ERROR (0);
+#define COMMAND_FAILED (1);
 
 enum log_type {
 	CLIENT,
@@ -16,5 +17,6 @@ void init_logger(enum log_type t);
 void exit_logger(void);
 void log_message(const gchar* message);
 void log_error(gint msg_num, gchar* message);
+void log_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd);
 
 #endif

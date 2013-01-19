@@ -3,7 +3,7 @@ set( TEST_EXECUTABLES test_run_cmd )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
 include_directories( ${CMAKE_SOURCE_DIR}/server/src ${WSH_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS} )
-set( SOURCES ${CMAKE_SOURCE_DIR}/server/src/cmd.c )
+set( SOURCES ${CMAKE_SOURCE_DIR}/server/src/cmd.c ${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 	add_executable( ${TEST_EXECUTABLE} ${TEST_EXECUTABLE}.c ${SOURCES} )

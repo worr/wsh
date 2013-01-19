@@ -54,7 +54,7 @@ void log_server_cmd(const gchar* command, const gchar* user, const gchar* source
 		g_snprintf(msg, attempted, cmd_server_template, command, user, cwd, source);
 	}
 
-	syslog(LOG_INFO, "%s", msg);
+	log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
@@ -77,7 +77,7 @@ void log_client_cmd(const gchar* command, const gchar* user, gchar** dests, cons
 		g_snprintf(msg, attempted, cmd_client_template, command, user, cwd, hosts);
 	}
 
-	syslog(LOG_INFO, "%s", msg);
+	log_message(msg);
 	g_free(hosts);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
@@ -96,7 +96,7 @@ void log_server_cmd_status(const gchar* command, const gchar* user, const gchar*
 		g_snprintf(msg, attempted, cmd_server_status_template, command, user, cwd, source, status);
 	}
 
-	syslog(LOG_INFO, "%s", msg);
+	log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
@@ -119,7 +119,7 @@ void log_client_cmd_status(const gchar* command, const gchar* user, gchar** dest
 		g_snprintf(msg, attempted, cmd_client_status_template, command, user, cwd, status, hosts);
 	}
 
-	syslog(LOG_INFO, "%s", msg);
+	log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
 	g_free(hosts);
 }

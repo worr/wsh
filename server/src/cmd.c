@@ -95,7 +95,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 
 	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &res->err)) {
 		ret = EXIT_FAILURE;
-		goto run_cmd_error;
+		goto run_cmd_error_no_log_cmd;
 	}
 
 	gchar* log_cmd = g_strjoinv(" ", argcv);
@@ -130,6 +130,9 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	}
 
 run_cmd_error:
+	g_free(log_cmd);
+
+run_cmd_error_no_log_cmd:
 	// Restoring old path
 	if (glib_check_version(2, 34, 0)) {
 		g_setenv("PATH", old_path, TRUE);
@@ -137,7 +140,6 @@ run_cmd_error:
 	}
 
 	g_free(cmd);
-	g_free(log_cmd);
 
 run_cmd_error_nofree:
 

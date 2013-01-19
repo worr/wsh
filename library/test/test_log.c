@@ -135,6 +135,29 @@ static void test_log_run_command_from_client(void) {
 	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
 
+static void test_log_command_status_server(void) {
+	gchar* test_cmd = "ls";
+	gchar* test_user = "will";
+	gchar* test_source = "127.0.0.1";
+	gchar* test_cwd = "/usr/home/will";
+	gint test_status = 0;
+	gchar* expected_message = "SERVER: command `ls` run as user `will` in dir `/usr/home/will` from host `127.0.0.1` exited with code `0`";
+
+	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
+	gint recv_priority;
+
+	init_logger(SERVER);
+
+	log_server_cmd_status(test_cmd, test_user, test_source, test_cwd, test_status);
+	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
+
+	g_assert_cmpstr(recv_message, ==, expected_message);
+	g_assert(recv_priority == LOG_INFO);
+
+	exit_logger();
+	g_slice_free1(strlen(recv_message) + 1, recv_message);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -145,6 +168,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Logging/LogErrorFromClient", test_error_log_from_client);
 	g_test_add_func("/Library/Logging/LogRunCommandFromServer", test_log_run_command_from_server);
 	g_test_add_func("/Library/Logging/LogRunCommandFromClient", test_log_run_command_from_client);
+	g_test_add_func("/Library/Logging/LogCommandStatusFromServer", test_log_command_status_server);
 
 	return g_test_run();
 }

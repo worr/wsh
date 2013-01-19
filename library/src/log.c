@@ -12,16 +12,16 @@ static const gchar* err_messages[2] = {
 };
 
 static const gchar* cmd_server_template =
-	"SERVER: running command `%s` as user `%s` in dir `%s` from host `%s`";
+	"running command `%s` as user `%s` in dir `%s` from host `%s`";
 
 static const gchar* cmd_client_template =
-	"CLIENT: running command `%s` as user `%s` in dir `%s` on hosts `%s`";
+	"running command `%s` as user `%s` in dir `%s` on hosts `%s`";
 
 static const gchar* cmd_server_status_template =
-	"SERVER: command `%s` run as user `%s` in dir `%s` from host `%s` exited with code `%d`";
+	"command `%s` run as user `%s` in dir `%s` from host `%s` exited with code `%d`";
 
 static const gchar* cmd_client_status_template =
-	"CLIENT: command `%s` run as user `%s` in dir `%s` exited with code `%d` on hosts `%s`";
+	"command `%s` run as user `%s` in dir `%s` exited with code `%d` on hosts `%s`";
 
 void init_logger(enum log_type t) {
 	type = t;

@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "cmd.h"
+#include "log.h"
 
 extern char** environ;
 
@@ -23,6 +24,10 @@ static void setup(struct test_run_cmd_data* fixture, gconstpointer user_data) {
 	data->req->in_fd = -1;
 	data->req->env = environ;
 	data->req->cwd = "/tmp";
+	data->req->host = "127.0.0.1";
+	data->req->username = "root";
+
+	init_logger(SERVER);
 }
 
 static void teardown(struct test_run_cmd_data* fixture, gconstpointer user_data) {
@@ -32,6 +37,7 @@ static void teardown(struct test_run_cmd_data* fixture, gconstpointer user_data)
 		g_error_free(data->res->err);
 	g_slice_free(struct cmd_req, data->req);
 	g_slice_free(struct cmd_res, data->res);
+	exit_logger();
 }
 
 static void test_run_exit_code(struct test_run_cmd_data* fixture, gconstpointer user_data) {

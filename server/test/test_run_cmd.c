@@ -1,5 +1,4 @@
 #include <glib.h>
-#include <glib-unix.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -214,8 +213,8 @@ static void setup_io(struct test_run_cmd_data* fixture, gconstpointer user_data)
 
 	gint inpipe[2], outpipe[2];
 
-	g_unix_open_pipe(inpipe, 0, NULL);
-	g_unix_open_pipe(outpipe, 0, NULL);
+	pipe(inpipe);
+	pipe(outpipe);
 
 	req->in_fd = inpipe[1];
 	res->out_fd = outpipe[0];

@@ -2,10 +2,12 @@
 
 #include <errno.h>
 #include <glib.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "log.h"
 
@@ -18,8 +20,9 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 
 gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 	GIOChannel* in, * out;
-	const gchar* prompt = "Password: ";
-	gchar* buf = g_slice_alloc0(strlen(prompt) + 1);
+	const GRegex* prompt_regexp = 
+		g_regex_new("^(Password: |\\[sudo\\] password for)", 0, 0, NULL);
+	gchar* buf;
 	gsize bytes_read, bytes_written;
 	GIOStatus stat;
 	gboolean ret = FALSE;
@@ -27,30 +30,48 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 	in = g_io_channel_unix_new(req->in_fd);
 	out = g_io_channel_unix_new(res->out_fd);
 
-	stat = g_io_channel_read_chars(out, buf, strlen(prompt), &bytes_read, &res->err);
-	switch (stat) {
-		case G_IO_STATUS_ERROR:
-			goto sudo_authenticate_error;
-		case G_IO_STATUS_EOF:
-			return TRUE;
-		default:
-			break;
+	buf = g_slice_alloc0(_SC_LINE_MAX);
+
+	// Read in prompt
+	g_io_channel_set_flags(out, G_IO_FLAG_NONBLOCK, NULL);
+	for (gsize i = 0; i < _SC_LINE_MAX; i++) {
+		stat = g_io_channel_read_chars(out, buf + i, 1, &bytes_read, &res->err);
+		switch (stat) {
+			case G_IO_STATUS_ERROR:
+				goto sudo_authenticate_error;
+			case G_IO_STATUS_EOF:
+				return TRUE;
+			case G_IO_STATUS_AGAIN:
+				break;
+			default:
+				continue;
+		}
 	}
 
-	// First time looking at prompt
-	if (g_strcmp0(buf, prompt) == 0) {
+	// Examine prompt for password prompt
+	if (g_regex_match(prompt_regexp, buf, 0, NULL)) {
 		stat = g_io_channel_write_chars(in, req->password, -1, &bytes_written, &res->err);
 		if (stat != G_IO_STATUS_NORMAL)
 			goto sudo_authenticate_error;
 
+		// If so, write password
 		stat = g_io_channel_write_chars(in, "\n", -1, &bytes_written, &res->err);
 		if (stat != G_IO_STATUS_NORMAL)
 			goto sudo_authenticate_error;
 
-		ret = TRUE;
-		// Look at prompt a second time to verify results
-	} else {
-		ret = TRUE;
+		g_slice_free1(_SC_LINE_MAX, buf);
+
+		// Check again
+		g_io_channel_read_to_end(out, &buf, &bytes_read, &res->err);
+		if (bytes_read != 0) {
+			if (g_regex_match(prompt_regexp, buf, 0, NULL))
+				ret = FALSE;
+			else
+				ret = TRUE;
+		} else {
+			// If no bytes read, we can assume success
+			ret = TRUE;
+		}
 	}
 
 sudo_authenticate_error:
@@ -62,7 +83,7 @@ sudo_authenticate_error:
 	g_io_channel_shutdown(out, FALSE, &res->err);
 
 sudo_authenticate_error_noshut:
-	g_slice_free1(strlen(prompt) + 1, buf);
+	g_slice_free1(_SC_LINE_MAX, buf);
 	return ret;
 }
 

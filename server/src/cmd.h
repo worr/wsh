@@ -4,7 +4,8 @@
 #include <glib.h>
 
 #define MAX_CMD_ARGS 255
-#define SUDO_CMD "sudo -u "
+#define SUDO_CMD "sudo -p 'wsh-sudo: ' -u "
+#define SUDO_PROMPT "wsh-sudo: "
 
 struct cmd_req {
 	gchar** env;

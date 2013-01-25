@@ -149,22 +149,22 @@ static void test_construct_sudo_cmd(struct test_run_cmd_data* fixture, gconstpoi
 
 	req->sudo = TRUE;
 	res = construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -p '"SUDO_PROMPT"' -u root /bin/ls");
 	g_free(res);
 
 	req->username = "worr";
 	res = construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -u worr /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -p '"SUDO_PROMPT"' -u worr /bin/ls");
 	g_free(res);
 
 	req->username = "";
 	res = construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -p '"SUDO_PROMPT"' -u root /bin/ls");
 	g_free(res);
 
 	req->username = " ";
 	res = construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -p '"SUDO_PROMPT"' -u root /bin/ls");
 	g_free(res);
 
 	req->cmd_string = "";
@@ -246,7 +246,7 @@ static void test_authenticate(struct test_run_cmd_data* fixture, gconstpointer u
 	GIOChannel* in = fixture->in_test_channel;
 	GIOChannel* out = fixture->out_test_channel;
 
-	const gchar* password_prompt = "Password: ";
+	const gchar* password_prompt = SUDO_PROMPT;
 
 	gchar* ret;
 	gsize ret_len;

@@ -17,8 +17,9 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 #endif
 
 gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
+	const gchar* prompt = SUDO_PROMPT;
+
 	GIOChannel* in, * out;
-	const gchar* prompt = "Password: ";
 	gchar* buf = g_slice_alloc0(strlen(prompt) + 1);
 	gsize bytes_read, bytes_written;
 	GIOStatus stat;

@@ -1,5 +1,4 @@
 #include <glib.h>
-#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -16,6 +15,7 @@ struct test_run_cmd_data {
 	GIOChannel* in_test_channel;
 	GIOChannel* out_test_channel;
 	char** envp;
+	gboolean status;
 };
 
 static void setup(struct test_run_cmd_data* fixture, gconstpointer user_data) {
@@ -230,13 +230,6 @@ static void teardown_io(struct test_run_cmd_data* fixture, gconstpointer user_da
 	close(req->in_fd);
 	close(res->out_fd);
 
-	gint in_fd = g_io_channel_unix_get_fd(fixture->in_test_channel);
-	gint out_fd = g_io_channel_unix_get_fd(fixture->out_test_channel);
-	g_io_channel_shutdown(fixture->in_test_channel, FALSE, NULL);
-	g_io_channel_shutdown(fixture->out_test_channel, FALSE, NULL);
-	close(in_fd);
-	close(out_fd);
-
 	teardown(fixture, user_data);
 }
 
@@ -248,19 +241,71 @@ static void test_authenticate(struct test_run_cmd_data* fixture, gconstpointer u
 
 	const gchar* password_prompt = SUDO_PROMPT;
 
-	gchar* ret;
-	gsize ret_len;
+	gchar* password;
+	gsize password_len;
 	gsize writ;
 
 	g_io_channel_write_chars(out, password_prompt, strlen(password_prompt), &writ, NULL);
 	g_io_channel_flush(out, NULL);
+	g_io_channel_shutdown(out, FALSE, NULL);
 
-	g_assert(sudo_authenticate(res, req) == TRUE);
+	gboolean ret_val = sudo_authenticate(res, req);
+	g_assert_no_error(res->err);
+	g_assert(ret_val == TRUE);
+
+	g_io_channel_read_line(in, &password, &password_len, NULL, NULL);
+	g_io_channel_shutdown(in, FALSE, NULL);
+
+	g_assert_cmpstr(g_strchomp(password), ==, req->password);
+	g_free(password);
+}
+
+static gpointer sudo_authenticate_launcher(gpointer fixture) {
+	gboolean* ret = g_malloc(sizeof(gboolean));
+	struct test_run_cmd_data* f = (struct test_run_cmd_data*)fixture;
+
+	*ret = TRUE;
+	*ret = sudo_authenticate(f->res, f->req);
+
+	return ret;
+}
+
+static void test_unsuccessful_authentication(struct test_run_cmd_data* fixture, gconstpointer user_data) {
+	struct cmd_res* res = fixture->res;
+	GIOChannel* in = fixture->in_test_channel;
+	GIOChannel* out = fixture->out_test_channel;
+
+	const gchar* password_prompt = SUDO_PROMPT;
+	const gchar* failure_message = "Sorry\n";
+
+	gchar* password;
+	gsize writ, password_len;
+	gboolean* ret;
+
+	fixture->status = TRUE;
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+#else
+	g_thread_init(NULL);
+#endif
+
+	GThread* test_thread = g_thread_new("test_thread", sudo_authenticate_launcher, fixture);
+	g_io_channel_write_chars(out, password_prompt, strlen(password_prompt), &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	g_io_channel_read_line(in, &password, &password_len, NULL, NULL);
+	g_io_channel_write_chars(out, failure_message, strlen(failure_message), &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	g_io_channel_shutdown(out, FALSE, NULL);
+	g_io_channel_shutdown(in, FALSE, NULL);
+
+	ret = g_thread_join(test_thread);
+
+	g_assert(*ret == FALSE);
 	g_assert_no_error(res->err);
 
-	g_io_channel_read_line(in, &ret, &ret_len, NULL, NULL);
-
-	g_assert_cmpstr(g_strchomp(ret), ==, req->password);
+	g_free(password);
 	g_free(ret);
 }
 
@@ -278,6 +323,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 	g_test_add("/Server/RunCmd/Path", struct test_run_cmd_data, NULL, setup, test_run_cmd_path, teardown);
 	g_test_add("/Server/RunCmd/Auth", struct test_run_cmd_data, NULL, setup_io, test_authenticate, teardown_io);
+	g_test_add("/Server/RunCmd/UnsuccessfulAuth", struct test_run_cmd_data, NULL, setup_io, test_unsuccessful_authentication, teardown_io);
 
 	return g_test_run();
 }

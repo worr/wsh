@@ -18,9 +18,14 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 
 gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 	const gchar* prompt = SUDO_PROMPT;
+	const GRegex* sorry_regex = g_regex_new("^[Ss]orry", 0, 0, &res->err);
+
+	if (res->err != NULL) 
+		return FALSE;
 
 	GIOChannel* in, * out;
 	gchar* buf = g_slice_alloc0(strlen(prompt) + 1);
+	gchar* out_line = NULL;
 	gsize bytes_read, bytes_written;
 	GIOStatus stat;
 	gboolean ret = FALSE;
@@ -33,13 +38,13 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 		case G_IO_STATUS_ERROR:
 			goto sudo_authenticate_error;
 		case G_IO_STATUS_EOF:
-			return TRUE;
+			ret = TRUE;
 		default:
 			break;
 	}
 
 	// First time looking at prompt
-	if (g_strcmp0(buf, prompt) == 0) {
+	if (!ret && g_strcmp0(buf, prompt) == 0) {
 		stat = g_io_channel_write_chars(in, req->password, -1, &bytes_written, &res->err);
 		if (stat != G_IO_STATUS_NORMAL)
 			goto sudo_authenticate_error;
@@ -48,13 +53,26 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 		if (stat != G_IO_STATUS_NORMAL)
 			goto sudo_authenticate_error;
 
-		ret = TRUE;
-		// Look at prompt a second time to verify results
+		stat = g_io_channel_flush(in, &res->err);
+		if (stat != G_IO_STATUS_NORMAL)
+			goto sudo_authenticate_error;
+
+		stat = g_io_channel_read_line(out, &out_line, &bytes_read, NULL, &res->err);
+		if (stat != G_IO_STATUS_EOF && stat != G_IO_STATUS_NORMAL)
+			goto sudo_authenticate_error;
+
+		if (out_line != NULL && g_regex_match(sorry_regex, out_line, 0, 0)) {
+			ret = FALSE;
+		} else {
+			ret= TRUE;
+		}
 	} else {
 		ret = TRUE;
 	}
 
 sudo_authenticate_error:
+	if (out_line != NULL)
+		g_free(out_line);
 
 	g_io_channel_shutdown(in, TRUE, &res->err);
 	if (res->err != NULL)

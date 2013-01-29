@@ -16,6 +16,29 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 }
 #endif
 
+static void add_line(struct cmd_res* res, const gchar* line, gboolean std_out) {
+	// Allocate space for a new string pointer and new string
+	if (res->std_output != NULL)
+		res->std_output = g_realloc(res->std_output, sizeof(gchar*) * res->std_output_len);
+	else
+		res->std_output = g_malloc0(sizeof(gchar*));
+
+	res->std_output[res->std_output_len] = g_malloc0(strlen(line) + 1);
+
+	// memmove() the string into the struct
+	g_memmove(res->std_output[res->std_output_len],
+		line,
+		strlen(line + 1));
+}
+
+static void add_line_stdout(struct cmd_res* res, const gchar* line) {
+	add_line(res, line, TRUE);
+}
+
+/*static void add_line_stderr(struct cmd_res* res, const gchar* line) {
+	add_line(res, line, FALSE);
+}*/
+
 gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 	const gchar* prompt = SUDO_PROMPT;
 	const GRegex* sorry_regex = g_regex_new("^[Ss]orry", 0, 0, &res->err);
@@ -63,10 +86,19 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 
 		if (out_line != NULL && g_regex_match(sorry_regex, out_line, 0, 0)) {
 			ret = FALSE;
+		} else if (out_line != NULL) {
+			// Write output to our stdout
+			add_line_stdout(res, out_line);
+			ret = TRUE;
 		} else {
-			ret= TRUE;
+			ret = TRUE;
 		}
+	} else if (! ret) {
+		add_line_stdout(res, buf);
 	} else {
+		stat = g_io_channel_write_chars(out, buf, -1, &bytes_written, &res->err);
+		if (stat != G_IO_STATUS_NORMAL)
+			goto sudo_authenticate_error;
 		ret = TRUE;
 	}
 
@@ -219,4 +251,3 @@ run_cmd_error_nofree:
 
 	return ret;
 }
-

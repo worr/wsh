@@ -282,8 +282,6 @@ static void test_unsuccessful_authentication(struct test_run_cmd_data* fixture, 
 	gsize writ, password_len;
 	gboolean* ret;
 
-	fixture->status = TRUE;
-
 #if GLIB_CHECK_VERSION(2, 32, 0)
 #else
 	g_thread_init(NULL);
@@ -309,6 +307,46 @@ static void test_unsuccessful_authentication(struct test_run_cmd_data* fixture, 
 	g_free(ret);
 }
 
+static void test_sudo_auth_with_output(struct test_run_cmd_data* fixture, gconstpointer user_data) {
+	struct cmd_res* res = fixture->res;
+	GIOChannel* in = fixture->in_test_channel;
+	GIOChannel* out = fixture->out_test_channel;
+
+	const gchar* password_prompt = SUDO_PROMPT;
+	const gchar* next_line = "ls output or something else banal like that";
+
+	gchar* password;
+	gsize writ, password_len;
+	gboolean* ret;
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+#else
+	g_thread_init(NULL);
+#endif
+
+	GThread* test_thread = g_thread_new("test_thread", sudo_authenticate_launcher, fixture);
+	g_io_channel_write_chars(out, password_prompt, strlen(password_prompt), &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	g_io_channel_read_line(in, &password, &password_len, NULL, NULL);
+	g_io_channel_write_chars(out, next_line, strlen(next_line), &writ, NULL);
+	g_io_channel_write_chars(out, "\n", 1, &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	g_io_channel_shutdown(out, FALSE, NULL);
+	g_io_channel_shutdown(in, FALSE, NULL);
+
+	ret = g_thread_join(test_thread);
+
+	g_assert_cmpstr(res->std_output[0], ==, next_line);
+
+	g_assert(*ret == TRUE);
+	g_assert_no_error(res->err);
+
+	g_free(password);
+	g_free(ret);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -324,6 +362,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/Path", struct test_run_cmd_data, NULL, setup, test_run_cmd_path, teardown);
 	g_test_add("/Server/RunCmd/Auth", struct test_run_cmd_data, NULL, setup_io, test_authenticate, teardown_io);
 	g_test_add("/Server/RunCmd/UnsuccessfulAuth", struct test_run_cmd_data, NULL, setup_io, test_unsuccessful_authentication, teardown_io);
+	g_test_add("/Server/RunCmd/AuthOutput", struct test_run_cmd_data, NULL, setup_io, test_sudo_auth_with_output, teardown_io);
 
 	return g_test_run();
 }

@@ -20,6 +20,10 @@ struct cmd_req {
 
 struct cmd_res {
 	GError* err;
+	gchar** std_output;
+	gchar** std_error;
+	gsize std_output_len;
+	gsize std_error_len;
 	gint exit_status;
 	gint out_fd;
 	gint err_fd;

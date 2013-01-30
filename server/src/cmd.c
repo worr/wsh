@@ -94,7 +94,23 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 			ret = TRUE;
 		}
 	} else if (! ret) {
+		stat = g_io_channel_read_line(out, &out_line, &bytes_read, NULL, &res->err);
+		if (stat != G_IO_STATUS_EOF && stat != G_IO_STATUS_NORMAL)
+			goto sudo_authenticate_error;
+
+		// Resize buffer
+		gsize new_buf_len = strlen(prompt) + bytes_read + 1;
+		gchar* copy_buf = g_slice_copy(strlen(buf) + 1, buf);
+
+		g_slice_free1(strlen(prompt) + 1, buf);
+		buf = g_slice_alloc0(new_buf_len);
+		g_memmove(buf, copy_buf, strlen(prompt) + 1);
+
+		if (g_strlcat(buf, out_line, new_buf_len) != new_buf_len - 1)
+			goto sudo_authenticate_error;
+
 		add_line_stdout(res, buf);
+		ret = TRUE;
 	} else {
 		stat = g_io_channel_write_chars(out, buf, -1, &bytes_written, &res->err);
 		if (stat != G_IO_STATUS_NORMAL)
@@ -113,7 +129,7 @@ sudo_authenticate_error:
 	g_io_channel_shutdown(out, FALSE, &res->err);
 
 sudo_authenticate_error_noshut:
-	g_slice_free1(strlen(prompt) + 1, buf);
+	g_slice_free1(strlen(buf) + 1, buf);
 	return ret;
 }
 

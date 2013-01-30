@@ -48,7 +48,8 @@ static void test_run_exit_code(struct test_run_cmd_data* fixture, gconstpointer 
 	struct cmd_res* res = fixture->res;
 
 	req->cmd_string = "/bin/sh -c 'exit 0'";
-	g_assert(run_cmd(res, req) == 0);
+	gint ret = run_cmd(res, req);
+	g_assert(ret == 0);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 

@@ -242,14 +242,18 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 
 	// wait()s to get status of called function, so we can report it back to
 	// the user and so we don't blow away path or anything
-	if (waitpid(pid, &stat, 0) != -1) {
-		res->exit_status = WEXITSTATUS(stat);
-		log_server_cmd_status(log_cmd, req->username, req->host, req->cwd, res->exit_status);
-	} else {
-		log_error(COMMAND_FAILED, strerror(errno));
-		ret = EXIT_FAILURE;
-		goto run_cmd_error;
-	}
+	do {
+		if (waitpid(pid, &stat, 0) != -1) {
+			res->exit_status = WEXITSTATUS(stat);
+			log_server_cmd_status(log_cmd, req->username, req->host, req->cwd, res->exit_status);
+			break;
+		} else {
+			if (errno == EINTR) continue;
+			log_error(COMMAND_FAILED, strerror(errno));
+			ret = EXIT_FAILURE;
+			goto run_cmd_error;
+		}
+	} while (TRUE);
 
 run_cmd_error:
 	g_free(log_cmd);

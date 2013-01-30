@@ -129,7 +129,10 @@ sudo_authenticate_error:
 	g_io_channel_shutdown(out, FALSE, &res->err);
 
 sudo_authenticate_error_noshut:
-	g_slice_free1(strlen(buf) + 1, buf);
+	if (strlen(buf) != 0 && strlen(buf) != strlen(prompt))
+		g_slice_free1(strlen(buf) + 1, buf);
+	else
+		g_slice_free1(strlen(prompt) + 1, buf);
 	return ret;
 }
 

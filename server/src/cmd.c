@@ -105,16 +105,16 @@ gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
 		g_slice_free1(strlen(prompt) + 1, buf);
 		buf = g_slice_alloc0(new_buf_len);
 		g_memmove(buf, copy_buf, strlen(prompt) + 1);
+		g_slice_free1(strlen(copy_buf) + 1, copy_buf);
 
+		// Copy what was read in for prompt into buff
 		if (g_strlcat(buf, out_line, new_buf_len) != new_buf_len - 1)
 			goto sudo_authenticate_error;
 
 		add_line_stdout(res, buf);
 		ret = TRUE;
 	} else {
-		stat = g_io_channel_write_chars(out, buf, -1, &bytes_written, &res->err);
-		if (stat != G_IO_STATUS_NORMAL)
-			goto sudo_authenticate_error;
+		// No output whatsoever
 		ret = TRUE;
 	}
 

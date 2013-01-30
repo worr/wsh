@@ -380,6 +380,31 @@ static void test_sudo_no_prompt(struct test_run_cmd_data* fixture, gconstpointer
 	g_free(ret);
 }
 
+static void test_sudo_no_output(struct test_run_cmd_data* fixture, gconstpointer user_data) {
+	struct cmd_res* res = fixture->res;
+	GIOChannel* in = fixture->in_test_channel;
+	GIOChannel* out = fixture->out_test_channel;
+
+	gboolean* ret;
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+#else
+	g_thread_init(NULL);
+#endif
+
+	GThread* test_thread = g_thread_new("test_thread", sudo_authenticate_launcher, fixture);
+
+	g_io_channel_shutdown(out, FALSE, NULL);
+	g_io_channel_shutdown(in, FALSE, NULL);
+
+	ret = g_thread_join(test_thread);
+
+	g_assert(*ret == TRUE);
+	g_assert_no_error(res->err);
+
+	g_free(ret);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -397,6 +422,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/UnsuccessfulAuth", struct test_run_cmd_data, NULL, setup_io, test_unsuccessful_authentication, teardown_io);
 	g_test_add("/Server/RunCmd/AuthOutput", struct test_run_cmd_data, NULL, setup_io, test_sudo_auth_with_output, teardown_io);
 	g_test_add("/Server/RunCmd/AuthNoPrompt", struct test_run_cmd_data, NULL, setup_io, test_sudo_no_prompt, teardown_io);
+	g_test_add("/Server/RunCmd/AuthNoOutput", struct test_run_cmd_data, NULL, setup_io, test_sudo_no_output, teardown_io);
 
 	return g_test_run();
 }

@@ -9,11 +9,13 @@
 
 struct cmd_req {
 	gchar** env;
+	gchar** std_input;
 	gchar* cmd_string;
 	gchar* username;
 	gchar* password;
 	gchar* cwd;
 	gchar* host; // put here mostly for logging purposes
+	gsize std_input_len;
 	gint in_fd;
 	gboolean sudo;
 };

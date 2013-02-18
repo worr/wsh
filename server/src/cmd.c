@@ -9,132 +9,13 @@
 
 #include "log.h"
 
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-#else
-const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
-	return g_environ_getenv_ov(envp, variable);
-}
-#endif
+// Struct that we pass to all of our main loop callbacks
+struct cmd_data {
+	GMainLoop* loop;
+	struct cmd_req* req;
+	struct cmd_res* res;
+};
 
-static void add_line(struct cmd_res* res, const gchar* line, gboolean std_out) {
-	// Allocate space for a new string pointer and new string
-	if (res->std_output != NULL)
-		res->std_output = g_realloc(res->std_output, sizeof(gchar*) * res->std_output_len);
-	else
-		res->std_output = g_malloc0(sizeof(gchar*));
-
-	res->std_output[res->std_output_len] = g_malloc0(strlen(line) + 1);
-
-	// memmove() the string into the struct
-	g_memmove(res->std_output[res->std_output_len],
-		line,
-		strlen(line + 1));
-}
-
-static void add_line_stdout(struct cmd_res* res, const gchar* line) {
-	add_line(res, line, TRUE);
-}
-
-/*static void add_line_stderr(struct cmd_res* res, const gchar* line) {
-	add_line(res, line, FALSE);
-}*/
-
-gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req) {
-	const gchar* prompt = SUDO_PROMPT;
-	const GRegex* sorry_regex = g_regex_new("^[Ss]orry", 0, 0, &res->err);
-
-	if (res->err != NULL) 
-		return FALSE;
-
-	GIOChannel* in, * out;
-	gchar* buf = g_slice_alloc0(strlen(prompt) + 1);
-	gchar* out_line = NULL;
-	gsize bytes_read, bytes_written;
-	GIOStatus stat;
-	gboolean ret = FALSE;
-
-	in = g_io_channel_unix_new(req->in_fd);
-	out = g_io_channel_unix_new(res->out_fd);
-
-	stat = g_io_channel_read_chars(out, buf, strlen(prompt), &bytes_read, &res->err);
-	switch (stat) {
-		case G_IO_STATUS_ERROR:
-			goto sudo_authenticate_error;
-		case G_IO_STATUS_EOF:
-			ret = TRUE;
-		default:
-			break;
-	}
-
-	// First time looking at prompt
-	if (!ret && g_strcmp0(buf, prompt) == 0) {
-		stat = g_io_channel_write_chars(in, req->password, -1, &bytes_written, &res->err);
-		if (stat != G_IO_STATUS_NORMAL)
-			goto sudo_authenticate_error;
-
-		stat = g_io_channel_write_chars(in, "\n", -1, &bytes_written, &res->err);
-		if (stat != G_IO_STATUS_NORMAL)
-			goto sudo_authenticate_error;
-
-		stat = g_io_channel_flush(in, &res->err);
-		if (stat != G_IO_STATUS_NORMAL)
-			goto sudo_authenticate_error;
-
-		stat = g_io_channel_read_line(out, &out_line, &bytes_read, NULL, &res->err);
-		if (stat != G_IO_STATUS_EOF && stat != G_IO_STATUS_NORMAL)
-			goto sudo_authenticate_error;
-
-		if (out_line != NULL && g_regex_match(sorry_regex, out_line, 0, 0)) {
-			ret = FALSE;
-		} else if (out_line != NULL) {
-			// Write output to our stdout
-			add_line_stdout(res, out_line);
-			ret = TRUE;
-		} else {
-			ret = TRUE;
-		}
-	} else if (! ret) {
-		stat = g_io_channel_read_line(out, &out_line, &bytes_read, NULL, &res->err);
-		if (stat != G_IO_STATUS_EOF && stat != G_IO_STATUS_NORMAL)
-			goto sudo_authenticate_error;
-
-		// Resize buffer
-		gsize new_buf_len = strlen(prompt) + bytes_read + 1;
-		gchar* copy_buf = g_slice_copy(strlen(buf) + 1, buf);
-
-		g_slice_free1(strlen(prompt) + 1, buf);
-		buf = g_slice_alloc0(new_buf_len);
-		g_memmove(buf, copy_buf, strlen(prompt) + 1);
-		g_slice_free1(strlen(copy_buf) + 1, copy_buf);
-
-		// Copy what was read in for prompt into buff
-		if (g_strlcat(buf, out_line, new_buf_len) != new_buf_len - 1)
-			goto sudo_authenticate_error;
-
-		add_line_stdout(res, buf);
-		ret = TRUE;
-	} else {
-		// No output whatsoever
-		ret = TRUE;
-	}
-
-sudo_authenticate_error:
-	if (out_line != NULL)
-		g_free(out_line);
-
-	g_io_channel_shutdown(in, TRUE, &res->err);
-	if (res->err != NULL)
-		goto sudo_authenticate_error_noshut;
-
-	g_io_channel_shutdown(out, FALSE, &res->err);
-
-sudo_authenticate_error_noshut:
-	if (strlen(buf) != 0 && strlen(buf) != strlen(prompt))
-		g_slice_free1(strlen(buf) + 1, buf);
-	else
-		g_slice_free1(strlen(prompt) + 1, buf);
-	return ret;
-}
 
 // This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
 // close enough.
@@ -146,6 +27,101 @@ const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable) {
 	}
 	return NULL;
 }
+
+#if GLIB_CHECK_VERSION( 2, 32, 0 )
+#else
+const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
+	return g_environ_getenv_ov(envp, variable);
+}
+#endif
+
+static void add_line(struct cmd_res* res, const gchar* line, gboolean std_out) {
+	gsize* buf_len = std_out ? &res->std_output_len : &res->std_error_len;
+	gchar** buf = std_out ? res->std_output : res->std_error;
+
+	// Allocate space for a new string pointer and new string
+	if (buf != NULL)
+		buf = g_realloc(buf, sizeof(gchar*) * *buf_len);
+	else
+		buf = g_malloc0(sizeof(gchar*));
+
+	buf[*buf_len] = g_malloc0(strlen(line) + 1);
+
+	// memmove() the string into the struct
+	g_memmove(buf[*buf_len], line, strlen(line + 1));
+
+	(*buf_len)++;
+	if (std_out) res->std_output = buf;
+	else res->std_error = buf;
+}
+
+static void add_line_stdout(struct cmd_res* res, const gchar* line) {
+	add_line(res, line, TRUE);
+}
+
+static void add_line_stderr(struct cmd_res* res, const gchar* line) {
+	add_line(res, line, FALSE);
+}
+
+// All this should do is log the status code and add it to our data struct
+static void check_exit_status(GPid pid, gint status, gpointer user_data) {
+	struct cmd_res* res = ((struct cmd_data*)user_data)->res;
+	struct cmd_req* req = ((struct cmd_data*)user_data)->req;
+	GMainLoop* loop = ((struct cmd_data*)user_data)->loop;
+
+	res->exit_status = WEXITSTATUS(status);
+	log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
+	
+	g_spawn_close_pid(pid);
+	g_main_loop_quit(loop);
+}
+
+static gboolean check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+	struct cmd_res* res = ((struct cmd_data*)user_data)->res;
+	struct cmd_req* req = ((struct cmd_data*)user_data)->req;
+
+	gchar* buf = NULL;
+	gsize buf_len = 0;
+
+	if (req->sudo) {
+	} else {
+		g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
+
+		if (buf)
+			add_line_stdout(res, buf);
+
+		if (res->err != NULL) 
+			goto check_stdout_err;
+	}
+
+check_stdout_err:
+	g_free(buf);
+	return TRUE;
+}
+
+static gboolean check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data) {
+	struct cmd_res* res = ((struct cmd_data*)user_data)->res;
+
+	gchar* buf = NULL;
+	gsize buf_len = 0;
+
+	g_io_channel_read_line(err, &buf, &buf_len, NULL, &res->err);
+
+	if (buf)
+		add_line_stderr(res, buf);
+
+	if (res->err != NULL) 
+		goto check_stdout_err;
+
+check_stdout_err:
+	g_free(buf);
+
+	return TRUE;
+}
+
+/*static gboolean write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {
+	return TRUE;
+}*/
 
 // retval should be g_free'd
 gchar* construct_sudo_cmd(const struct cmd_req* req) {
@@ -177,12 +153,14 @@ gchar* construct_sudo_cmd(const struct cmd_req* req) {
 }
 
 gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
-	gint ret = EXIT_SUCCESS;
-
-	gchar* old_path;
-	pid_t pid;
-	gint stat, argcp;
 	gchar** argcv;
+	gchar* old_path;
+	GMainLoop* loop;
+	//GIOChannel* in, * out, * err;
+	GIOChannel * out, * err;
+	gint argcp;
+	gint ret = EXIT_SUCCESS;
+	GPid pid;
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = construct_sudo_cmd(req);
@@ -240,20 +218,42 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		goto run_cmd_error;
 	}
 
-	// wait()s to get status of called function, so we can report it back to
-	// the user and so we don't blow away path or anything
-	do {
-		if (waitpid(pid, &stat, 0) != -1) {
-			res->exit_status = WEXITSTATUS(stat);
-			log_server_cmd_status(log_cmd, req->username, req->host, req->cwd, res->exit_status);
-			break;
-		} else {
-			if (errno == EINTR) continue;
-			log_error(COMMAND_FAILED, strerror(errno));
-			ret = EXIT_FAILURE;
-			goto run_cmd_error;
-		}
-	} while (TRUE);
+	// Main loop initialization
+	GMainContext* context = g_main_context_new();
+	loop = g_main_loop_new(context, FALSE);
+	struct cmd_data user_data;
+
+	user_data.loop = loop;
+	user_data.req = req;
+	user_data.res = res;
+
+	// Watch child process
+	GSource* watch_src = g_child_watch_source_new(pid);
+	g_source_set_callback(watch_src, (GSourceFunc)check_exit_status, &user_data, NULL);
+	g_source_attach(watch_src, context);
+
+	// Initialize IO Channels
+	out = g_io_channel_unix_new(res->out_fd);
+	err = g_io_channel_unix_new(res->err_fd);
+	//in = g_io_channel_unix_new(req->in_fd);
+
+	// Add IO channels
+	GSource* stdout_src = g_io_create_watch(out, G_IO_IN);
+	g_source_set_callback(stdout_src, (GSourceFunc)check_stdout, &user_data, NULL);
+	g_source_attach(stdout_src, context);
+
+	GSource* stderr_src = g_io_create_watch(err, G_IO_IN);
+	g_source_set_callback(stderr_src, (GSourceFunc)check_stderr, &user_data, NULL);
+	g_source_attach(stderr_src, context);
+
+	//g_io_add_watch(in, G_IO_OUT, write_stdin, &user_data);
+
+	// Start dat loop
+	g_main_loop_run(loop);
+	g_main_loop_unref(loop);
+	g_source_unref(watch_src);
+	g_source_unref(stdout_src);
+	g_source_unref(stderr_src);
 
 run_cmd_error:
 	g_free(log_cmd);
@@ -274,3 +274,4 @@ run_cmd_error_nofree:
 
 	return ret;
 }
+

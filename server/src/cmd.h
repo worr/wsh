@@ -7,7 +7,7 @@
 #define SUDO_CMD "sudo -p 'wsh-sudo: ' -u "
 #define SUDO_PROMPT "wsh-sudo: "
 
-struct cmd_req {
+typedef struct {
 	gchar** env;
 	gchar** std_input;
 	gchar* cmd_string;
@@ -18,9 +18,9 @@ struct cmd_req {
 	gsize std_input_len;
 	gint in_fd;
 	gboolean sudo;
-};
+} wsh_cmd_req_t;
 
-struct cmd_res {
+typedef struct {
 	GError* err;
 	gchar** std_output;
 	gchar** std_error;
@@ -29,12 +29,11 @@ struct cmd_res {
 	gint exit_status;
 	gint out_fd;
 	gint err_fd;
-};
+} wsh_cmd_res_t;
 
-gint run_cmd(struct cmd_res* res, struct cmd_req* req);
-gchar* construct_sudo_cmd(const struct cmd_req* req);
+gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
 const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable); 
-gboolean sudo_authenticate(struct cmd_res* res, const struct cmd_req* req);
 
 # if GLIB_CHECK_VERSION( 2, 32, 0 )
 # else

@@ -12,8 +12,9 @@
 // Struct that we pass to all of our main loop callbacks
 struct cmd_data {
 	GMainLoop* loop;
-	struct cmd_req* req;
-	struct cmd_res* res;
+	wsh_cmd_req_t* req;
+	wsh_cmd_res_t* res;
+	gboolean sudo_rdy;
 };
 
 
@@ -35,7 +36,7 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 }
 #endif
 
-static void add_line(struct cmd_res* res, const gchar* line, gboolean std_out) {
+static void add_line(wsh_cmd_res_t* res, const gchar* line, gboolean std_out) {
 	gsize* buf_len = std_out ? &res->std_output_len : &res->std_error_len;
 	gchar** buf = std_out ? res->std_output : res->std_error;
 
@@ -55,18 +56,18 @@ static void add_line(struct cmd_res* res, const gchar* line, gboolean std_out) {
 	else res->std_error = buf;
 }
 
-static void add_line_stdout(struct cmd_res* res, const gchar* line) {
+static void add_line_stdout(wsh_cmd_res_t* res, const gchar* line) {
 	add_line(res, line, TRUE);
 }
 
-static void add_line_stderr(struct cmd_res* res, const gchar* line) {
+static void add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 	add_line(res, line, FALSE);
 }
 
 // All this should do is log the status code and add it to our data struct
 static void check_exit_status(GPid pid, gint status, gpointer user_data) {
-	struct cmd_res* res = ((struct cmd_data*)user_data)->res;
-	struct cmd_req* req = ((struct cmd_data*)user_data)->req;
+	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
 	GMainLoop* loop = ((struct cmd_data*)user_data)->loop;
 
 	res->exit_status = WEXITSTATUS(status);
@@ -77,21 +78,44 @@ static void check_exit_status(GPid pid, gint status, gpointer user_data) {
 }
 
 static gboolean check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
-	struct cmd_res* res = ((struct cmd_data*)user_data)->res;
-	struct cmd_req* req = ((struct cmd_data*)user_data)->req;
+	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
 
 	if (req->sudo) {
+		g_io_channel_read_chars(out, buf, strlen(SUDO_PROMPT), &buf_len, &res->err);
+
+		if (res->err)
+			goto check_stdout_err;
+
+		if (g_strcmp0(buf, SUDO_PROMPT) == 0) {
+			((struct cmd_data*)user_data)->sudo_rdy = TRUE;
+		} else {
+			gchar* line_remainder = NULL;
+			gchar* comb = NULL;
+
+			g_io_channel_read_line(out, &line_remainder, &buf_len, NULL, &res->err);
+
+			if (res->err)
+				goto check_stdout_sudo_err;
+
+			g_strconcat(comb, buf, line_remainder, NULL);
+			add_line_stdout(res, comb);
+			g_free(comb);
+
+check_stdout_sudo_err:
+			g_free(line_remainder);
+		}
 	} else {
 		g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
 
+		if (res->err)
+			goto check_stdout_err;
+
 		if (buf)
 			add_line_stdout(res, buf);
-
-		if (res->err != NULL) 
-			goto check_stdout_err;
 	}
 
 check_stdout_err:
@@ -100,7 +124,7 @@ check_stdout_err:
 }
 
 static gboolean check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data) {
-	struct cmd_res* res = ((struct cmd_data*)user_data)->res;
+	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
@@ -119,12 +143,33 @@ check_stdout_err:
 	return TRUE;
 }
 
-/*static gboolean write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {
+static gboolean write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {
+	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
+	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+	gboolean sudo_rdy = ((struct cmd_data*)user_data)->sudo_rdy;
+	gsize wrote;
+
+	if (sudo_rdy) {
+		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
+
+		if (res->err || wrote < strlen(req->password))
+			goto write_stdin_err;
+
+		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
+
+		if (res->err || wrote == 0)
+			goto write_stdin_err;
+
+		((struct cmd_data*)user_data)->sudo_rdy = FALSE;
+	}
+
+write_stdin_err:
+
 	return TRUE;
-}*/
+}
 
 // retval should be g_free'd
-gchar* construct_sudo_cmd(const struct cmd_req* req) {
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
 		return NULL;
 
@@ -152,18 +197,17 @@ gchar* construct_sudo_cmd(const struct cmd_req* req) {
 	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
 }
 
-gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
+gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gchar** argcv;
 	gchar* old_path;
 	GMainLoop* loop;
-	//GIOChannel* in, * out, * err;
-	GIOChannel * out, * err;
+	GIOChannel* in, * out, * err;
 	gint argcp;
 	gint ret = EXIT_SUCCESS;
 	GPid pid;
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
-	gchar* cmd = construct_sudo_cmd(req);
+	gchar* cmd = wsh_construct_sudo_cmd(req);
 
 	if (cmd == NULL) {
 		ret = EXIT_FAILURE;
@@ -208,7 +252,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 		NULL, // child setup
 		NULL, // user_data
 		&pid, // child_pid
-		NULL, // stdin
+		&req->in_fd, // stdin
 		&res->out_fd, // stdout
 		&res->err_fd, // stderr
 		&res->err); // Gerror
@@ -226,6 +270,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	user_data.loop = loop;
 	user_data.req = req;
 	user_data.res = res;
+	user_data.sudo_rdy = FALSE;
 
 	// Watch child process
 	GSource* watch_src = g_child_watch_source_new(pid);
@@ -235,7 +280,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	// Initialize IO Channels
 	out = g_io_channel_unix_new(res->out_fd);
 	err = g_io_channel_unix_new(res->err_fd);
-	//in = g_io_channel_unix_new(req->in_fd);
+	in = g_io_channel_unix_new(req->in_fd);
 
 	// Add IO channels
 	GSource* stdout_src = g_io_create_watch(out, G_IO_IN);
@@ -246,7 +291,9 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	g_source_set_callback(stderr_src, (GSourceFunc)check_stderr, &user_data, NULL);
 	g_source_attach(stderr_src, context);
 
-	//g_io_add_watch(in, G_IO_OUT, write_stdin, &user_data);
+	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT);
+	g_source_set_callback(stdin_src, (GSourceFunc)write_stdin, &user_data, NULL);
+	g_source_attach(stdin_src, context);
 
 	// Start dat loop
 	g_main_loop_run(loop);
@@ -254,6 +301,7 @@ gint run_cmd(struct cmd_res* res, struct cmd_req* req) {
 	g_source_unref(watch_src);
 	g_source_unref(stdout_src);
 	g_source_unref(stderr_src);
+	g_source_unref(stdin_src);
 
 run_cmd_error:
 	g_free(log_cmd);

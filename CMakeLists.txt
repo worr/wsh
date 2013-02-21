@@ -43,6 +43,7 @@ if( BUILD_TESTS )
 	enable_testing()
 
 	add_subdirectory( library/test )
+	add_definitions( -DBUILD_TESTS )
 endif( BUILD_TESTS )
 
 if( BUILD_SERVER )

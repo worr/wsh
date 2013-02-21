@@ -202,6 +202,28 @@ static void g_environ_getenv_override_mid(struct test_wsh_run_cmd_data* fixture,
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
 
+static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+	gint fds[2];
+	gchar* buf;
+	gsize buf_len;
+
+	pipe(fds);
+
+	GIOChannel* out = g_io_channel_unix_new(fds[0]);
+	GIOChannel* mock_stdin = g_io_channel_unix_new(fds[1]);
+
+	struct test_cmd_data data = {
+		.sudo_rdy = TRUE,
+		.req = fixture->req,
+		.res = fixture->res,
+	};
+
+	wsh_write_stdin(mock_stdin, G_IO_IN, &data);
+	g_io_channel_read_line(out, &buf, &buf_len, NULL, NULL);
+
+	g_assert_cmpstr(g_strchomp(buf), ==, "test");
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -215,6 +237,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideFail", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 	g_test_add("/Server/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
+	g_test_add("/Server/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin, teardown);
 
 	return g_test_run();
 }

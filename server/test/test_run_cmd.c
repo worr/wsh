@@ -242,10 +242,20 @@ static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture
 
 	g_io_channel_write_chars(out, SUDO_PROMPT, strlen(SUDO_PROMPT), &writ, NULL);
 	g_io_channel_flush(out, NULL);
-
 	wsh_check_stdout(mock_stdout, G_IO_IN, &data);
 
 	g_assert(data.sudo_rdy);
+
+	// Test to see if sudo_rdy isn't always set
+	data.sudo_rdy = FALSE;
+	fixture->req->sudo = FALSE;
+
+	g_io_channel_write_chars(out, "TEST\n", strlen("TEST\n"), &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	wsh_check_stdout(mock_stdout, G_IO_IN, &data);
+
+	g_assert(!data.sudo_rdy);
 }
 
 int main(int argc, char** argv, char** env) {

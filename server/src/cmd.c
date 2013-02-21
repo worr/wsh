@@ -15,6 +15,9 @@ struct cmd_data {
 	wsh_cmd_req_t* req;
 	wsh_cmd_res_t* res;
 	gboolean sudo_rdy;
+	gboolean cmd_exited;
+	gboolean out_closed;
+	gboolean err_closed;
 };
 
 
@@ -41,9 +44,12 @@ static void add_line(wsh_cmd_res_t* res, const gchar* line, gboolean std_out) {
 	gchar** buf = std_out ? res->std_output : res->std_error;
 
 	// Allocate space for a new string pointer and new string
-	if (buf != NULL)
-		buf = g_realloc(buf, sizeof(gchar*) * *buf_len);
-	else
+	if (buf != NULL) {
+		gchar** buf2 = g_malloc_n(*buf_len + 1, sizeof(gchar*));
+		g_memmove(buf2, buf, sizeof(gchar*) * *buf_len + 1);
+		g_free(buf);
+		buf = buf2;
+	} else
 		buf = g_malloc0(sizeof(gchar*));
 
 	buf[*buf_len] = g_malloc0(strlen(line) + 1);
@@ -64,31 +70,56 @@ static void add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 	add_line(res, line, FALSE);
 }
 
+static void check_if_need_to_close(struct cmd_data* cmd_data) {
+	if (cmd_data->cmd_exited && cmd_data->out_closed && cmd_data->err_closed) {
+		g_main_loop_quit(cmd_data->loop);
+	}
+}
+
 // All this should do is log the status code and add it to our data struct
 static void check_exit_status(GPid pid, gint status, gpointer user_data) {
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
-	GMainLoop* loop = ((struct cmd_data*)user_data)->loop;
 
 	res->exit_status = WEXITSTATUS(status);
 	log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
 	
 	g_spawn_close_pid(pid);
-	g_main_loop_quit(loop);
+
+	((struct cmd_data*)user_data)->cmd_exited = TRUE;
+	check_if_need_to_close(user_data);
 }
 
 static gboolean check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
+	gboolean ret = TRUE;
+	GIOStatus stat; 
+
+	if (cond & G_IO_HUP) {
+		((struct cmd_data*)user_data)->out_closed = TRUE;
+		check_if_need_to_close((struct cmd_data*)user_data);
+
+		return FALSE;
+	}
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
 
 	if (req->sudo) {
-		g_io_channel_read_chars(out, buf, strlen(SUDO_PROMPT), &buf_len, &res->err);
+		stat = g_io_channel_read_chars(out, buf, strlen(SUDO_PROMPT), &buf_len, &res->err);
+		if (stat == G_IO_STATUS_EOF) {
+			((struct cmd_data*)user_data)->out_closed = TRUE;
+			check_if_need_to_close((struct cmd_data*)user_data);
+			ret = FALSE;
 
-		if (res->err)
 			goto check_stdout_err;
+		}
+
+		if (res->err) {
+			ret = FALSE;
+			goto check_stdout_err;
+		}
 
 		if (g_strcmp0(buf, SUDO_PROMPT) == 0) {
 			((struct cmd_data*)user_data)->sudo_rdy = TRUE;
@@ -96,10 +127,19 @@ static gboolean check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_d
 			gchar* line_remainder = NULL;
 			gchar* comb = NULL;
 
-			g_io_channel_read_line(out, &line_remainder, &buf_len, NULL, &res->err);
+			stat = g_io_channel_read_line(out, &line_remainder, &buf_len, NULL, &res->err);
+			if (stat == G_IO_STATUS_EOF) {
+				ret = FALSE;
+				((struct cmd_data*)user_data)->out_closed = TRUE;
+				check_if_need_to_close((struct cmd_data*)user_data);
 
-			if (res->err)
 				goto check_stdout_sudo_err;
+			}
+
+			if (res->err) {
+				ret = FALSE;
+				goto check_stdout_sudo_err;
+			}
 
 			g_strconcat(comb, buf, line_remainder, NULL);
 			add_line_stdout(res, comb);
@@ -109,10 +149,20 @@ check_stdout_sudo_err:
 			g_free(line_remainder);
 		}
 	} else {
-		g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
+		stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
+		if (stat == G_IO_STATUS_EOF) {
+			ret = FALSE;
+			((struct cmd_data*)user_data)->out_closed = TRUE;
+			check_if_need_to_close((struct cmd_data*)user_data);
 
-		if (res->err)
 			goto check_stdout_err;
+		}
+
+		if (res->err) {
+			ret = FALSE;
+
+			goto check_stdout_err;
+		}
 
 		if (buf)
 			add_line_stdout(res, buf);
@@ -120,52 +170,76 @@ check_stdout_sudo_err:
 
 check_stdout_err:
 	g_free(buf);
-	return TRUE;
+
+	return ret;
 }
 
 static gboolean check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data) {
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+	gboolean ret = TRUE;
+	GIOStatus stat;
+
+	if (cond & G_IO_HUP) {
+		((struct cmd_data*)user_data)->err_closed = TRUE;
+		check_if_need_to_close(user_data);
+
+		return FALSE;
+	}
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
 
-	g_io_channel_read_line(err, &buf, &buf_len, NULL, &res->err);
+	stat = g_io_channel_read_line(err, &buf, &buf_len, NULL, &res->err);
+	if (stat == G_IO_STATUS_EOF) {
+		ret = FALSE;
+		((struct cmd_data*)user_data)->err_closed = TRUE;
+		check_if_need_to_close(user_data);
+
+		goto check_stderr_err;
+	}
 
 	if (buf)
 		add_line_stderr(res, buf);
 
-	if (res->err != NULL) 
-		goto check_stdout_err;
+	if (res->err != NULL) {
+		ret = FALSE;
+	}
 
-check_stdout_err:
+check_stderr_err:
 	g_free(buf);
 
-	return TRUE;
+	return ret;
 }
 
 static gboolean write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	gboolean sudo_rdy = ((struct cmd_data*)user_data)->sudo_rdy;
+	GIOStatus stat;
 	gsize wrote;
+	gboolean ret = TRUE;
 
 	if (sudo_rdy) {
-		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
+		stat = g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
 
-		if (res->err || wrote < strlen(req->password))
+		if (res->err || wrote < strlen(req->password)) {
+			ret = FALSE;
 			goto write_stdin_err;
+		}
 
-		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
+		stat = g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
 
-		if (res->err || wrote == 0)
+		if (res->err || wrote == 0) {
+			ret = FALSE;
 			goto write_stdin_err;
+		}
 
 		((struct cmd_data*)user_data)->sudo_rdy = FALSE;
 	}
 
 write_stdin_err:
 
-	return TRUE;
+	return ret;
 }
 
 // retval should be g_free'd
@@ -265,12 +339,15 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	// Main loop initialization
 	GMainContext* context = g_main_context_new();
 	loop = g_main_loop_new(context, FALSE);
-	struct cmd_data user_data;
-
-	user_data.loop = loop;
-	user_data.req = req;
-	user_data.res = res;
-	user_data.sudo_rdy = FALSE;
+	struct cmd_data user_data = {
+		.loop = loop,
+		.req = req,
+		.res = res,
+		.sudo_rdy = FALSE,
+		.cmd_exited = FALSE,
+		.out_closed = FALSE,
+		.err_closed = FALSE,
+	};
 
 	// Watch child process
 	GSource* watch_src = g_child_watch_source_new(pid);
@@ -283,25 +360,31 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	in = g_io_channel_unix_new(req->in_fd);
 
 	// Add IO channels
-	GSource* stdout_src = g_io_create_watch(out, G_IO_IN);
+	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP);
 	g_source_set_callback(stdout_src, (GSourceFunc)check_stdout, &user_data, NULL);
 	g_source_attach(stdout_src, context);
 
-	GSource* stderr_src = g_io_create_watch(err, G_IO_IN);
+	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP);
 	g_source_set_callback(stderr_src, (GSourceFunc)check_stderr, &user_data, NULL);
 	g_source_attach(stderr_src, context);
 
-	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT);
+	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP);
 	g_source_set_callback(stdin_src, (GSourceFunc)write_stdin, &user_data, NULL);
 	g_source_attach(stdin_src, context);
 
+	g_io_channel_unref(in);
+	g_io_channel_unref(out);
+	g_io_channel_unref(err);
+	g_source_unref(watch_src);
+	g_source_unref(stderr_src);
+	g_source_unref(stdout_src);
+	g_source_unref(stdin_src);
+
 	// Start dat loop
 	g_main_loop_run(loop);
+
+	g_main_context_unref(context);
 	g_main_loop_unref(loop);
-	g_source_unref(watch_src);
-	g_source_unref(stdout_src);
-	g_source_unref(stderr_src);
-	g_source_unref(stdin_src);
 
 run_cmd_error:
 	g_free(log_cmd);

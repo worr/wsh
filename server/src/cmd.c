@@ -215,19 +215,18 @@ static gboolean write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_dat
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	gboolean sudo_rdy = ((struct cmd_data*)user_data)->sudo_rdy;
-	GIOStatus stat;
 	gsize wrote;
 	gboolean ret = TRUE;
 
 	if (sudo_rdy) {
-		stat = g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
+		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
 
 		if (res->err || wrote < strlen(req->password)) {
 			ret = FALSE;
 			goto write_stdin_err;
 		}
 
-		stat = g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
+		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
 
 		if (res->err || wrote == 0) {
 			ret = FALSE;

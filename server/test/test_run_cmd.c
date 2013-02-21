@@ -222,6 +222,11 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 	g_io_channel_read_line(in, &buf, &buf_len, NULL, NULL);
 
 	g_assert_cmpstr(g_strchomp(buf), ==, "test");
+
+	g_io_channel_shutdown(in, FALSE, NULL);
+	g_io_channel_shutdown(mock_stdin, FALSE, NULL);
+	close(fds[0]);
+	close(fds[1]);
 }
 
 static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
@@ -256,6 +261,11 @@ static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture
 	wsh_check_stdout(mock_stdout, G_IO_IN, &data);
 
 	g_assert(!data.sudo_rdy);
+
+	g_io_channel_shutdown(out, FALSE, NULL);
+	g_io_channel_shutdown(mock_stdout, FALSE, NULL);
+	close(fds[0]);
+	close(fds[1]);
 }
 
 int main(int argc, char** argv, char** env) {

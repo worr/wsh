@@ -107,6 +107,9 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data
 	gsize buf_len = 0;
 
 	if (req->sudo) {
+		buf_len = strlen(SUDO_PROMPT) + 1;
+		buf = g_malloc(buf_len);
+
 		stat = g_io_channel_read_chars(out, buf, strlen(SUDO_PROMPT), &buf_len, &res->err);
 		if (stat == G_IO_STATUS_EOF) {
 			((struct cmd_data*)user_data)->out_closed = TRUE;

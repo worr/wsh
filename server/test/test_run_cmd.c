@@ -209,7 +209,7 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 
 	pipe(fds);
 
-	GIOChannel* out = g_io_channel_unix_new(fds[0]);
+	GIOChannel* in = g_io_channel_unix_new(fds[0]);
 	GIOChannel* mock_stdin = g_io_channel_unix_new(fds[1]);
 
 	struct test_cmd_data data = {
@@ -219,9 +219,33 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 	};
 
 	wsh_write_stdin(mock_stdin, G_IO_IN, &data);
-	g_io_channel_read_line(out, &buf, &buf_len, NULL, NULL);
+	g_io_channel_read_line(in, &buf, &buf_len, NULL, NULL);
 
 	g_assert_cmpstr(g_strchomp(buf), ==, "test");
+}
+
+static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+	gint fds[2];
+	gsize writ;
+	fixture->req->sudo = TRUE;
+
+	pipe(fds);
+
+	GIOChannel* out = g_io_channel_unix_new(fds[1]);
+	GIOChannel* mock_stdout = g_io_channel_unix_new(fds[0]);
+
+	struct test_cmd_data data = {
+		.sudo_rdy = FALSE,
+		.req = fixture->req,
+		.res = fixture->res,
+	};
+
+	g_io_channel_write_chars(out, SUDO_PROMPT, strlen(SUDO_PROMPT), &writ, NULL);
+	g_io_channel_flush(out, NULL);
+
+	wsh_check_stdout(mock_stdout, G_IO_IN, &data);
+
+	g_assert(data.sudo_rdy);
 }
 
 int main(int argc, char** argv, char** env) {
@@ -238,6 +262,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 	g_test_add("/Server/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
 	g_test_add("/Server/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin, teardown);
+	g_test_add("/Server/RunCmd/SudoRdy", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_check_stdout_sudo_rdy, teardown);
 
 	return g_test_run();
 }

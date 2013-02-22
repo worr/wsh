@@ -96,13 +96,6 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data
 	gboolean ret = TRUE;
 	GIOStatus stat; 
 
-	if (cond & G_IO_HUP) {
-		((struct cmd_data*)user_data)->out_closed = TRUE;
-		wsh_check_if_need_to_close((struct cmd_data*)user_data);
-
-		return FALSE;
-	}
-
 	gchar* buf = NULL;
 	gsize buf_len = 0;
 
@@ -171,6 +164,12 @@ check_stdout_sudo_err:
 			wsh_add_line_stdout(res, buf);
 	}
 
+	if (cond & G_IO_HUP) {
+		((struct cmd_data*)user_data)->out_closed = TRUE;
+		wsh_check_if_need_to_close((struct cmd_data*)user_data);
+		ret = FALSE;
+	}
+
 check_stdout_err:
 	g_free(buf);
 
@@ -181,13 +180,6 @@ gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	gboolean ret = TRUE;
 	GIOStatus stat;
-
-	if (cond & G_IO_HUP) {
-		((struct cmd_data*)user_data)->err_closed = TRUE;
-		wsh_check_if_need_to_close(user_data);
-
-		return FALSE;
-	}
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
@@ -206,6 +198,12 @@ gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data
 
 	if (res->err != NULL) {
 		ret = FALSE;
+	}
+
+	if (cond & G_IO_HUP) {
+		((struct cmd_data*)user_data)->err_closed = TRUE;
+		wsh_check_if_need_to_close(user_data);
+		ret =  FALSE;
 	}
 
 check_stderr_err:

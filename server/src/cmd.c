@@ -99,6 +99,15 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data
 	gchar* buf = NULL;
 	gsize buf_len = 0;
 
+	if (cond & G_IO_HUP) {
+		((struct cmd_data*)user_data)->out_closed = TRUE;
+		wsh_check_if_need_to_close((struct cmd_data*)user_data);
+		ret = FALSE;
+
+		if (! (cond & G_IO_IN))
+			return ret;
+	}
+
 	if (req->sudo) {
 		buf_len = strlen(SUDO_PROMPT) + 1;
 		buf = g_malloc(buf_len);
@@ -164,12 +173,6 @@ check_stdout_sudo_err:
 			wsh_add_line_stdout(res, buf);
 	}
 
-	if (cond & G_IO_HUP) {
-		((struct cmd_data*)user_data)->out_closed = TRUE;
-		wsh_check_if_need_to_close((struct cmd_data*)user_data);
-		ret = FALSE;
-	}
-
 check_stdout_err:
 	g_free(buf);
 
@@ -183,6 +186,15 @@ gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
+
+	if (cond & G_IO_HUP) {
+		((struct cmd_data*)user_data)->err_closed = TRUE;
+		wsh_check_if_need_to_close(user_data);
+		ret =  FALSE;
+
+		if (! (cond & G_IO_IN))
+			return ret;
+	}
 
 	stat = g_io_channel_read_line(err, &buf, &buf_len, NULL, &res->err);
 	if (stat == G_IO_STATUS_EOF) {
@@ -198,12 +210,6 @@ gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data
 
 	if (res->err != NULL) {
 		ret = FALSE;
-	}
-
-	if (cond & G_IO_HUP) {
-		((struct cmd_data*)user_data)->err_closed = TRUE;
-		wsh_check_if_need_to_close(user_data);
-		ret =  FALSE;
 	}
 
 check_stderr_err:

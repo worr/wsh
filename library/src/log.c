@@ -4,6 +4,8 @@
 #include <string.h>
 #include <syslog.h>
 
+const gchar* WSH_IDENT = "wsh";
+
 static enum log_type type;
 
 static const gchar* err_messages[ERROR_MESSAGE_LEN] = {

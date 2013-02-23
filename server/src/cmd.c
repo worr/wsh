@@ -10,6 +10,10 @@
 
 #include "log.h"
 
+const guint MAX_CMD_ARGS = 255;
+const gchar* SUDO_CMD = "sudo -p 'wsh-sudo: ' -u ";
+const gchar* SUDO_PROMPT = "wsh-sudo: ";
+
 // Struct that we pass to most of our main loop callbacks
 struct cmd_data {
 	GMainLoop* loop;

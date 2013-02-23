@@ -3,7 +3,7 @@
 
 #include <glib.h>
 
-#define WSH_IDENT "wsh"
+extern const gchar* WSH_IDENT;
 
 enum error_message {
 	TEST_ERROR,

@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <glib.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -9,7 +10,7 @@
 
 #include "log.h"
 
-// Struct that we pass to all of our main loop callbacks
+// Struct that we pass to most of our main loop callbacks
 struct cmd_data {
 	GMainLoop* loop;
 	wsh_cmd_req_t* req;
@@ -20,6 +21,11 @@ struct cmd_data {
 	gboolean err_closed;
 };
 
+// Struct that we pass to our timeout callback
+struct kill_data {
+	wsh_cmd_res_t* res;
+	GPid pid;
+};
 
 // This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
 // close enough.
@@ -74,6 +80,13 @@ static void wsh_check_if_need_to_close(struct cmd_data* cmd_data) {
 	if (cmd_data->cmd_exited && cmd_data->out_closed && cmd_data->err_closed) {
 		g_main_loop_quit(cmd_data->loop);
 	}
+}
+
+static void wsh_kill_proccess(gpointer user_data) {
+	struct kill_data* kdata = (struct kill_data*)user_data;
+
+	if (kill(kdata->pid, SIGKILL))
+		log_error(COMMAND_FAILED_TO_DIE, strerror(errno));
 }
 
 // All this should do is log the status code and add it to our data struct
@@ -381,6 +394,19 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP);
 	g_source_set_callback(stdin_src, (GSourceFunc)wsh_write_stdin, &user_data, NULL);
 	g_source_attach(stdin_src, context);
+
+	// Add timeout if present
+	if (req->timeout != 0) {
+		struct kill_data kdata = {
+			.pid = pid,
+			.res = res,
+		};
+
+		GSource* timeout_src = g_timeout_source_new_seconds(req->timeout);
+		g_source_set_callback(timeout_src, (GSourceFunc)wsh_kill_proccess, &kdata, NULL);
+		g_source_attach(timeout_src, context);
+		g_source_unref(timeout_src);
+	}
 
 	g_io_channel_unref(in);
 	g_io_channel_unref(out);

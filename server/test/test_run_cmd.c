@@ -268,6 +268,18 @@ static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture
 	close(fds[1]);
 }
 
+static void test_wsh_run_cmd_timeout(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+	g_test_timer_start();
+
+	fixture->req->cmd_string = "/bin/sleep 5";
+	fixture->req->timeout = 1;
+
+	wsh_run_cmd(fixture->res, fixture->req);
+
+	gdouble time_len = g_test_timer_elapsed();
+	g_assert(time_len < 4.5);
+}
+
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -283,6 +295,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Server/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
 	g_test_add("/Server/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin, teardown);
 	g_test_add("/Server/RunCmd/SudoRdy", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_check_stdout_sudo_rdy, teardown);
+	g_test_add("/Server/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_timeout, teardown);
 
 	return g_test_run();
 }

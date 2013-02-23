@@ -5,6 +5,7 @@ message CommandRequest {
 	optional AuthInfo auth = 2;
 	repeated string env = 3;
 	optional string cwd = 4;
+	optional int64 timeout = 5;
 }
 
 message CommandReply {

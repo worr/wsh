@@ -6,9 +6,11 @@
 
 static enum log_type type;
 
-static const gchar* err_messages[2] = {
+static const gchar* err_messages[ERROR_MESSAGE_LEN] = {
 	"TEST ERROR",
-	"COMMAND FAILED"
+	"COMMAND FAILED",
+	"COMMAND TIMEOUT REACHED",
+	"COULD NOT KILL COMMAND",
 };
 
 static const gchar* cmd_server_template =

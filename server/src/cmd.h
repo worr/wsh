@@ -17,6 +17,7 @@ typedef struct {
 	gchar* host; // put here mostly for logging purposes
 	gsize std_input_len;
 	gint in_fd;
+	guint timeout;
 	gboolean sudo;
 } wsh_cmd_req_t;
 

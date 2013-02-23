@@ -5,8 +5,13 @@
 
 #define WSH_IDENT "wsh"
 
-#define TEST_ERROR (0)
-#define COMMAND_FAILED (1)
+enum error_message {
+	TEST_ERROR,
+	COMMAND_FAILED,
+	COMMAND_TIMEOUT,
+	COMMAND_FAILED_TO_DIE,
+	ERROR_MESSAGE_LEN,
+};
 
 enum log_type {
 	CLIENT,

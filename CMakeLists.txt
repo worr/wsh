@@ -17,6 +17,7 @@ set( WSH_LIBRARIES wsh)
 
 add_definitions( -std=c99 )
 add_definitions( -Wall -Werror -pedantic )
+add_definitions( -D_GNU_SOURCE )
 
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake

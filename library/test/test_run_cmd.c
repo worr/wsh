@@ -30,7 +30,7 @@ static void setup(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data
 	data->req->username = "root";
 	data->req->password = "test";
 
-	init_logger(SERVER);
+	wsh_init_logger(WSH_LOGGER_SERVER);
 }
 
 static void teardown(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
@@ -49,7 +49,7 @@ static void teardown(struct test_wsh_run_cmd_data* fixture, gconstpointer user_d
 
 	g_slice_free(wsh_cmd_req_t, data->req);
 	g_slice_free(wsh_cmd_res_t, data->res);
-	exit_logger();
+	wsh_exit_logger();
 }
 
 static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {

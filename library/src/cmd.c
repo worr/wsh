@@ -90,7 +90,7 @@ static void wsh_kill_proccess(gpointer user_data) {
 	struct kill_data* kdata = (struct kill_data*)user_data;
 
 	if (kill(kdata->pid, SIGKILL))
-		log_error(COMMAND_FAILED_TO_DIE, strerror(errno));
+		wsh_log_error(WSH_ERR_COMMAND_FAILED_TO_DIE, strerror(errno));
 }
 
 // All this should do is log the status code and add it to our data struct
@@ -99,7 +99,7 @@ static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
 
 	res->exit_status = WEXITSTATUS(status);
-	log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
+	wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
 	
 	g_spawn_close_pid(pid);
 
@@ -343,7 +343,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	}
 
 	gchar* log_cmd = g_strjoinv(" ", argcv);
-	log_server_cmd(log_cmd, req->username, req->host, req->cwd);
+	wsh_log_server_cmd(log_cmd, req->username, req->host, req->cwd);
 
 	g_spawn_async_with_pipes(
 		req->cwd,  // working dir
@@ -445,7 +445,7 @@ run_cmd_error_no_log_cmd:
 run_cmd_error_nofree:
 
 	if (res->err != NULL)
-		log_error(COMMAND_FAILED, res->err->message);
+		wsh_log_error(WSH_ERR_COMMAND_FAILED, res->err->message);
 
 	return ret;
 }

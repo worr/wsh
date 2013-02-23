@@ -6,9 +6,9 @@
 
 const gchar* WSH_IDENT = "wsh";
 
-static enum log_type type;
+static enum wsh_log_type type;
 
-static const gchar* err_messages[ERROR_MESSAGE_LEN] = {
+static const gchar* err_messages[WSH_ERR_ERROR_MESSAGE_LEN] = {
 	"TEST ERROR",
 	"COMMAND FAILED",
 	"COMMAND TIMEOUT REACHED",
@@ -27,25 +27,25 @@ static const gchar* cmd_server_status_template =
 static const gchar* cmd_client_status_template =
 	"command `%s` run as user `%s` in dir `%s` exited with code `%d` on hosts `%s`";
 
-void init_logger(enum log_type t) {
+void wsh_init_logger(enum wsh_log_type t) {
 	type = t;
 	openlog(WSH_IDENT, LOG_PID, LOG_DAEMON);
 }
 
-void exit_logger(void) {
+void wsh_exit_logger(void) {
 	closelog();
 }
 
-void log_message(const gchar* message) {
-	syslog(LOG_INFO, "%s: %s", type == CLIENT ? "CLIENT" : "SERVER", message);
+void wsh_log_message(const gchar* message) {
+	syslog(LOG_INFO, "%s: %s", type == WSH_LOGGER_CLIENT ? "CLIENT" : "SERVER", message);
 }
 
-void log_error(gint msg_num, gchar* message) {
-	syslog(LOG_ERR, "%s ERROR %d: %s: %s", type == CLIENT ? "CLIENT" : "SERVER", msg_num, err_messages[msg_num], message);
+void wsh_log_error(gint msg_num, gchar* message) {
+	syslog(LOG_ERR, "%s ERROR %d: %s: %s", type == WSH_LOGGER_CLIENT ? "CLIENT" : "SERVER", msg_num, err_messages[msg_num], message);
 }
 
-void log_server_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd) {
-	g_assert(type != CLIENT);
+void wsh_log_server_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd) {
+	g_assert(type != WSH_LOGGER_CLIENT);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_server_template) + strlen(command) + strlen(user) + strlen(source) + strlen(cwd);
@@ -58,12 +58,12 @@ void log_server_cmd(const gchar* command, const gchar* user, const gchar* source
 		g_snprintf(msg, attempted, cmd_server_template, command, user, cwd, source);
 	}
 
-	log_message(msg);
+	wsh_log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
-void log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd) {
-	g_assert(type != SERVER);
+void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd) {
+	g_assert(type != WSH_LOGGER_SERVER);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_client_template) + strlen(command) + strlen(user) + strlen(cwd);
@@ -81,13 +81,13 @@ void log_client_cmd(const gchar* command, const gchar* user, gchar** dests, cons
 		g_snprintf(msg, attempted, cmd_client_template, command, user, cwd, hosts);
 	}
 
-	log_message(msg);
+	wsh_log_message(msg);
 	g_free(hosts);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
-void log_server_cmd_status(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd, gint status) {
-	g_assert(type != CLIENT);
+void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd, gint status) {
+	g_assert(type != WSH_LOGGER_CLIENT);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_server_status_template) + strlen(command) + strlen(user) + strlen(source) + strlen(cwd) + 3;
@@ -100,12 +100,12 @@ void log_server_cmd_status(const gchar* command, const gchar* user, const gchar*
 		g_snprintf(msg, attempted, cmd_server_status_template, command, user, cwd, source, status);
 	}
 
-	log_message(msg);
+	wsh_log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
-void log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status) {
-	g_assert(type != SERVER);
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status) {
+	g_assert(type != WSH_LOGGER_SERVER);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_client_status_template) + strlen(command) + strlen(user) + strlen(cwd) + 3;
@@ -123,7 +123,7 @@ void log_client_cmd_status(const gchar* command, const gchar* user, gchar** dest
 		g_snprintf(msg, attempted, cmd_client_status_template, command, user, cwd, status, hosts);
 	}
 
-	log_message(msg);
+	wsh_log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
 	g_free(hosts);
 }

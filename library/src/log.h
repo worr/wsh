@@ -6,26 +6,26 @@
 extern const gchar* WSH_IDENT;
 
 enum error_message {
-	TEST_ERROR,
-	COMMAND_FAILED,
-	COMMAND_TIMEOUT,
-	COMMAND_FAILED_TO_DIE,
-	ERROR_MESSAGE_LEN,
+	WSH_ERR_TEST_ERROR,
+	WSH_ERR_COMMAND_FAILED,
+	WSH_ERR_COMMAND_TIMEOUT,
+	WSH_ERR_COMMAND_FAILED_TO_DIE,
+	WSH_ERR_ERROR_MESSAGE_LEN,
 };
 
-enum log_type {
-	CLIENT,
-	SERVER,
+enum wsh_log_type {
+	WSH_LOGGER_CLIENT,
+	WSH_LOGGER_SERVER,
 };
 
-void init_logger(enum log_type t);
-void exit_logger(void);
-void log_message(const gchar* message);
-void log_error(gint msg_num, gchar* message);
-void log_server_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd);
-void log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd);
-void log_server_cmd_status(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd, gint status);
-void log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status);
+void wsh_init_logger(enum wsh_log_type t);
+void wsh_exit_logger(void);
+void wsh_log_message(const gchar* message);
+void wsh_log_error(gint msg_num, gchar* message);
+void wsh_log_server_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd);
+void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd);
+void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd, gint status);
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status);
 
 #endif
 

@@ -15,7 +15,7 @@ static void test_init_logger(void) {
 	gint recv_logopt;
 	gint recv_facility;
 
-	init_logger(CLIENT);
+	wsh_init_logger(WSH_LOGGER_CLIENT);
 
 	gchar* recv_ident = g_slice_alloc0(strlen(test_ident) + 1);
 	g_assert(openlog_called(recv_ident, strlen(test_ident) + 1, &recv_logopt, &recv_facility) == 1);
@@ -27,7 +27,7 @@ static void test_init_logger(void) {
 }
 
 static void test_exit_logger(void) {
-	exit_logger();
+	wsh_exit_logger();
 	g_assert(closelog_called() == 1);
 }
 
@@ -36,9 +36,9 @@ static void test_log_message_from_client(void) {
 	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 9);
 	gint recv_priority;
 
-	init_logger(CLIENT);
+	wsh_init_logger(WSH_LOGGER_CLIENT);
 
-	log_message(test_message);
+	wsh_log_message(test_message);
 
 	// Expected result
 	test_message = "CLIENT: this is a test message";
@@ -47,7 +47,7 @@ static void test_log_message_from_client(void) {
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
 
-	exit_logger();
+	wsh_exit_logger();
 
 	g_slice_free1(strlen(test_message) + 1, recv_message);
 }
@@ -57,9 +57,9 @@ static void test_log_message_from_server(void) {
 	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 9);
 	gint recv_priority;
 
-	init_logger(SERVER);
+	wsh_init_logger(WSH_LOGGER_SERVER);
 
-	log_message(test_message);
+	wsh_log_message(test_message);
 
 	test_message = "SERVER: this is a test message";
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
@@ -67,7 +67,7 @@ static void test_log_message_from_server(void) {
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
 
-	exit_logger();
+	wsh_exit_logger();
 
 	g_slice_free1(strlen(test_message) + 1, recv_message);
 }
@@ -76,9 +76,9 @@ static void test_error_log_from_client(void) {
 	gchar* test_message = "this is an error";
 	gint recv_priority;
 
-	init_logger(CLIENT);
+	wsh_init_logger(WSH_LOGGER_CLIENT);
 
-	log_error(0, test_message);
+	wsh_log_error(0, test_message);
 
 	test_message = "CLIENT ERROR 0: TEST ERROR: this is an error";
 	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 1);
@@ -88,7 +88,7 @@ static void test_error_log_from_client(void) {
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_ERR);
 
-	exit_logger();
+	wsh_exit_logger();
 
 	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
@@ -103,15 +103,15 @@ static void test_log_run_command_from_server(void) {
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
-	init_logger(SERVER);
+	wsh_init_logger(WSH_LOGGER_SERVER);
 
-	log_server_cmd(test_cmd, test_user, test_source, test_cwd);
+	wsh_log_server_cmd(test_cmd, test_user, test_source, test_cwd);
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
 
-	exit_logger();
+	wsh_exit_logger();
 	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
 
@@ -125,15 +125,15 @@ static void test_log_run_command_from_client(void) {
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
-	init_logger(CLIENT);
+	wsh_init_logger(WSH_LOGGER_CLIENT);
 
-	log_client_cmd(test_cmd, test_user, test_dest, test_cwd);
+	wsh_log_client_cmd(test_cmd, test_user, test_dest, test_cwd);
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
 
-	exit_logger();
+	wsh_exit_logger();
 	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
 
@@ -148,15 +148,15 @@ static void test_log_command_status_server(void) {
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
-	init_logger(SERVER);
+	wsh_init_logger(WSH_LOGGER_SERVER);
 
-	log_server_cmd_status(test_cmd, test_user, test_source, test_cwd, test_status);
+	wsh_log_server_cmd_status(test_cmd, test_user, test_source, test_cwd, test_status);
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
 
-	exit_logger();
+	wsh_exit_logger();
 	g_slice_free1(strlen(recv_message) + 1, recv_message);
 }
 
@@ -171,15 +171,15 @@ static void test_log_command_status_client(void) {
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
-	init_logger(CLIENT);
+	wsh_init_logger(WSH_LOGGER_CLIENT);
 
-	log_client_cmd_status(test_cmd, test_user, test_dest, test_cwd, test_status);
+	wsh_log_client_cmd_status(test_cmd, test_user, test_dest, test_cwd, test_status);
 	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
 
-	exit_logger();
+	wsh_exit_logger();
 	g_slice_free1(strlen(expected_message) + 1, recv_message);
 }
 

@@ -38,6 +38,15 @@ static void teardown(struct test_wsh_run_cmd_data* fixture, gconstpointer user_d
 
 	if (data->res->err != NULL)
 		g_error_free(data->res->err);
+	
+	for (gint i = 0; i < data->res->std_output_len; i++) {
+		g_free(data->res->std_output[i]);
+	}
+
+	for (gint i = 0; i < data->res->std_error_len; i++) {
+		g_free(data->res->std_error[i]);
+	}
+
 	g_slice_free(wsh_cmd_req_t, data->req);
 	g_slice_free(wsh_cmd_res_t, data->res);
 	exit_logger();

@@ -22,6 +22,8 @@ static void test_init_logger(void) {
 	g_assert_cmpstr(recv_ident, ==, test_ident);
 	g_assert(recv_logopt == LOG_PID);
 	g_assert(recv_facility == LOG_DAEMON);
+
+	g_slice_free1(strlen(test_ident) + 1, recv_ident);
 }
 
 static void test_exit_logger(void) {

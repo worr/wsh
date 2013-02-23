@@ -2,7 +2,7 @@ set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
 set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
-set( WSH_SOURCES log.c )
+set( WSH_SOURCES log.c cmd.c )
 add_library( wsh ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
 
 # Find protoc-c compiler

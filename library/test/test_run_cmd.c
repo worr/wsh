@@ -292,19 +292,19 @@ static void test_wsh_run_cmd_timeout(struct test_wsh_run_cmd_data* fixture, gcon
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add("/Server/RunCmd/ConstructSudoCmd", struct test_wsh_run_cmd_data, NULL, setup, test_construct_sudo_cmd, teardown);
-	g_test_add("/Server/RunCmd/ExitCode", struct test_wsh_run_cmd_data, NULL, setup, test_run_exit_code, teardown);
-	g_test_add("/Server/RunCmd/Stdout", struct test_wsh_run_cmd_data, NULL, setup, test_run_stdout, teardown);
-	g_test_add("/Server/RunCmd/Stderr", struct test_wsh_run_cmd_data, NULL, setup, test_run_stderr, teardown);
-	g_test_add("/Server/RunCmd/Errors", struct test_wsh_run_cmd_data, NULL, setup, test_run_err, teardown);
-	g_test_add("/Server/RunCmd/NullCmd", struct test_wsh_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
-	g_test_add("/Server/RunCmd/EnvironGetEnvOverride", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
-	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideFail", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
-	g_test_add("/Server/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
-	g_test_add("/Server/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
-	g_test_add("/Server/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin, teardown);
-	g_test_add("/Server/RunCmd/SudoRdy", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_check_stdout_sudo_rdy, teardown);
-	g_test_add("/Server/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_timeout, teardown);
+	g_test_add("/Library/RunCmd/ConstructSudoCmd", struct test_wsh_run_cmd_data, NULL, setup, test_construct_sudo_cmd, teardown);
+	g_test_add("/Library/RunCmd/ExitCode", struct test_wsh_run_cmd_data, NULL, setup, test_run_exit_code, teardown);
+	g_test_add("/Library/RunCmd/Stdout", struct test_wsh_run_cmd_data, NULL, setup, test_run_stdout, teardown);
+	g_test_add("/Library/RunCmd/Stderr", struct test_wsh_run_cmd_data, NULL, setup, test_run_stderr, teardown);
+	g_test_add("/Library/RunCmd/Errors", struct test_wsh_run_cmd_data, NULL, setup, test_run_err, teardown);
+	g_test_add("/Library/RunCmd/NullCmd", struct test_wsh_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
+	g_test_add("/Library/RunCmd/EnvironGetEnvOverride", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
+	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideFail", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
+	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
+	g_test_add("/Library/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
+	g_test_add("/Library/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin, teardown);
+	g_test_add("/Library/RunCmd/SudoRdy", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_check_stdout_sudo_rdy, teardown);
+	g_test_add("/Library/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_timeout, teardown);
 
 	return g_test_run();
 }

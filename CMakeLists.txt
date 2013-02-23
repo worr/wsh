@@ -43,14 +43,14 @@ if( BUILD_TESTS )
 	# enable testing for whole project
 	enable_testing()
 
-	add_subdirectory( library/test )
 	add_definitions( -DBUILD_TESTS )
+	add_subdirectory( library/test )
 endif( BUILD_TESTS )
 
 if( BUILD_SERVER )
 	add_subdirectory( server/src )
 	if( BUILD_TESTS )
-		add_subdirectory( server/test )
+		#add_subdirectory( server/test )
 	endif( BUILD_TESTS )
 endif( BUILD_SERVER )
 

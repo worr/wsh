@@ -1,4 +1,4 @@
-set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto )
+set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 

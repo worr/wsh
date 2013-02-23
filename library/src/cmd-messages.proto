@@ -3,13 +3,14 @@ import "auth.proto";
 message CommandRequest {
 	required string command = 1;
 	optional AuthInfo auth = 2;
-	repeated string env = 3;
-	optional string cwd = 4;
-	optional int64 timeout = 5;
+	repeated string stdin = 3;
+	repeated string env = 4;
+	optional string cwd = 5;
+	optional int64 timeout = 6;
 }
 
 message CommandReply {
-	required string stdout = 1;
-	required string stderr = 2;
+	repeated string stdout = 1;
+	repeated string stderr = 2;
 	required int64 ret_code = 3;
 }

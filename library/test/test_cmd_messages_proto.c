@@ -233,7 +233,7 @@ static void test_unpacking_corrupted_request(void) {
 static void test_unpacking_corrupted_response(void) {
 	CommandReply* reply = NULL;
 
-	if (g_test_trap_fork(0, 0)) {
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
 		reply = command_reply__unpack(NULL, corrupted_reply_len, corrupted_reply);
 		exit(0);
 	}

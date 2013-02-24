@@ -1,5 +1,5 @@
-#ifndef LOG_H
-#define LOG_H
+#ifndef __WSH_LOG_H
+#define __WSH_LOG_H
 
 #include <glib.h>
 

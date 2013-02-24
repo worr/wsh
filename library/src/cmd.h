@@ -1,5 +1,5 @@
-#ifndef CMD_H
-#define CMD_H
+#ifndef __WSH_CMD_H
+#define __WSH_CMD_H
 
 #include <glib.h>
 

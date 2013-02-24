@@ -5,13 +5,8 @@
 #include "cmd.h"
 #include "parse.h"
 
-union int_out {
-	guint32 size;
-	gchar buf[4];
-};
-
 static void test_get_message_size(void) {
-	union int_out size;
+	wshd_message_size_t size;
 	gint recv;
 	gint fds[2];
 	gsize writ;

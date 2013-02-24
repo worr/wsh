@@ -10,11 +10,12 @@ union int_out {
 	gchar buf[4];
 };
 
-static void test_get_size(void) {
+static void test_get_message_size(void) {
 	union int_out size;
 	gint recv;
 	gint fds[2];
 	gsize writ;
+	GError* err = NULL;
 
 	pipe(fds);
 
@@ -26,20 +27,22 @@ static void test_get_size(void) {
 	size.size = htonl(0);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_flush(in, NULL);
-	recv = wshd_get_size(mock_stdout);
+	recv = wshd_get_message_size(mock_stdout, err);
+	g_assert_no_error(err);
 	g_assert(recv == ntohl(size.size));
 
 	size.size = htonl(200);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_flush(in, NULL);
-	recv = wshd_get_size(mock_stdout);
+	recv = wshd_get_message_size(mock_stdout, err);
+	g_assert_no_error(err);
 	g_assert(recv == ntohl(size.size));
 }
 
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add_func("/Server/Parser/GetSize", test_get_size);
+	g_test_add_func("/Server/Parser/GetSize", test_get_message_size);
 
 	return g_test_run();
 }

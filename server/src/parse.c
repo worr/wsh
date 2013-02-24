@@ -11,11 +11,11 @@ union size_output {
 	gchar buf[4];
 };
 
-gint wshd_get_size(GIOChannel* std_output) {
+gint wshd_get_message_size(GIOChannel* std_output, GError* err) {
 	union size_output out;
 	gsize read;
 
-	g_io_channel_read_chars(std_output, out.buf, 4, &read, NULL);
+	g_io_channel_read_chars(std_output, out.buf, 4, &read, &err);
 	out.size = ntohl(out.size);
 
 	return out.size;

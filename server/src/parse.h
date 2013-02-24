@@ -3,6 +3,6 @@
 
 #include <glib.h>
 
-gint wshd_get_size(GIOChannel* std_output);
+gint wshd_get_message_size(GIOChannel* std_output, GError* err);
 
 #endif

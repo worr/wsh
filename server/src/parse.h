@@ -11,3 +11,4 @@ typedef union {
 gint wshd_get_message_size(GIOChannel* std_output, GError* err);
 
 #endif
+

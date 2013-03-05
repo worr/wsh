@@ -1,0 +1,71 @@
+#include "pack.h"
+
+#include <glib.h>
+#include <string.h>
+
+#include "auth.pb-c.h"
+#include "cmd-messages.pb-c.h"
+
+// buf MUST be g_free()d
+void wsh_pack_request(guint8** buf, gsize* buf_len, const wsh_cmd_req_t* req) {
+	AuthInfo ai = AUTH_INFO__INIT;
+	CommandRequest cmd_req = COMMAND_REQUEST__INIT;
+
+	ai.username = req->username;
+	ai.password = req->password;
+
+	cmd_req.command = req->cmd_string;
+	cmd_req.auth = &ai;
+	cmd_req.stdin = req->std_input;
+	cmd_req.n_stdin = req->std_input_len;
+	cmd_req.env = req->env;
+	cmd_req.cwd = req->cwd;
+	if (req->timeout != 0)
+		cmd_req.has_timeout = TRUE;
+	cmd_req.timeout = req->timeout;
+
+	cmd_req.n_env = 0;
+	for (gsize i = 0; cmd_req.env[i] != NULL; i++)
+		cmd_req.n_env++;
+
+	*buf_len = command_request__get_packed_size(&cmd_req);
+	*buf = g_malloc0(*buf_len);
+
+	command_request__pack(&cmd_req, *buf);
+}
+
+// req ought to be allocated
+void wsh_unpack_request(wsh_cmd_req_t* req, const guint8* buf, gsize buf_len) {
+	CommandRequest* cmd_req;
+
+	cmd_req = command_request__unpack(NULL, buf_len, buf);
+
+	req->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
+	req->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
+
+	req->cmd_string = g_strndup(cmd_req->command, strlen(cmd_req->command));
+
+	req->std_input = g_new0(gchar*, cmd_req->n_stdin + 1);
+	for (gsize i = 0; i < cmd_req->n_stdin; i++)
+		req->std_input[i] = g_strndup(cmd_req->stdin[i], strlen(cmd_req->stdin[i]) + 1);
+	req->std_input[cmd_req->n_stdin + 1] = NULL;
+	req->std_input_len = cmd_req->n_stdin;
+
+	req->env = g_new0(gchar*, cmd_req->n_env + 1);
+	for (gsize i = 0; i < cmd_req->n_env; i++)
+		req->env[i] = g_strndup(cmd_req->env[i], strlen(cmd_req->env[i]) + 1);
+	req->env[cmd_req->n_env] = NULL;
+
+	req->cwd = g_strndup(cmd_req->cwd, strlen(cmd_req->cwd));
+	req->timeout = cmd_req->timeout;
+}
+
+void wsh_free_unpacked_request(wsh_cmd_req_t* req) {
+	g_free(req->username);
+	g_free(req->password);
+	g_free(req->cmd_string);
+	g_strfreev(req->std_input);
+	g_strfreev(req->env);
+	g_free(req->cwd);
+}
+

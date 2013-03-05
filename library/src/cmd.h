@@ -2,6 +2,7 @@
 #define __WSH_CMD_H
 
 #include <glib.h>
+#include <stdint.h>
 
 extern const guint MAX_CMD_ARGS;
 extern const gchar* SUDO_CMD;
@@ -17,7 +18,7 @@ typedef struct {
 	gchar* host; // put here mostly for logging purposes
 	gsize std_input_len;
 	gint in_fd;
-	guint timeout;
+	guint64 timeout;
 	gboolean sudo;
 } wsh_cmd_req_t;
 
@@ -34,7 +35,6 @@ typedef struct {
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
-
 
 #ifdef BUILD_TESTS
 
@@ -61,3 +61,4 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable);
 # endif
 
 #endif
+

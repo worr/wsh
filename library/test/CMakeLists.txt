@@ -1,4 +1,4 @@
-set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto )
+set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto test_pack )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
@@ -17,6 +17,7 @@ set( SOURCES
 	${WSH_PROTOC_SOURCES}
 	${CMAKE_SOURCE_DIR}/library/src/log.c
 	${CMAKE_SOURCE_DIR}/library/src/cmd.c
+	${CMAKE_SOURCE_DIR}/library/src/pack.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
 )
 

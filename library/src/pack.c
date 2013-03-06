@@ -69,3 +69,18 @@ void wsh_free_unpacked_request(wsh_cmd_req_t* req) {
 	g_free(req->cwd);
 }
 
+void wsh_pack_response(guint8** buf, gsize* buf_len, const wsh_cmd_res_t* res) {
+	CommandReply cmd_res = COMMAND_REPLY__INIT;
+
+	cmd_res.stdout = res->std_output;
+	cmd_res.stderr = res->std_error;
+	cmd_res.n_stdout = res->std_output_len;
+	cmd_res.n_stderr = res->std_error_len;
+	cmd_res.ret_code = res->exit_status;
+
+	*buf_len = command_reply__get_packed_size(&cmd_res);
+	*buf = g_malloc0(*buf_len);
+
+	command_reply__pack(&cmd_res, *buf);
+}
+

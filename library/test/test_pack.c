@@ -56,22 +56,24 @@ static void test_wsh_pack_request(void) {
 }
 
 static void test_wsh_unpack_request(void) {
-	wsh_cmd_req_t req;
+	wsh_cmd_req_t* req = g_new(wsh_cmd_req_t, 1);
 
 	wsh_unpack_request(&req, encoded_req, encoded_req_len);
 
-	g_assert_cmpstr(req.cmd_string, ==, req_cmd);
-	g_assert_cmpstr(req.cwd, ==, req_cwd);
-	g_assert(req.timeout == req_timeout);
-	g_assert_cmpstr(req.username, ==, req_username);
-	g_assert_cmpstr(req.password, ==, req_password);
-	g_assert(req.std_input_len == req_stdin_len);
+	g_assert_cmpstr(req->cmd_string, ==, req_cmd);
+	g_assert_cmpstr(req->cwd, ==, req_cwd);
+	g_assert(req->timeout == req_timeout);
+	g_assert_cmpstr(req->username, ==, req_username);
+	g_assert_cmpstr(req->password, ==, req_password);
+	g_assert(req->std_input_len == req_stdin_len);
 
 	for (gsize i = 0; i < req_stdin_len; i++)
-		g_assert_cmpstr(req.std_input[i], ==, req_stdin[i]);
+		g_assert_cmpstr(req->std_input[i], ==, req_stdin[i]);
 
 	for (gsize i = 0; i < req_env_len; i++)
-		g_assert_cmpstr(req.env[i], ==, req_env[i]);
+		g_assert_cmpstr(req->env[i], ==, req_env[i]);
+
+	wsh_free_unpacked_request(&req);
 }
 
 static void test_wsh_pack_response(void) {
@@ -92,12 +94,31 @@ static void test_wsh_pack_response(void) {
 		g_assert(buf[i] == encoded_res[i]);
 }
 
+static void test_wsh_unpack_response(void) {
+	wsh_cmd_res_t* res = g_new(wsh_cmd_res_t, 1);
+
+	wsh_unpack_response(&res, encoded_res, encoded_res_len);
+
+	g_assert(res->std_output_len == res_stdout_len);
+	for (gsize i = 0; i < res->std_output_len; i++)
+		g_assert_cmpstr(res->std_output[i], ==, res_stdout[i]);
+
+	g_assert(res->std_error_len == res_stderr_len);
+	for (gsize i = 0; i < res->std_error_len; i++)
+		g_assert_cmpstr(res->std_error[i], ==, res_stderr[i]);
+
+	g_assert(res->exit_status == res_exit_status);
+
+	wsh_free_unpacked_response(&res);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
 	g_test_add_func("/Library/Packing/PackRequest", test_wsh_pack_request);
 	g_test_add_func("/Library/Packing/UnpackRequest", test_wsh_unpack_request);
 	g_test_add_func("/Library/Packing/PackResponse", test_wsh_pack_response);
+	g_test_add_func("/Library/Packing/UnpackResponse", test_wsh_unpack_response);
 
 	return g_test_run();
 }

@@ -35,38 +35,41 @@ void wsh_pack_request(guint8** buf, gsize* buf_len, const wsh_cmd_req_t* req) {
 }
 
 // req ought to be allocated
-void wsh_unpack_request(wsh_cmd_req_t* req, const guint8* buf, gsize buf_len) {
+void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, gsize buf_len) {
 	CommandRequest* cmd_req;
 
 	cmd_req = command_request__unpack(NULL, buf_len, buf);
 
-	req->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
-	req->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
+	(*req)->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
+	(*req)->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
 
-	req->cmd_string = g_strndup(cmd_req->command, strlen(cmd_req->command));
+	(*req)->cmd_string = g_strndup(cmd_req->command, strlen(cmd_req->command));
 
-	req->std_input = g_new0(gchar*, cmd_req->n_stdin + 1);
+	(*req)->std_input = g_new0(gchar*, cmd_req->n_stdin + 1);
 	for (gsize i = 0; i < cmd_req->n_stdin; i++)
-		req->std_input[i] = g_strndup(cmd_req->stdin[i], strlen(cmd_req->stdin[i]) + 1);
-	req->std_input[cmd_req->n_stdin + 1] = NULL;
-	req->std_input_len = cmd_req->n_stdin;
+		(*req)->std_input[i] = g_strndup(cmd_req->stdin[i], strlen(cmd_req->stdin[i]) + 1);
+	(*req)->std_input[cmd_req->n_stdin + 1] = NULL;
+	(*req)->std_input_len = cmd_req->n_stdin;
 
-	req->env = g_new0(gchar*, cmd_req->n_env + 1);
+	(*req)->env = g_new0(gchar*, cmd_req->n_env + 1);
 	for (gsize i = 0; i < cmd_req->n_env; i++)
-		req->env[i] = g_strndup(cmd_req->env[i], strlen(cmd_req->env[i]) + 1);
-	req->env[cmd_req->n_env] = NULL;
+		(*req)->env[i] = g_strndup(cmd_req->env[i], strlen(cmd_req->env[i]) + 1);
+	(*req)->env[cmd_req->n_env] = NULL;
 
-	req->cwd = g_strndup(cmd_req->cwd, strlen(cmd_req->cwd));
-	req->timeout = cmd_req->timeout;
+	(*req)->cwd = g_strndup(cmd_req->cwd, strlen(cmd_req->cwd));
+	(*req)->timeout = cmd_req->timeout;
+
+	command_request__free_unpacked(cmd_req, NULL);
 }
 
-void wsh_free_unpacked_request(wsh_cmd_req_t* req) {
-	g_free(req->username);
-	g_free(req->password);
-	g_free(req->cmd_string);
-	g_strfreev(req->std_input);
-	g_strfreev(req->env);
-	g_free(req->cwd);
+void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
+	g_free((*req)->username);
+	g_free((*req)->password);
+	g_free((*req)->cmd_string);
+	g_strfreev((*req)->std_input);
+	g_strfreev((*req)->env);
+	g_free((*req)->cwd);
+	g_free(*req);
 }
 
 void wsh_pack_response(guint8** buf, gsize* buf_len, const wsh_cmd_res_t* res) {
@@ -82,5 +85,33 @@ void wsh_pack_response(guint8** buf, gsize* buf_len, const wsh_cmd_res_t* res) {
 	*buf = g_malloc0(*buf_len);
 
 	command_reply__pack(&cmd_res, *buf);
+}
+
+void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf, gsize buf_len) {
+	CommandReply* cmd_res;
+
+	cmd_res = command_reply__unpack(NULL, buf_len, buf);
+
+	(*res)->std_output_len = cmd_res->n_stdout;
+	(*res)->std_output = g_new0(gchar*, (*res)->std_output_len + 1);
+	for (gsize i = 0; i < cmd_res->n_stdout; i++)
+		(*res)->std_output[i] = g_strndup(cmd_res->stdout[i], strlen(cmd_res->stdout[i]) + 1);
+	(*res)->std_output[(*res)->std_output_len] = NULL;
+
+	(*res)->std_error_len = cmd_res->n_stderr;
+	(*res)->std_error = g_new0(gchar*, (*res)->std_error_len + 1);
+	for (gsize i = 0; i < cmd_res->n_stderr; i++)
+		(*res)->std_error[i] = g_strndup(cmd_res->stderr[i], strlen(cmd_res->stderr[i]) + 1);
+	(*res)->std_error[(*res)->std_error_len] = NULL;
+
+	(*res)->exit_status = cmd_res->ret_code;
+
+	command_reply__free_unpacked(cmd_res, NULL);
+}
+
+void wsh_free_unpacked_response(wsh_cmd_res_t** res) {
+	g_strfreev((*res)->std_output);
+	g_strfreev((*res)->std_error);
+	g_free(*res);
 }
 

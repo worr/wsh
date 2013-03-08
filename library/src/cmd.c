@@ -49,35 +49,32 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 }
 #endif
 
-static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gboolean std_out) {
-	gsize* buf_len = std_out ? &res->std_output_len : &res->std_error_len;
-	gchar** buf = std_out ? res->std_output : res->std_error;
-
+static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf, gsize* buf_len) {
 	// Allocate space for a new string pointer and new string
-	if (buf != NULL) {
-		gchar** buf2 = g_malloc_n(*buf_len + 1, sizeof(gchar*));
-		g_memmove(buf2, buf, sizeof(gchar*) * *buf_len + 1);
-		g_free(buf);
-		buf = buf2;
-	} else
-		buf = g_malloc0(sizeof(gchar*));
+	if (*buf != NULL) {
+		gchar** buf2 = g_malloc_n(*buf_len + 2, sizeof(gchar*));
+		g_memmove(buf2, *buf, sizeof(gchar*) * *buf_len + 1);
+		g_free(*buf);
+		*buf = buf2;
+	} else {
+		*buf = g_new0(gchar*, 2);
+    }
 
-	buf[*buf_len] = g_malloc0(strlen(line) + 1);
+	(*buf)[*buf_len] = g_malloc0(strlen(line) + 1);
+    (*buf)[*buf_len + 1] = NULL;
 
 	// memmove() the string into the struct
-	g_memmove(buf[*buf_len], line, strlen(line + 1));
+	g_memmove((*buf)[*buf_len], line, strlen(line + 1));
 
 	(*buf_len)++;
-	if (std_out) res->std_output = buf;
-	else res->std_error = buf;
 }
 
 static void wsh_add_line_stdout(wsh_cmd_res_t* res, const gchar* line) {
-	wsh_add_line(res, line, TRUE);
+	wsh_add_line(res, line, &res->std_output, &res->std_output_len);
 }
 
 static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
-	wsh_add_line(res, line, FALSE);
+	wsh_add_line(res, line, &res->std_error, &res->std_error_len);
 }
 
 static void wsh_check_if_need_to_close(struct cmd_data* cmd_data) {

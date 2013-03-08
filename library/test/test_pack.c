@@ -56,7 +56,7 @@ static void test_wsh_pack_request(void) {
 }
 
 static void test_wsh_unpack_request(void) {
-	wsh_cmd_req_t* req = g_new(wsh_cmd_req_t, 1);
+	wsh_cmd_req_t* req = g_new0(wsh_cmd_req_t, 1);
 
 	wsh_unpack_request(&req, encoded_req, encoded_req_len);
 
@@ -92,6 +92,8 @@ static void test_wsh_pack_response(void) {
 	g_assert(buf_len == encoded_res_len);
 	for (gsize i = 0; i < buf_len; i++)
 		g_assert(buf[i] == encoded_res[i]);
+
+	g_free(buf);
 }
 
 static void test_wsh_unpack_response(void) {

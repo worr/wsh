@@ -48,7 +48,7 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, gsize buf_len) {
 	(*req)->std_input = g_new0(gchar*, cmd_req->n_stdin + 1);
 	for (gsize i = 0; i < cmd_req->n_stdin; i++)
 		(*req)->std_input[i] = g_strndup(cmd_req->stdin[i], strlen(cmd_req->stdin[i]) + 1);
-	(*req)->std_input[cmd_req->n_stdin + 1] = NULL;
+	(*req)->std_input[cmd_req->n_stdin] = NULL;
 	(*req)->std_input_len = cmd_req->n_stdin;
 
 	(*req)->env = g_new0(gchar*, cmd_req->n_env + 1);

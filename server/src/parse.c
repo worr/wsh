@@ -35,10 +35,9 @@ void wshd_get_message(GIOChannel* std_output, wsh_cmd_req_t** req, GError* err) 
 
 	buf = g_malloc0(msg_size);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpointer-sign"
+#pragma GCC diagnostic ignored "-Wpointer-sign"
 	g_io_channel_read_chars(std_output, buf, msg_size, &read, &err);
-#pragma clang diagnostic pop
+#pragma GCC diagnostic error "-Wpointer-sign"
 	for (gint i = 0; i < 87; i++)
 		g_assert(buf[i] == encoded_req[i]);
 

@@ -35,6 +35,9 @@ typedef struct {
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
+gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data);
+gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data);
+gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data);
 
 #ifdef BUILD_TESTS
 
@@ -49,9 +52,6 @@ struct test_cmd_data {
 };
 
 const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable); 
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data);
-gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data);
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data);
 
 #endif
 

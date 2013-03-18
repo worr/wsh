@@ -11,6 +11,9 @@ gint wshd_get_message_size(GIOChannel* std_input, GError* err) {
 	wshd_message_size_t out;
 	gsize read;
 
+	g_io_channel_set_encoding(std_input, NULL, &err);
+	if (err != NULL) return -1;
+
 	g_io_channel_read_chars(std_input, out.buf, 4, &read, &err);
 	out.size = ntohl(out.size);
 
@@ -21,6 +24,9 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 	gint msg_size;
 	guint8* buf;
 	gsize read;
+
+	g_io_channel_set_encoding(std_input, NULL, &err);
+	if (err != NULL) return;
 
 	msg_size = wshd_get_message_size(std_input, err);
 	if (err != NULL) return;

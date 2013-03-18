@@ -1,5 +1,5 @@
-#ifndef __WSH_PARSE_H
-#define __WSH_PARSE_H
+#ifndef __WSHD_PARSE_H
+#define __WSHD_PARSE_H
 
 #include <glib.h>
 

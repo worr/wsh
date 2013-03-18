@@ -1,4 +1,4 @@
-set( TEST_EXECUTABLES test_parse )
+set( TEST_EXECUTABLES test_parse test_output )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
@@ -10,6 +10,7 @@ set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )
 set( SOURCES 
 	${WSH_PROTOC_SOURCES}
 	${CMAKE_SOURCE_DIR}/server/src/parse.c
+	${CMAKE_SOURCE_DIR}/server/src/output.c
 )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )

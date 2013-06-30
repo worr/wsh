@@ -2,3 +2,12 @@ build/*
 *.swp
 *.swo
 Testing/*
+build.ninja
+.ninja_deps
+.ninja_log
+rules.ninja
+CMakeCache.txt
+CMakeFiles
+CTestTestfile.cmake
+cmake_install.cmake
+gen

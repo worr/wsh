@@ -28,6 +28,8 @@ find_package( PROTOBUF-C REQUIRED )
 
 find_package( Threads REQUIRED )
 
+find_package( SSH2 REQUIRED )
+
 # This is a hack to get around problems with the custom cmake libs I found
 if( IS_DIRECTORY /usr/local/lib )
 	link_directories( /usr/local/lib )

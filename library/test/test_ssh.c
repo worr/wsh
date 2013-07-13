@@ -1,7 +1,6 @@
 #include <glib.h>
 #include <libssh/libssh.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "ssh.h"
 
@@ -15,7 +14,6 @@ static const gchar* unreachable_remote = "xxx.yyy.zzz";
 
 static void host_not_reachable(void) {
 	ssh_session channel = NULL;
-	fprintf(stderr, "Pointer: %p\n", channel);
 	GError* err;
 	gint ret = wsh_ssh_host(&channel, username, password, unreachable_remote, port, FALSE, &err);
 	g_assert(ret == -1);

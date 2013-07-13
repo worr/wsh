@@ -3,7 +3,6 @@
 #include <errno.h>
 #include <glib.h>
 #include <libssh/libssh.h>
-#include <stdio.h>
 #include <string.h>
 
 gint wsh_ssh_host(ssh_session* session, const gchar* username, 
@@ -53,6 +52,8 @@ gint wsh_ssh_host(ssh_session* session, const gchar* username,
 					ret = -1;
 					goto wsh_ssh_host_err;
 				}
+
+				break;
 			case SSH_SERVER_ERROR:
 				*err = g_error_new(WSH_SSH_ERROR, 3, "Error getting host key: %s", ssh_get_error(*session));
 				ssh_disconnect(*session);

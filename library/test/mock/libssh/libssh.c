@@ -1,7 +1,6 @@
 #include "libssh/libssh.h"
 
 #include <glib.h>
-#include <stdio.h>
 
 gint ssh_server_is_known_ret;
 gint ssh_connect_ret;

@@ -45,7 +45,7 @@ gint wsh_ssh_host(ssh_session* session, const gchar* username,
 			case SSH_SERVER_KNOWN_OK:
 			case SSH_SERVER_NOT_KNOWN:
 			case SSH_SERVER_FILE_NOT_FOUND:
-				if (ssh_write_knownhost()) {
+				if (ssh_write_knownhost(*session)) {
 					*err = g_error_new(WSH_SSH_ERROR, 1, "Error writing known hosts file: %s", strerror(errno));
 					ssh_disconnect(*session);
 					ssh_free(*session);

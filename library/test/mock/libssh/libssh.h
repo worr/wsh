@@ -28,6 +28,7 @@ void ssh_disconnect();
 void ssh_free();
 const gchar* ssh_get_error();
 ssh_session ssh_new();
+void set_ssh_write_knownhost_res(gint ret);
 gint ssh_write_knownhost();
 gint ssh_options_set();
 

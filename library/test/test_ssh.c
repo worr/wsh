@@ -37,11 +37,26 @@ static void change_host_key(void) {
 	g_assert_error(err, WSH_SSH_ERROR, 2);
 }
 
+static void fail_add_host_key(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
+	set_ssh_write_knownhost_res(-1);
+
+	ssh_session channel = NULL;
+	GError *err;
+	gint ret = wsh_ssh_host(&channel, username, password, remote, port, TRUE, &err);
+
+	g_assert(ret == -1);
+	g_assert(channel == NULL);
+	g_assert_error(err, WSH_SSH_ERROR, 1);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
 	g_test_add_func("/Library/SSH/UnreachableHost", host_not_reachable);
 	g_test_add_func("/Library/SSH/ChangedHostKey", change_host_key);
+	g_test_add_func("/Library/SSH/FailToAddHostKey", fail_add_host_key);
 
 	return g_test_run();
 }

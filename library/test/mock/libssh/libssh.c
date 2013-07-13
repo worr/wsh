@@ -5,6 +5,7 @@
 
 gint ssh_server_is_known_ret;
 gint ssh_connect_ret;
+gint ssh_write_knownhost_ret;
 
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
@@ -36,8 +37,12 @@ ssh_session ssh_new() {
 	return NULL;
 }
 
+void set_ssh_write_knownhost_res(gint ret) {
+	ssh_write_knownhost_ret = ret;
+}
+
 gint ssh_write_knownhost() {
-	return 0;
+	return ssh_write_knownhost_ret;
 }
 
 gint ssh_options_set() {

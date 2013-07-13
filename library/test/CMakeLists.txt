@@ -8,7 +8,6 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/library/test/mock
 	${GLIB2_INCLUDE_DIRS}
 	${PROTOBUF_INCLUDE_DIR}
-	${LIBSSH_INCLUDE_DIR}
 )
 
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
@@ -21,6 +20,7 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/src/pack.c
 	${CMAKE_SOURCE_DIR}/library/src/ssh.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c
 )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
@@ -31,6 +31,5 @@ foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 		${GLIB2_LIBRARIES}
 		${CMAKE_THREAD_LIBS_INIT}
 		${PROTOBUF_LIBRARIES}
-		${LIBSSH_LIBRARY}
 	)
 endforeach( TEST_EXECUTABLE )

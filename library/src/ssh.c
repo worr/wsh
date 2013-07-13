@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <glib.h>
 #include <libssh/libssh.h>
+#include <stdio.h>
 #include <string.h>
 
 gint wsh_ssh_host(ssh_session* session, const gchar* username, 
@@ -29,7 +30,7 @@ gint wsh_ssh_host(ssh_session* session, const gchar* username,
 			ret = -1;
 			goto wsh_ssh_host_err;
 		}
-	} while (ret != SSH_AGAIN);
+	} while (ret == SSH_AGAIN);
 
 	// Let's add the hostkey if it didn't change or anything
 	if (add_hostkey) {

@@ -4,6 +4,8 @@
 #include <glib.h>
 #include <libssh/libssh.h>
 
+GQuark WSH_SSH_ERROR;
+
 gint wsh_ssh_host(ssh_session* session, const gchar* username, 
 				  const gchar* password, const gchar* remote, 
 				  const gint port, gboolean add_hostkey, GError** err);

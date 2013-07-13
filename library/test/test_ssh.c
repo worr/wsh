@@ -5,7 +5,7 @@
 
 #include "ssh.h"
 
-extern GQuark wsh_ssh_error_quark(void);
+extern GQuark WSH_SSH_ERROR;
 
 static const gchar* username = "worr";
 static const gchar* password = "pass";
@@ -20,7 +20,7 @@ static void host_not_reachable(void) {
 	gint ret = wsh_ssh_host(&channel, username, password, unreachable_remote, port, FALSE, &err);
 	g_assert(ret == -1);
 	g_assert(channel == NULL);
-	g_assert_error(err, wsh_ssh_error_quark(), 4);
+	g_assert_error(err, WSH_SSH_ERROR, 4);
 }
 
 int main(int argc, char** argv) {

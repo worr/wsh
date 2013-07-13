@@ -17,6 +17,7 @@ gint wsh_ssh_host(ssh_session* session, const gchar* username,
 	ssh_options_set(*session, SSH_OPTIONS_HOST, remote);
 	ssh_options_set(*session, SSH_OPTIONS_PORT, &port);
 	ssh_options_set(*session, SSH_OPTIONS_USER, username);
+	ssh_options_parse_config(*session, NULL);
 
 	// Try and connect
 	gint conn_ret;
@@ -67,3 +68,4 @@ gint wsh_ssh_host(ssh_session* session, const gchar* username,
 wsh_ssh_host_err:
 	return ret;
 }
+

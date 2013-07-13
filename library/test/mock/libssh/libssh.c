@@ -47,3 +47,7 @@ gint ssh_write_knownhost() {
 gint ssh_options_set() {
 	return 0;
 }
+
+void ssh_options_parse_config() {
+}
+

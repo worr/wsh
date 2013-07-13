@@ -31,6 +31,7 @@ ssh_session ssh_new();
 void set_ssh_write_knownhost_res(gint ret);
 gint ssh_write_knownhost();
 gint ssh_options_set();
+void ssh_options_parse_config();
 
 #endif
 

@@ -51,6 +51,7 @@ static void change_host_key(void) {
 }
 
 static void fail_add_host_key(void) {
+	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_NOT_KNOWN);
 	set_ssh_write_knownhost_res(SSH_ERROR);
 
@@ -73,7 +74,7 @@ static void fail_add_host_key(void) {
 
 static void add_host_key(void) {
 	set_ssh_connect_res(SSH_OK);
-	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
+	set_ssh_is_server_known_res(SSH_SERVER_NOT_KNOWN);
 	set_ssh_write_knownhost_res(SSH_OK);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);

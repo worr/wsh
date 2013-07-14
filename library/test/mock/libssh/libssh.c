@@ -25,7 +25,8 @@ gint ssh_is_server_known() {
 void ssh_disconnect() {
 }
 
-void ssh_free() {
+void ssh_free(ssh_session* session) {
+	g_free(session);
 }
 
 const char* ssh_get_error() {
@@ -33,7 +34,7 @@ const char* ssh_get_error() {
 }
 
 ssh_session ssh_new() {
-	return NULL;
+	return g_malloc0(sizeof(ssh_session));
 }
 
 void set_ssh_write_knownhost_res(gint ret) {

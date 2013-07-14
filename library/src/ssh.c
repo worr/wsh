@@ -85,6 +85,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 		*err = g_error_new(WSH_SSH_ERROR, 1, "Error writing known hosts file: %s", strerror(errno));
 		ssh_disconnect(session->session);
 		ssh_free(session->session);
+		session->session = NULL;
 		return WSH_SSH_HOST_KEY_ERROR;
 	}
 

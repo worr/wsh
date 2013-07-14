@@ -9,6 +9,10 @@ const gint WSH_SSH_NEED_ADD_HOST_KEY = 1;
 const gint WSH_SSH_HOST_KEY_ERROR = 2;
 
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
+	g_assert(session->session == NULL);
+	g_assert(session->hostname != NULL);
+	g_assert(session->username != NULL);
+
 	WSH_SSH_ERROR = g_quark_from_static_string("wsh_ssh_error");
 	gint ret = 0;
 	session->session = ssh_new();
@@ -35,6 +39,9 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 }
 
 gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gboolean force_add, GError** err) {
+	g_assert(session->session != NULL);
+	g_assert(session->hostname != NULL);
+
 	gint ret = 0;
 
 	// Let's add the hostkey if it didn't change or anything
@@ -72,6 +79,8 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 }
 
 gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
+	g_assert(session->session != NULL);
+
 	if (ssh_write_knownhost(session->session)) {
 		*err = g_error_new(WSH_SSH_ERROR, 1, "Error writing known hosts file: %s", strerror(errno));
 		ssh_disconnect(session->session);

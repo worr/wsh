@@ -9,11 +9,19 @@ GQuark WSH_SSH_ERROR;
 extern const gint WSH_SSH_NEED_ADD_HOST_KEY;
 extern const gint WSH_SSH_HOST_KEY_ERROR;
 
-gint wsh_ssh_host(ssh_session* session, const gchar* username, 
-				  const gchar* password, const gchar* remote, 
-				  const gint port, GError** err);
+typedef enum { WSH_SSH_AUTH_PASSWORD, WSH_SSH_AUTH_PUBKEY } wsh_ssh_auth_type_t;
 
-gint wsh_verify_host_key(ssh_session* session, gboolean add_hostkey, gboolean force_add, GError** err);
-gint wsh_add_host_key(ssh_session* session, GError** err);
+typedef struct {
+	gint port;
+	wsh_ssh_auth_type_t auth_type;
+	ssh_session session;
+	const gchar* hostname;
+	const gchar* username;
+	const gchar* password;
+} wsh_ssh_session_t;
+
+gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err);
+gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gboolean force_add, GError** err);
+gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err);
 
 #endif

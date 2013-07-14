@@ -87,8 +87,10 @@ static void add_host_key(void) {
 	gint ret = wsh_verify_host_key(session, TRUE, FALSE, &err);
 
 	g_assert(ret == 0);
+	g_assert(session->session != NULL);
 	g_assert_no_error(err);
 
+	g_free(session->session);
 	g_slice_free(wsh_ssh_session_t, session);
 }
 

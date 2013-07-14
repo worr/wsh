@@ -60,7 +60,7 @@ static void fail_add_host_key(void) {
 	session->username = username;
 	session->password = password;
 	session->port = port;
-	GError *err;
+	GError *err = NULL;
 
 	wsh_ssh_host(session, &err);
 	gint ret = wsh_verify_host_key(session, TRUE, FALSE, &err);
@@ -82,7 +82,7 @@ static void add_host_key(void) {
 	session->username = username;
 	session->password = password;
 	session->port = port;
-	GError *err;
+	GError *err = NULL;
 
 	wsh_ssh_host(session, &err);
 	gint ret = wsh_verify_host_key(session, TRUE, FALSE, &err);

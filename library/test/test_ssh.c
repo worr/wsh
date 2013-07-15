@@ -364,6 +364,27 @@ static void exec_wshd_channel_exec_failure(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
+static void exec_wshd_success(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_exec_ret(SSH_OK);
+
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+	GError* err = NULL;
+
+	wsh_ssh_host(session, &err);
+	gint ret = wsh_ssh_exec_wshd(session, &err);
+
+	g_assert(ret == 0);
+	g_assert(session->session != NULL);
+	g_assert_no_error(err);
+
+	g_free(session->session);
+	g_slice_free(wsh_ssh_session_t, session);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -397,6 +418,8 @@ int main(int argc, char** argv) {
 		exec_wshd_channel_failure);
 	g_test_add_func("/Library/SSH/ExecWshExecError",
 		exec_wshd_channel_exec_failure);
+	g_test_add_func("/Library/SSH/ExecWshSuccess",
+		exec_wshd_success);
 
 	return g_test_run();
 }

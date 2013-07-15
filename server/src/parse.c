@@ -20,6 +20,7 @@ gint wshd_get_message_size(GIOChannel* std_input, GError* err) {
 	return out.size;
 }
 
+#pragma GCC diagnostic ignored "-Wpointer-sign"
 void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 	gint msg_size;
 	guint8* buf;
@@ -33,9 +34,7 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 
 	buf = g_malloc0(msg_size);
 
-#pragma GCC diagnostic ignored "-Wpointer-sign"
 	g_io_channel_read_chars(std_input, buf, msg_size, &read, &err);
-#pragma GCC diagnostic error "-Wpointer-sign"
 
 	if (err != NULL) goto wshd_get_message_err;
 
@@ -44,4 +43,5 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 wshd_get_message_err:
 	g_free(buf);
 }
+#pragma GCC diagnostic error "-Wpointer-sign"
 

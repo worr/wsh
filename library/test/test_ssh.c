@@ -24,7 +24,7 @@ static void host_not_reachable(void) {
 
 	g_assert(ret == -1);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 4);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_CONNECT_ERR);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -46,7 +46,7 @@ static void change_host_key(void) {
 
 	g_assert(ret == WSH_SSH_NEED_ADD_HOST_KEY);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 2);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_HOST_KEY_CHANGED_ERR);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -69,7 +69,7 @@ static void fail_add_host_key(void) {
 
 	g_assert(ret == WSH_SSH_HOST_KEY_ERROR);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 1);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_WRITE_ERR);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -117,7 +117,7 @@ static void authenticate_password_unsuccessfully(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 6);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_ERR);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -142,7 +142,7 @@ static void authenticate_password_denied(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 7);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -192,7 +192,7 @@ static void authenticate_pubkey_unsuccessful(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 4);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_ERR);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -217,7 +217,7 @@ static void authenticate_pubkey_denied(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 5);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_DENIED);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -267,7 +267,7 @@ static void authenticate_kbdint_unsuccessful(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 1);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_ERR);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -292,7 +292,7 @@ static void authenticate_kbdint_denied(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, 2);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_DENIED);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);

@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "cmd.h"
+#include "log.h"
 #include "output.h"
 #include "parse.h"
 
@@ -14,6 +15,8 @@ int main(int argc, char** argv, char** env) {
 	gint ret = 0;
 	wsh_cmd_req_t* req = g_slice_new0(wsh_cmd_req_t);
 	wsh_cmd_res_t* res = g_slice_new0(wsh_cmd_res_t);
+
+    wsh_init_logger(WSH_LOGGER_SERVER);
 
 	wshd_get_message(in, &req, err);
 	if (err != NULL) {

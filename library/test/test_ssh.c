@@ -436,6 +436,44 @@ static void send_cmd_write_failure(void) {
 	g_slice_free(wsh_cmd_req_t, req);
 }
 
+static void send_cmd_write_success(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_write_ret(SSH_OK);
+
+	wsh_cmd_req_t* req = g_slice_new0(wsh_cmd_req_t);
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+
+	req->cmd_string = req_cmd;
+	req->std_input = req_stdin;
+	req->std_input_len = req_stdin_len;
+	req->env = req_env;
+	req->cwd = req_cwd;
+	req->timeout = req_timeout;
+	req->username = req_username;
+	req->password = req_password;
+
+	GError* err = NULL;
+
+	wsh_ssh_host(session, &err);
+	wsh_ssh_exec_wshd(session, &err);
+	gint ret = wsh_ssh_send_cmd(session, req, &err);
+
+	g_assert(ret == 0);
+	g_assert(session->session != NULL);
+	g_assert(session->channel != NULL);
+	g_assert_no_error(err);
+
+	g_free(session->session);
+	g_free(session->channel);
+	g_slice_free(wsh_ssh_session_t, session);
+	g_slice_free(wsh_cmd_req_t, req);
+
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -474,6 +512,8 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/SSH/SendCmdWriteFailure",
 		send_cmd_write_failure);
+	g_test_add_func("/Library/SSH/SendCmdWriteSuccess",
+		send_cmd_write_success);
 
 	return g_test_run();
 }

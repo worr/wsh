@@ -58,6 +58,8 @@ void set_ssh_channel_request_exec_ret(gint ret);
 gint ssh_channel_request_exec();
 void ssh_channel_close();
 void ssh_channel_free(ssh_channel chan);
+void set_ssh_channel_write_ret(gint ret);
+gint ssh_channel_write();
 
 #endif
 

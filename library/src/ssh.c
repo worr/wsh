@@ -5,6 +5,9 @@
 #include <libssh/libssh.h>
 #include <string.h>
 
+#include "cmd.h"
+#include "pack.h"
+
 const gint WSH_SSH_NEED_ADD_HOST_KEY = 1;
 const gint WSH_SSH_HOST_KEY_ERROR = 2;
 
@@ -179,8 +182,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 
 	gint ret = 0;
 
-	ssh_channel chan;
-	if ((chan = ssh_channel_new(session->session)) == NULL) {
+	if ((session->channel = ssh_channel_new(session->session)) == NULL) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR,
 			"%s: Error opening ssh channel: %s", session->hostname,
 			ssh_get_error(session->session));
@@ -189,7 +191,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 
 	}
 
-	if (ssh_channel_open_session(chan)) {
+	if (ssh_channel_open_session(session->channel)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR,
 			"%s: Error opening ssh channel: %s", session->hostname,
 			ssh_get_error(session->session));
@@ -197,7 +199,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
-	if (ssh_channel_request_exec(chan, "wshd")) {
+	if (ssh_channel_request_exec(session->channel, "wshd")) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
 			"%s: Error exec'ing wshd: %s", session->hostname,
 			ssh_get_error(session->session));
@@ -208,10 +210,50 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 	return ret;
 
 wsh_ssh_exec_wshd_error:
-	if (chan != NULL) {
-		ssh_channel_close(chan);
-		ssh_channel_free(chan);
+	if (session->channel != NULL) {
+		ssh_channel_close(session->channel);
+		ssh_channel_free(session->channel);
+		session->channel = NULL;
 	}
+	ssh_disconnect(session->session);
+	ssh_free(session->session);
+	session->session = NULL;
+
+	return ret;
+}
+
+gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, wsh_cmd_req_t* req, GError** err) {
+	g_assert(session != NULL);
+	g_assert(session->session != NULL);
+	g_assert(session->channel != NULL);
+	g_assert(req != NULL);
+
+	gint ret = 0;
+	guint8* buf = NULL;
+	gsize buf_len;
+
+	wsh_pack_request(&buf, &buf_len, req);
+	if (buf == NULL || buf_len == 0) {
+		ret = WSH_SSH_PACK_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PACK_ERR,
+			"%s: Error packing command", session->hostname);
+		goto wsh_ssh_send_cmd_error;
+	}
+
+	if (ssh_channel_write(session->channel, buf, buf_len)) {
+		ret = WSH_SSH_WRITE_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
+			"%s: Error writing out command over ssh: %s",
+			session->hostname, ssh_get_error(session->session));
+		goto wsh_ssh_send_cmd_error;
+	}
+
+	return ret;
+
+wsh_ssh_send_cmd_error:
+	ssh_channel_close(session->channel);
+	ssh_channel_free(session->channel);
+	session->channel = NULL;
 	ssh_disconnect(session->session);
 	ssh_free(session->session);
 	session->session = NULL;

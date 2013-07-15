@@ -2,6 +2,7 @@
 #include <libssh/libssh.h>
 #include <stdlib.h>
 
+#include "cmd.h"
 #include "ssh.h"
 
 extern GQuark WSH_SSH_ERROR;
@@ -10,6 +11,16 @@ static const gchar* username = "worr";
 static const gchar* password = "pass";
 static const gchar* remote = "127.0.0.1";
 static const gint 	port = 22;
+
+static gchar* req_username = "will";
+static gchar* req_password = "test";
+static gchar* req_cmd = "ls";
+static gchar* req_stdin[3] = { "yes", "no", NULL };
+static const gsize req_stdin_len = 2;
+static gchar* req_env[4] = { "PATH=/usr/bin", "USER=will", "MAILTO=will@worrbase.com", NULL };
+static const gsize req_env_len = 3;
+static gchar* req_cwd = "/tmp";
+static const guint64 req_timeout = 5;
 
 static void host_not_reachable(void) {
 	set_ssh_connect_res(SSH_ERROR);
@@ -337,6 +348,7 @@ static void exec_wshd_channel_failure(void) {
 
 	g_assert(ret == WSH_SSH_CHANNEL_CREATION_ERR);
 	g_assert(session->session == NULL);
+	g_assert(session->channel == NULL);
 	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR);
 
 	g_error_free(err);
@@ -358,6 +370,7 @@ static void exec_wshd_channel_exec_failure(void) {
 
 	g_assert(ret == WSH_SSH_EXEC_WSHD_ERR);
 	g_assert(session->session == NULL);
+	g_assert(session->channel == NULL);
 	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR);
 
 	g_error_free(err);
@@ -379,10 +392,48 @@ static void exec_wshd_success(void) {
 
 	g_assert(ret == 0);
 	g_assert(session->session != NULL);
+	g_assert(session->channel != NULL);
 	g_assert_no_error(err);
 
 	g_free(session->session);
+	g_free(session->channel);
 	g_slice_free(wsh_ssh_session_t, session);
+}
+
+static void send_cmd_write_failure(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_write_ret(SSH_ERROR);
+
+	wsh_cmd_req_t* req = g_slice_new0(wsh_cmd_req_t);
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+
+	req->cmd_string = req_cmd;
+	req->std_input = req_stdin;
+	req->std_input_len = req_stdin_len;
+	req->env = req_env;
+	req->cwd = req_cwd;
+	req->timeout = req_timeout;
+	req->username = req_username;
+	req->password = req_password;
+
+	GError* err = NULL;
+
+	wsh_ssh_host(session, &err);
+	wsh_ssh_exec_wshd(session, &err);
+	gint ret = wsh_ssh_send_cmd(session, req, &err);
+
+	g_assert(ret != 0);
+	g_assert(session->session == NULL);
+	g_assert(session->channel == NULL);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_WRITE_ERR);
+
+	g_error_free(err);
+	g_slice_free(wsh_ssh_session_t, session);
+	g_slice_free(wsh_cmd_req_t, req);
 }
 
 int main(int argc, char** argv) {
@@ -420,6 +471,9 @@ int main(int argc, char** argv) {
 		exec_wshd_channel_exec_failure);
 	g_test_add_func("/Library/SSH/ExecWshSuccess",
 		exec_wshd_success);
+
+	g_test_add_func("/Library/SSH/SendCmdWriteFailure",
+		send_cmd_write_failure);
 
 	return g_test_run();
 }

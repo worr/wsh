@@ -12,6 +12,7 @@ gint ssh_userauth_kbdint_setanswer_ret;
 gint ssh_userauth_password_ret;
 gint ssh_channel_open_session_ret;
 gint ssh_channel_request_exec_ret;
+gint ssh_channel_write_ret;
 
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
@@ -124,5 +125,13 @@ void ssh_channel_close() {
 
 void ssh_channel_free(ssh_channel chan) {
 	g_free(chan);
+}
+
+void set_ssh_channel_write_ret(gint ret) {
+	ssh_channel_write_ret = ret;
+}
+
+gint ssh_channel_write() {
+	return ssh_channel_write_ret;
 }
 

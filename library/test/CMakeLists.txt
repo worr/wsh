@@ -1,9 +1,12 @@
+set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
+file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
+
 set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto test_pack test_ssh )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
 include_directories( 
-	${CMAKE_OUTPUT_DIRECTORY}/gen
+	${PROTO_GEN_DIR}
 	${CMAKE_SOURCE_DIR}/library/src
 	${CMAKE_SOURCE_DIR}/library/test/mock
 	${GLIB2_INCLUDE_DIRS}

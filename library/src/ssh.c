@@ -172,3 +172,50 @@ wsh_ssh_authenticate_failure:
 	return ret;
 }
 
+gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
+	g_assert(session != NULL);
+	g_assert(session->session != NULL);
+	g_assert(session->hostname != NULL);
+
+	gint ret = 0;
+
+	ssh_channel chan;
+	if ((chan = ssh_channel_new(session->session)) == NULL) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR,
+			"%s: Error opening ssh channel: %s", session->hostname,
+			ssh_get_error(session->session));
+		ret = WSH_SSH_CHANNEL_CREATION_ERR;
+		goto wsh_ssh_exec_wshd_error;
+
+	}
+
+	if (ssh_channel_open_session(chan)) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR,
+			"%s: Error opening ssh channel: %s", session->hostname,
+			ssh_get_error(session->session));
+		ret = WSH_SSH_CHANNEL_CREATION_ERR;
+		goto wsh_ssh_exec_wshd_error;
+	}
+
+	if (ssh_channel_request_exec(chan, "wshd")) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
+			"%s: Error exec'ing wshd: %s", session->hostname,
+			ssh_get_error(session->session));
+		ret = WSH_SSH_EXEC_WSHD_ERR;
+		goto wsh_ssh_exec_wshd_error;
+	}
+
+	return ret;
+
+wsh_ssh_exec_wshd_error:
+	if (chan != NULL) {
+		ssh_channel_close(chan);
+		ssh_channel_free(chan);
+	}
+	ssh_disconnect(session->session);
+	ssh_free(session->session);
+	session->session = NULL;
+
+	return ret;
+}
+

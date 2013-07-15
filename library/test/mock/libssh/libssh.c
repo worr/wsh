@@ -10,6 +10,8 @@ gint ssh_userauth_autopubkey_ret;
 gint ssh_userauth_kbdint_ret;
 gint ssh_userauth_kbdint_setanswer_ret;
 gint ssh_userauth_password_ret;
+gint ssh_channel_open_session_ret;
+gint ssh_channel_request_exec_ret;
 
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
@@ -95,5 +97,32 @@ void set_ssh_userauth_password_ret(gint ret) {
 
 gint ssh_userauth_password() {
 	return ssh_userauth_password_ret;
+}
+
+ssh_channel ssh_channel_new() {
+	return g_malloc0(sizeof(ssh_channel));
+}
+
+void set_ssh_channel_open_session_ret(gint ret) {
+	ssh_channel_open_session_ret = ret;
+}
+
+gint ssh_channel_open_session() {
+	return ssh_channel_open_session_ret;
+}
+
+void set_ssh_channel_request_exec_ret(gint ret) {
+	ssh_channel_request_exec_ret = ret;
+}
+
+gint ssh_channel_request_exec() {
+	return ssh_channel_request_exec_ret;
+}
+
+void ssh_channel_close() {
+}
+
+void ssh_channel_free(ssh_channel chan) {
+	g_free(chan);
 }
 

@@ -27,6 +27,7 @@
 #define SSH_AUTH_METHOD_INTERACTIVE 0x04
 
 typedef void* ssh_session;
+typedef void* ssh_channel;
 
 void set_ssh_connect_res(gint ret);
 gint ssh_connect();
@@ -50,6 +51,13 @@ void set_ssh_userauth_kbdint_setanswer_ret(gint ret);
 gint ssh_userauth_kbdint_setanswer();
 void set_ssh_userauth_password_ret(gint ret);
 gint ssh_userauth_password();
+ssh_channel ssh_channel_new();
+void set_ssh_channel_open_session_ret(gint ret);
+gint ssh_channel_open_session();
+void set_ssh_channel_request_exec_ret(gint ret);
+gint ssh_channel_request_exec();
+void ssh_channel_close();
+void ssh_channel_free(ssh_channel chan);
 
 #endif
 

@@ -96,6 +96,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 
 gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session != NULL);
+	g_assert(session->hostname != NULL);
 
 	gint method = ssh_userauth_list(session->session, NULL);
 	gint ret = -1;
@@ -115,6 +116,7 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	// We only support OpenSSH's use of kbd interactive auth for passwords
 	// Otherwise it's too interactive for our purposes
 	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) && (method & SSH_AUTH_METHOD_INTERACTIVE)) {
+		g_assert(session->password != NULL);
 		ret = ssh_userauth_kbdint(session->session, NULL, NULL);
 		switch (ret) {
 			case SSH_AUTH_ERROR:
@@ -136,6 +138,7 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	}
 
 	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) && (method & SSH_AUTH_METHOD_PASSWORD)) {
+		g_assert(session->password != NULL);
 		ret = ssh_userauth_password(session->session, NULL, session->password);
 		switch (ret) {
 			case SSH_AUTH_ERROR:

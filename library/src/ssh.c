@@ -95,6 +95,8 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 }
 
 gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
+	g_assert(session->session != NULL);
+
 	gint method = ssh_userauth_list(session->session, NULL);
 	gint ret = -1;
 

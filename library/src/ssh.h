@@ -26,3 +26,4 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err);
 gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err);
 
 #endif
+

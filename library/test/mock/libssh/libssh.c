@@ -5,6 +5,11 @@
 gint ssh_server_is_known_ret;
 gint ssh_connect_ret;
 gint ssh_write_knownhost_ret;
+gint ssh_userauth_list_ret;
+gint ssh_userauth_autopubkey_ret;
+gint ssh_userauth_kbdint_ret;
+gint ssh_userauth_kbdint_setanswer_ret;
+gint ssh_userauth_password_ret;
 
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
@@ -50,5 +55,45 @@ gint ssh_options_set() {
 }
 
 void ssh_options_parse_config() {
+}
+
+void set_ssh_userauth_list_ret(gint ret) {
+	ssh_userauth_list_ret = ret;
+}
+
+gint ssh_userauth_list() {
+	return ssh_userauth_list_ret;
+}
+
+void set_ssh_userauth_autopubkey(gint ret) {
+	ssh_userauth_autopubkey_ret = ret;
+}
+
+gint ssh_userauth_autopubkey() {
+	return ssh_userauth_autopubkey_ret;
+}
+
+void set_ssh_userauth_kbdint_ret(gint ret) {
+	ssh_userauth_kbdint_ret = ret;
+}
+
+gint ssh_userauth_kbdint() {
+	return ssh_userauth_kbdint_ret;
+}
+
+void set_ssh_userauth_kbdint_setanswer_ret(gint ret) {
+	ssh_userauth_kbdint_setanswer_ret = ret;
+}
+
+gint ssh_userauth_kbdint_setanswer() {
+	return ssh_userauth_kbdint_setanswer_ret;
+}
+
+void set_ssh_userauth_password_ret(gint ret) {
+	ssh_userauth_password_ret = ret;
+}
+
+gint ssh_userauth_password() {
+	return ssh_userauth_password_ret;
 }
 

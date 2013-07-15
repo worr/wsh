@@ -67,7 +67,8 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 				ret = wsh_add_host_key(session, err);
 			break;
 		case SSH_SERVER_ERROR:
-			*err = g_error_new(WSH_SSH_ERROR, 3, "Error getting host key: %s", ssh_get_error(session->session));
+			*err = g_error_new(WSH_SSH_ERROR, 3, "%s: Error getting host key: %s",
+				session->hostname, ssh_get_error(session->session));
 			ssh_disconnect(session->session);
 			ssh_free(session->session);
 			session->session = NULL;
@@ -82,7 +83,8 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session != NULL);
 
 	if (ssh_write_knownhost(session->session)) {
-		*err = g_error_new(WSH_SSH_ERROR, 1, "Error writing known hosts file: %s", strerror(errno));
+		*err = g_error_new(WSH_SSH_ERROR, 1, "%s: Error writing known hosts file: %s",
+			session->hostname, strerror(errno));
 		ssh_disconnect(session->session);
 		ssh_free(session->session);
 		session->session = NULL;
@@ -90,5 +92,67 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 	}
 
 	return 0;
+}
+
+gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
+	gint method = ssh_userauth_list(session->session, NULL);
+	gint ret = -1;
+
+	if ((session->auth_type == WSH_SSH_AUTH_PUBKEY) && (method & SSH_AUTH_METHOD_PUBLICKEY)) {
+		switch (ret = ssh_userauth_autopubkey(session->session, NULL)) {
+			case SSH_AUTH_ERROR:
+				*err = g_error_new(WSH_SSH_ERROR, 4, "%s: Error authenticating with pubkey: %s",
+					session->hostname, ssh_get_error(session->session));
+				goto wsh_ssh_authenticate_failure;
+			case SSH_AUTH_DENIED:
+				*err = g_error_new(WSH_SSH_ERROR, 5, "%s: Access denied", session->hostname);
+				goto wsh_ssh_authenticate_failure;
+		}
+	}
+
+	// We only support OpenSSH's use of kbd interactive auth for passwords
+	// Otherwise it's too interactive for our purposes
+	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) && (method & SSH_AUTH_METHOD_INTERACTIVE)) {
+		ret = ssh_userauth_kbdint(session->session, NULL, NULL);
+		switch (ret) {
+			case SSH_AUTH_ERROR:
+				*err = g_error_new(WSH_SSH_ERROR, 1,
+					"%s: Error initiating kbd interactive mode: %s",
+					session->hostname, ssh_get_error(session->session));
+				goto wsh_ssh_authenticate_failure;
+			case SSH_AUTH_DENIED:
+				*err = g_error_new(WSH_SSH_ERROR, 2, "%s: Access denied",
+					session->hostname);
+				goto wsh_ssh_authenticate_failure;
+		}
+
+		if (ssh_userauth_kbdint_setanswer(session->session, 0, session->password)) {
+			*err = g_error_new(WSH_SSH_ERROR, 3, "%s: Error setting kbd interactive answer: %s", 
+				session->hostname, ssh_get_error(session->session));
+			goto wsh_ssh_authenticate_failure;
+		}
+	}
+
+	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) && (method & SSH_AUTH_METHOD_PASSWORD)) {
+		ret = ssh_userauth_password(session->session, NULL, session->password);
+		switch (ret) {
+			case SSH_AUTH_ERROR:
+				*err = g_error_new(WSH_SSH_ERROR, 6, "%s: Error authenticating with password: %s",
+					session->hostname, ssh_get_error(session->session));
+				goto wsh_ssh_authenticate_failure;
+			case SSH_AUTH_DENIED:
+				*err = g_error_new(WSH_SSH_ERROR, 7, "%s: Access denied", session->hostname);
+				goto wsh_ssh_authenticate_failure;
+		}
+	}
+
+	return ret;
+
+wsh_ssh_authenticate_failure:
+	ssh_disconnect(session->session);
+	ssh_free(session->session);
+	session->session = NULL;
+
+	return ret;
 }
 

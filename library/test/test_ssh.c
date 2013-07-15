@@ -26,6 +26,7 @@ static void host_not_reachable(void) {
 	g_assert(session->session == NULL);
 	g_assert_error(err, WSH_SSH_ERROR, 4);
 
+	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
@@ -47,6 +48,7 @@ static void change_host_key(void) {
 	g_assert(session->session == NULL);
 	g_assert_error(err, WSH_SSH_ERROR, 2);
 
+	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
@@ -69,6 +71,7 @@ static void fail_add_host_key(void) {
 	g_assert(session->session == NULL);
 	g_assert_error(err, WSH_SSH_ERROR, 1);
 
+	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
@@ -95,6 +98,32 @@ static void add_host_key(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
+static void authenticate_password_unsuccessfully(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
+	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PASSWORD);
+	set_ssh_userauth_password_ret(SSH_AUTH_ERROR);
+
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+	session->password = password;
+	session->port = port;
+	session->auth_type = WSH_SSH_AUTH_PASSWORD;
+	GError *err = NULL;
+
+	wsh_ssh_host(session, &err);
+	gint ret = wsh_ssh_authenticate(session, &err);
+
+	g_assert(ret != 0);
+	g_assert(session->session == NULL);
+	g_assert_error(err, WSH_SSH_ERROR, 6);
+
+	g_error_free(err);
+	g_free(session->session);
+	g_slice_free(wsh_ssh_session_t, session);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -102,6 +131,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/SSH/ChangedHostKey", change_host_key);
 	g_test_add_func("/Library/SSH/FailToAddHostKey", fail_add_host_key);
 	g_test_add_func("/Library/SSH/AddHostKey", add_host_key);
+	g_test_add_func("/Library/SSH/AuthenticateUnsuccessfully", authenticate_password_unsuccessfully);
 
 	return g_test_run();
 }

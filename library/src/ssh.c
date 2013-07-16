@@ -276,7 +276,6 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 	gint ret = 0;
 	wsh_unholy_union buf_u;
 	guchar* buf = NULL;
-	*res = g_slice_new0(wsh_cmd_res_t);
 
 	/* Just like in server/src/parse.c we need to grab an int first that
 	 * represents the size of the following protobuf object

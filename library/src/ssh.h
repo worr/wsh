@@ -47,6 +47,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err);
 gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err);
 gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err);
 gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, wsh_cmd_req_t* req, GError** err);
+gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GError** err);
 
 #endif
 

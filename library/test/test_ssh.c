@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "cmd.h"
+#include "pack.h"
 #include "ssh.h"
 
 extern GQuark WSH_SSH_ERROR;
@@ -21,6 +22,9 @@ static gchar* req_env[4] = { "PATH=/usr/bin", "USER=will", "MAILTO=will@worrbase
 static const gsize req_env_len = 3;
 static gchar* req_cwd = "/tmp";
 static const guint64 req_timeout = 5;
+
+static guint8 encoded_res[17]
+	= { 0x0a, 0x03, 0x66, 0x6f, 0x6f, 0x0a, 0x03, 0x62, 0x61, 0x72, 0x12, 0x03, 0x62, 0x61, 0x7a, 0x18, 0x00 };
 
 static void host_not_reachable(void) {
 	set_ssh_connect_res(SSH_ERROR);
@@ -500,6 +504,35 @@ static void recv_result_read_failure(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
+static void recv_result_success(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_read_ret(SSH_OK);
+	set_ssh_channel_read_set(encoded_res);
+
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	wsh_cmd_res_t* res = NULL;
+	session->hostname = remote;
+	session->username = username;
+	GError* err = NULL;
+
+	wsh_ssh_host(session, &err);
+	wsh_ssh_exec_wshd(session, &err);
+	gint ret = wsh_ssh_recv_cmd_res(session, &res, &err);
+
+	g_assert(ret == 0);
+	g_assert(res != NULL);
+	g_assert(session->session != NULL);
+	g_assert(session->channel != NULL);
+	g_assert_no_error(err);
+
+	g_free(session->session);
+	g_free(session->channel);
+	g_slice_free(wsh_ssh_session_t, session);
+	wsh_free_unpacked_response(&res);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -543,6 +576,8 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/SSH/RecvResReadFailure",
 		recv_result_read_failure);
+	g_test_add_func("/Library/SSH/RecvResSuccess",
+		recv_result_success);
 
 	return g_test_run();
 }

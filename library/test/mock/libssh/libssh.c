@@ -1,6 +1,7 @@
 #include "libssh/libssh.h"
 
 #include <glib.h>
+#include <string.h>
 
 gint ssh_server_is_known_ret;
 gint ssh_connect_ret;
@@ -16,6 +17,7 @@ gint ssh_channel_write_ret;
 gint ssh_channel_read_ret;
 
 void* ssh_channel_read_set;
+guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
 
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
@@ -147,7 +149,11 @@ void set_ssh_channel_read_set(void* buf) {
 }
 
 gint ssh_channel_read(ssh_channel channel, void* buf, guint32 buf_len, gboolean is_stderr) {
-	buf = ssh_channel_read_set;
+	if (buf_len == 4) {
+		g_memmove(buf, ssh_channel_read_size, buf_len);
+	} else {
+		g_memmove(buf, ssh_channel_read_set, buf_len);
+	}
 	return ssh_channel_read_ret;
 }
 

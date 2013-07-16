@@ -301,6 +301,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 		goto wsh_ssh_recv_cmd_res_error;
 	}
 
+	*res = g_new0(wsh_cmd_res_t, 1);
 	wsh_unpack_response(res, buf, buf_u.size);
 	if (buf == NULL) {
 		ret = WSH_SSH_PACK_ERR;
@@ -318,7 +319,7 @@ wsh_ssh_recv_cmd_res_error:
 		g_slice_free1(buf_u.size, buf);
 
 	if (*res != NULL) {
-		g_slice_free(wsh_cmd_res_t, *res);
+		g_free(*res);
 		*res = NULL;
 	}
 

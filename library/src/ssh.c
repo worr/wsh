@@ -1,5 +1,6 @@
 #include "ssh.h"
 
+#include <arpa/inet.h>
 #include <errno.h>
 #include <glib.h>
 #include <libssh/libssh.h>
@@ -10,6 +11,11 @@
 
 const gint WSH_SSH_NEED_ADD_HOST_KEY = 1;
 const gint WSH_SSH_HOST_KEY_ERROR = 2;
+
+typedef union {
+	guint32 size;
+	gchar buf[4];
+} wsh_unholy_union;
 
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session == NULL);
@@ -251,6 +257,66 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, wsh_cmd_req_t* req, GError** e
 	return ret;
 
 wsh_ssh_send_cmd_error:
+	ssh_channel_close(session->channel);
+	ssh_channel_free(session->channel);
+	session->channel = NULL;
+	ssh_disconnect(session->session);
+	ssh_free(session->session);
+	session->session = NULL;
+
+	return ret;
+}
+
+gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GError** err) {
+	g_assert(session != NULL);
+	g_assert(session->session != NULL);
+	g_assert(session->channel != NULL);
+	g_assert(*res == NULL);
+
+	gint ret = 0;
+	wsh_unholy_union buf_u;
+	guchar* buf = NULL;
+	*res = g_slice_new0(wsh_cmd_res_t);
+
+	/* Just like in server/src/parse.c we need to grab an int first that
+	 * represents the size of the following protobuf object
+	 */
+	if (ssh_channel_read(session->channel, buf_u.buf, 4, FALSE)) {
+		ret = WSH_SSH_READ_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_READ_ERR,
+			"%s: Couldn't read size bytes: %s", session->hostname,
+			ssh_get_error(session->session));
+		goto wsh_ssh_recv_cmd_res_error;
+	}
+
+	buf_u.size = ntohl(buf_u.size);
+
+	// We have our message size, let's make some room and read it in
+	buf = g_slice_alloc0(buf_u.size);
+	if (ssh_channel_read(session->channel, buf, buf_u.size, FALSE)) {
+		ret = WSH_SSH_READ_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_READ_ERR,
+			"%s: Couldn't read response: %s", session->hostname,
+			ssh_get_error(session->session));
+		goto wsh_ssh_recv_cmd_res_error;
+	}
+
+	wsh_unpack_response(res, buf, buf_u.size);
+	if (buf == NULL) {
+		ret = WSH_SSH_PACK_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PACK_ERR,
+			"%s: Error packing command resonse", session->hostname);
+		goto wsh_ssh_recv_cmd_res_error;
+	}
+
+	g_slice_free1(buf_u.size, buf);
+
+	return ret;
+
+wsh_ssh_recv_cmd_res_error:
+	if (buf != NULL)
+		g_slice_free1(buf_u.size, buf);
+
 	ssh_channel_close(session->channel);
 	ssh_channel_free(session->channel);
 	session->channel = NULL;

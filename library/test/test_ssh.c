@@ -471,7 +471,6 @@ static void send_cmd_write_success(void) {
 	g_free(session->channel);
 	g_slice_free(wsh_ssh_session_t, session);
 	g_slice_free(wsh_cmd_req_t, req);
-
 }
 
 int main(int argc, char** argv) {

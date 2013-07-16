@@ -28,6 +28,7 @@ typedef enum {
 	WSH_SSH_EXEC_WSHD_ERR,
 	WSH_SSH_PACK_ERR,
 	WSH_SSH_WRITE_ERR,
+	WSH_SSH_READ_ERR,
 } wsh_ssh_err_enum;
 
 typedef struct {

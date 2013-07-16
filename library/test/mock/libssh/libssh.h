@@ -60,6 +60,9 @@ void ssh_channel_close();
 void ssh_channel_free(ssh_channel chan);
 void set_ssh_channel_write_ret(gint ret);
 gint ssh_channel_write();
+void set_ssh_channel_read_ret(gint ret);
+void set_ssh_channel_read_set(void* buf);
+gint ssh_channel_read(ssh_channel channel, void* buf, guint32 buf_len, gboolean is_stderr);
 
 #endif
 

@@ -39,7 +39,7 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 		if (conn_ret == SSH_ERROR) {
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CONNECT_ERR,
 				"Cannot connect to host %s: %s", session->hostname,
-				strerror(errno));
+				ssh_get_error(session->session));
 			ssh_free(session->session);
 			session->session = NULL;
 			ret = -1;
@@ -53,10 +53,24 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 	g_assert(session->session != NULL);
 	g_assert(session->hostname != NULL);
 
+	guchar* hash = NULL;
 	gint ret = 0;
+	gint state, hash_len;
+
+	state = ssh_is_server_known(session->session);
+
+	hash_len = ssh_get_pubkey_hash(session->session, &hash);
+	if (hash_len < 0) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
+			"%s: error getting hostkey: %s", session->hostname, ssh_get_error(session->session));
+		ssh_disconnect(session->session);
+		ssh_free(session->session);
+		session->session = NULL;
+		ret = WSH_SSH_HOST_KEY_ERROR;
+	}
 
 	// Let's add the hostkey if it didn't change or anything
-	switch (ssh_is_server_known(session->session)) {
+	switch (state) {
 		case SSH_SERVER_KNOWN_CHANGED:
 		case SSH_SERVER_FOUND_OTHER:
 			if (add_hostkey && force_add) {
@@ -82,7 +96,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 		case SSH_SERVER_ERROR:
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_READ_ERR,
 				"%s: Error getting host key: %s",
-				session->hostname, ssh_get_error(session->session));
+				session->hostname, strerror(errno));
 			ssh_disconnect(session->session);
 			ssh_free(session->session);
 			session->session = NULL;

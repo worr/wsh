@@ -29,6 +29,8 @@
 typedef void* ssh_session;
 typedef void* ssh_channel;
 
+gint ssh_get_pubkey_hash();
+void ssh_set_blocking();
 void set_ssh_connect_res(gint ret);
 gint ssh_connect();
 void set_ssh_is_server_known_res(gint ret);

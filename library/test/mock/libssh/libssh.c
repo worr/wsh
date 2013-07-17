@@ -19,6 +19,13 @@ gint ssh_channel_read_ret;
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
 
+gint ssh_get_pubkey_hash() {
+	return 1;
+}
+
+void ssh_set_blocking() {
+}
+
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
 }

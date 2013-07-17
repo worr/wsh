@@ -3,6 +3,7 @@ project( wsh C )
 
 option( BUILD_SERVER "Build wsh server" ON )
 option( BUILD_CLIENT "Build wsh client" ON )
+option( BUILD_UTILS  "Build wsh utilities" ON )
 option( BUILD_TESTS  "Build wsh unit tests" OFF )
 
 set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules )
@@ -48,6 +49,13 @@ if( BUILD_TESTS )
 	add_definitions( -DBUILD_TESTS )
 	add_subdirectory( library/test )
 endif( BUILD_TESTS )
+
+if( BUILD_UTILS )
+	add_subdirectory( util/src )
+	if( BUILD_TESTS )
+		add_subdirectory( util/test )
+	endif( BUILD_TESTS )
+endif( BUILD_UTILS )
 
 if( BUILD_SERVER )
 	add_subdirectory( server/src )

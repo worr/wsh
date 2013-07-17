@@ -11,3 +11,5 @@ script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=
 notifications:
     irc:
         - "skynet.csh.rit.edu#freshmen"
+        template:
+            - "%{repository}#%{build_number}: ${author}: %{branch}: %{message}"

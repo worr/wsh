@@ -7,3 +7,7 @@ before_install:
    - sudo apt-get install protobuf-c-compiler libprotobuf-c0-dev libprotobuf-c0 libssh-4 libssh-dev
 
 script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON .. && make && ctest -V
+
+notifications:
+    irc:
+        - "skynet.csh.rit.edu#freshmen"

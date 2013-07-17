@@ -53,7 +53,7 @@ endif( BUILD_TESTS )
 if( BUILD_UTILS )
 	add_subdirectory( util/src )
 	if( BUILD_TESTS )
-		#add_subdirectory( util/test )
+		add_subdirectory( util/test )
 	endif( BUILD_TESTS )
 endif( BUILD_UTILS )
 

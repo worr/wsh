@@ -3,6 +3,11 @@ file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
 set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
 set( WSH_SOURCES log.c cmd.c pack.c ssh.c )
+
+if( LIBCRANGE_LIBRARY )
+	set( WSH_SOURCES ${WSH_SOURCES} range_expansion.c )
+endif( LIBCRANGE_LIBRARY )
+
 add_library( wsh ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
 
 # Find protoc-c compiler
@@ -29,11 +34,13 @@ add_custom_command(
 
 set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )
 
-include_directories( 
+include_directories(
 	${GLIB2_INCLUDE_DIRS}
 	${PROTOBUF_INCLUDE_DIR}
 	${PROTO_GEN_DIR}
 	${LIBSSH_INCLUDE_DIR}
+	${LIBCRANGE_INCLUDE_DIR}
+	${LIBAPR_INCLUDE_DIR}
 )
 
 target_link_libraries( wsh 
@@ -41,4 +48,6 @@ target_link_libraries( wsh
 	${PROTOBUF_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
 	${LIBSSH_LIBRARY}
+	${LIBCRANGE_LIBRARY}
+	${LIBAPR_LIBRARY}
 )

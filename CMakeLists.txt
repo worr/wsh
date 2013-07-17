@@ -5,6 +5,7 @@ option( BUILD_SERVER "Build wsh server" ON )
 option( BUILD_CLIENT "Build wsh client" ON )
 option( BUILD_UTILS  "Build wsh utilities" ON )
 option( BUILD_TESTS  "Build wsh unit tests" OFF )
+option( WITH_RANGE   "Use libcrange as an host expansion lib" OFF )
 
 set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules )
 
@@ -14,7 +15,7 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 
 set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/src )
-set( WSH_LIBRARIES wsh)
+set( WSH_LIBRARIES wsh )
 
 add_definitions( -std=c99 )
 add_definitions( -Wall -Werror -pedantic )
@@ -30,6 +31,14 @@ find_package( PROTOBUF-C REQUIRED )
 find_package( Threads REQUIRED )
 
 find_package( SSH REQUIRED )
+
+# Optional dep
+if( WITH_RANGE )
+	find_package( CRANGE )
+	if( LIBCRANGE_LIBRARY )
+		find_package( APR REQUIRED )
+	endif( LIBCRANGE_LIBRARY )
+endif( WITH_RANGE )
 
 # This is a hack to get around problems with the custom cmake libs I found
 if( IS_DIRECTORY /usr/local/lib )

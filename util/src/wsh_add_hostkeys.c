@@ -1,8 +1,10 @@
 #include <glib.h>
 #include <stdlib.h>
 
+#include "range_expansion.h"
 #include "ssh.h"
 
+static gboolean range = FALSE;
 static gboolean force = FALSE;
 static gchar* username = NULL;
 static gint port = 22;
@@ -11,6 +13,7 @@ static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to ssh", NULL },
 	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
+	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
 	{ NULL }
 };
 
@@ -54,6 +57,31 @@ gint main(gint argc, gchar** argv) {
 
 	if (username == NULL) {
 		username = g_strdup(g_get_user_name());
+	}
+
+	// Really fucking ugly code to resolve range
+	if (range) {
+		gchar* temp_res = "null,";
+		for (gint i = 1; i < argc; i++) {
+			gchar** exp_res = NULL;
+			if (wsh_exp_range_expand(&exp_res, argv[i], &err)) {
+				g_printerr("%s\n", err->message);
+				return EXIT_FAILURE;
+			}
+			gchar* tmp_str = g_strjoinv(",", exp_res);
+			gchar* tmp_joined_res = g_strconcat(temp_res, tmp_str, NULL);
+
+			if (i != 1)
+				g_free(temp_res);
+			g_free(tmp_str);
+			g_strfreev(exp_res);
+
+			temp_res = tmp_joined_res;
+		}
+
+		g_print("%s\n", temp_res);
+		argv = g_strsplit(temp_res, ",", 0);
+		g_free(temp_res);
 	}
 
 	for (gint i = 1; i < argc; i++) {

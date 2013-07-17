@@ -13,4 +13,4 @@ notifications:
         channels:
             - "skynet.csh.rit.edu#freshmen"
         template:
-            - "%{repository}#%{build_number}: ${author}: %{branch}: %{message}"
+            - "%{repository}#%{build_number}: %{author}: %{branch}: %{message}"

@@ -23,13 +23,17 @@ static gint add_hostkey(const gchar* hostname, GError** err) {
 
 	if (wsh_ssh_host(session, err)) {
 		g_printerr("Could not add ssh key: %s\n", (*err)->message);
+		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
 
 	if (wsh_verify_host_key(session, TRUE, force, err)) {
 		g_printerr("Could not add ssh key: %s\n", (*err)->message);
+		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
+
+	g_slice_free(wsh_ssh_session_t, session);
 
 	return EXIT_SUCCESS;
 }
@@ -55,5 +59,7 @@ gint main(gint argc, gchar** argv) {
 	}
 
 	g_free(username);
+	g_option_context_free(context);
+
 	return ret;
 }

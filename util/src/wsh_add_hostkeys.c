@@ -79,7 +79,6 @@ gint main(gint argc, gchar** argv) {
 			temp_res = tmp_joined_res;
 		}
 
-		g_print("%s\n", temp_res);
 		argv = g_strsplit(temp_res, ",", 0);
 		g_free(temp_res);
 	}

@@ -6,14 +6,18 @@
 #endif
 #include "ssh.h"
 
+#ifdef RANGE
 static gboolean range = FALSE;
+#endif
 static gboolean force = FALSE;
 static gchar* username = NULL;
 static gint port = 22;
 
 static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to ssh", NULL },
+#ifdef RANGE
 	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
+#endif
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
 	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
 	{ NULL }
@@ -61,6 +65,7 @@ gint main(gint argc, gchar** argv) {
 		username = g_strdup(g_get_user_name());
 	}
 
+#ifdef RANGE
 	// Really fucking ugly code to resolve range
 	if (range) {
 		gchar* temp_res = "null,";
@@ -85,6 +90,7 @@ gint main(gint argc, gchar** argv) {
 		g_free(temp_res);
 	}
 
+#endif
 	for (gint i = 1; i < argc; i++) {
 		if ((ret = add_hostkey(argv[i], &err))) break;
 	}

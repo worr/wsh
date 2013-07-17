@@ -1,7 +1,9 @@
 #include <glib.h>
 #include <stdlib.h>
 
-#include "range_expansion.h"
+#ifdef RANGE
+# include "range_expansion.h"
+#endif
 #include "ssh.h"
 
 static gboolean range = FALSE;

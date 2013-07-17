@@ -21,6 +21,10 @@ add_definitions( -std=c99 )
 add_definitions( -Wall -Werror -pedantic )
 add_definitions( -D_GNU_SOURCE )
 
+if( WITH_RANGE )
+	add_definitions( -DRANGE )
+endif( WITH_RANGE )
+
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake
 find_package( GLIB2 REQUIRED )

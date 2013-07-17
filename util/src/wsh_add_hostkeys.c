@@ -5,10 +5,12 @@
 
 static gboolean force = FALSE;
 static gchar* username = NULL;
+static gint port = 22;
 
 static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to ssh", NULL },
 	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
+	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
 	{ NULL }
 };
 
@@ -19,7 +21,7 @@ static gint add_hostkey(const gchar* hostname, GError** err) {
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
 	session->hostname = hostname;
 	session->username = username;
-	session->port = 22;
+	session->port = port;
 
 	if (wsh_ssh_host(session, err)) {
 		g_printerr("Could not add ssh key: %s\n", (*err)->message);

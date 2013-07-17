@@ -63,9 +63,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 	if (hash_len < 0) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
 			"%s: error getting hostkey: %s", session->hostname, ssh_get_error(session->session));
-		ssh_disconnect(session->session);
-		ssh_free(session->session);
-		session->session = NULL;
+		wsh_ssh_disconnect(session);
 		ret = WSH_SSH_HOST_KEY_ERROR;
 	}
 
@@ -79,9 +77,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_CHANGED_ERR,
 					"Host key for %s changed, tampering suspected",
 					session->hostname);
-				ssh_disconnect(session->session);
-				ssh_free(session->session);
-				session->session = NULL;
+				wsh_ssh_disconnect(session);
 				ret = WSH_SSH_NEED_ADD_HOST_KEY;
 			}
 
@@ -97,9 +93,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_READ_ERR,
 				"%s: Error getting host key: %s",
 				session->hostname, strerror(errno));
-			ssh_disconnect(session->session);
-			ssh_free(session->session);
-			session->session = NULL;
+			wsh_ssh_disconnect(session);
 			ret = WSH_SSH_HOST_KEY_ERROR;
 			break;
 	}
@@ -114,9 +108,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_WRITE_ERR,
 			"%s: Error writing known hosts file: %s",
 			session->hostname, strerror(errno));
-		ssh_disconnect(session->session);
-		ssh_free(session->session);
-		session->session = NULL;
+		wsh_ssh_disconnect(session);
 		return WSH_SSH_HOST_KEY_ERROR;
 	}
 
@@ -188,9 +180,7 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	return ret;
 
 wsh_ssh_authenticate_failure:
-	ssh_disconnect(session->session);
-	ssh_free(session->session);
-	session->session = NULL;
+	wsh_ssh_disconnect(session);
 
 	return ret;
 }
@@ -230,14 +220,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 	return ret;
 
 wsh_ssh_exec_wshd_error:
-	if (session->channel != NULL) {
-		ssh_channel_close(session->channel);
-		ssh_channel_free(session->channel);
-		session->channel = NULL;
-	}
-	ssh_disconnect(session->session);
-	ssh_free(session->session);
-	session->session = NULL;
+	wsh_ssh_disconnect(session);
 
 	return ret;
 }
@@ -271,12 +254,7 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, wsh_cmd_req_t* req, GError** e
 	return ret;
 
 wsh_ssh_send_cmd_error:
-	ssh_channel_close(session->channel);
-	ssh_channel_free(session->channel);
-	session->channel = NULL;
-	ssh_disconnect(session->session);
-	ssh_free(session->session);
-	session->session = NULL;
+	wsh_ssh_disconnect(session);
 
 	return ret;
 }
@@ -335,14 +313,24 @@ wsh_ssh_recv_cmd_res_error:
 		g_free(*res);
 		*res = NULL;
 	}
+	
+	wsh_ssh_disconnect(session);
 
-	ssh_channel_close(session->channel);
-	ssh_channel_free(session->channel);
-	session->channel = NULL;
+	return ret;
+}
+
+void wsh_ssh_disconnect(wsh_ssh_session_t* session) {
+	g_assert(session != NULL);
+	g_assert(session->session != NULL);
+
+	if (session->channel != NULL) {
+		ssh_channel_close(session->channel);
+		ssh_channel_free(session->channel);
+		session->channel = NULL;
+	}
+
 	ssh_disconnect(session->session);
 	ssh_free(session->session);
 	session->session = NULL;
-
-	return ret;
 }
 

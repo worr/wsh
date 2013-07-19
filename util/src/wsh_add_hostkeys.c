@@ -12,8 +12,12 @@ static gboolean range = FALSE;
 static gboolean force = FALSE;
 static gchar* username = NULL;
 static gint port = 22;
+static gint threads = 0;
+
+static GStaticMutex mutex;
 
 static GOptionEntry entries[] = {
+	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to spawn off (default: none)", NULL },
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to ssh", NULL },
 	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
@@ -38,11 +42,13 @@ static gint add_hostkey(const gchar* hostname, GError** err) {
 		return EXIT_FAILURE;
 	}
 
+	g_static_mutex_lock(&mutex);
 	if (wsh_verify_host_key(session, TRUE, force, err)) {
 		g_printerr("Could not add ssh key: %s\n", (*err)->message);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
+	g_static_mutex_unlock(&mutex);
 
 	g_slice_free(wsh_ssh_session_t, session);
 
@@ -87,12 +93,17 @@ gint main(gint argc, gchar** argv) {
 		}
 
 		argv = g_strsplit(temp_res, ",", 0);
+		argc = g_strv_length(argv);
 		g_free(temp_res);
 	}
 
 #endif
-	for (gint i = 1; i < argc; i++) {
-		if ((ret = add_hostkey(argv[i], &err))) break;
+
+	if (threads == 0 || argc < 5) {
+		for (gint i = 1; i < argc; i++) {
+			if ((ret = add_hostkey(argv[i], &err))) break;
+		}
+	} else {
 	}
 
 	g_free(username);

@@ -92,7 +92,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 		case SSH_SERVER_ERROR:
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_READ_ERR,
 				"%s: Error getting host key: %s",
-				session->hostname, strerror(errno));
+				session->hostname, ssh_get_error(session->session));
 			wsh_ssh_disconnect(session);
 			ret = WSH_SSH_HOST_KEY_ERROR;
 			break;
@@ -107,7 +107,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 	if (ssh_write_knownhost(session->session)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_WRITE_ERR,
 			"%s: Error writing known hosts file: %s",
-			session->hostname, strerror(errno));
+			session->hostname, ssh_get_error(session->session));
 		wsh_ssh_disconnect(session);
 		return WSH_SSH_HOST_KEY_ERROR;
 	}

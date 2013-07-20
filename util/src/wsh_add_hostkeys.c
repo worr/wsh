@@ -14,7 +14,6 @@ static gchar* username = NULL;
 static gint port = 22;
 static gint threads = 0;
 
-static GStaticMutex mutex;
 
 static GOptionEntry entries[] = {
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to spawn off (default: none)", NULL },
@@ -27,28 +26,30 @@ static GOptionEntry entries[] = {
 	{ NULL }
 };
 
-static gint add_hostkey(const gchar* hostname, GError** err) {
+static gint add_hostkey(const gchar* hostname, gpointer userdata) {
+	GError* err;
+	//static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+
 	g_assert(hostname);
-	g_assert(*err == NULL);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
 	session->hostname = hostname;
 	session->username = username;
 	session->port = port;
 
-	if (wsh_ssh_host(session, err)) {
-		g_printerr("Could not add ssh key: %s\n", (*err)->message);
+	//g_static_mutex_lock(&mutex);
+	if (wsh_ssh_host(session, &err)) {
+		g_printerr("Could not add ssh key: %s\n", err->message);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
 
-	g_static_mutex_lock(&mutex);
-	if (wsh_verify_host_key(session, TRUE, force, err)) {
-		g_printerr("Could not add ssh key: %s\n", (*err)->message);
+	if (wsh_verify_host_key(session, TRUE, force, &err)) {
+		g_printerr("Could not add ssh key: %s\n", err->message);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
-	g_static_mutex_unlock(&mutex);
+	//g_static_mutex_unlock(&mutex);
 
 	g_slice_free(wsh_ssh_session_t, session);
 
@@ -59,6 +60,10 @@ gint main(gint argc, gchar** argv) {
 	GError* err = NULL;
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
+
+	if (glib_major_version < 32) {
+		g_thread_init(NULL);
+	}
 
 	context = g_option_context_new("[HOSTS] - automatically add hostkeys to your hostkey file");
 	g_option_context_add_main_entries(context, entries, NULL);
@@ -101,9 +106,20 @@ gint main(gint argc, gchar** argv) {
 
 	if (threads == 0 || argc < 5) {
 		for (gint i = 1; i < argc; i++) {
-			if ((ret = add_hostkey(argv[i], &err))) break;
+			if ((ret = add_hostkey(argv[i], NULL))) break;
 		}
 	} else {
+		GThreadPool* gtp;
+		if ((gtp = g_thread_pool_new((GFunc)add_hostkey, NULL, threads, TRUE, &err)) == NULL) {
+			g_printerr("%s\n", err->message);
+			return EXIT_FAILURE;
+		}
+
+		for (gint i = 1; i < argc; i++) {
+			g_thread_pool_push(gtp, argv[i], NULL);
+		}
+
+		g_thread_pool_free(gtp, FALSE, TRUE);
 	}
 
 	g_free(username);

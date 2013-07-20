@@ -39,6 +39,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
     PKG_SEARCH_MODULE( GLIB2 ${_pkgconfig_REQUIRED} glib-2.0>=${GLIB2_MIN_VERSION} )
   ELSE ( GLIB2_MIN_VERSION )
     PKG_SEARCH_MODULE( GLIB2 ${_pkgconfig_REQUIRED} glib-2.0 )
+    PKG_SEARCH_MODULE( GTHREAD2 ${_pkgconfig_REQUIRED} gthread-2.0 )
   ENDIF ( GLIB2_MIN_VERSION )
   IF ( PKG_CONFIG_FOUND )
     IF ( GLIB2_FOUND )
@@ -100,11 +101,30 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
         SET ( _glib2_FOUND TRUE )
     ENDIF ( _glib2_include_DIR AND _glib2_link_DIR )
 
+	FIND_LIBRARY(
+      _gthread2_link_DIR
+	NAMES
+	  gthread-2.0
+	  gthread
+    PATHS
+      /opt/gnome/lib
+      /opt/local/lib
+      /sw/lib
+      /usr/lib
+      /usr/local/lib
+	)
+
+	IF ( _gthread2_link_DIR )
+		SET ( _gthread2_FOUND TRUE )
+	ENDIF ( _gthread2_link_DIR )
 
     IF ( _glib2_FOUND )
         SET ( GLIB2_INCLUDE_DIRS ${_glib2_include_DIR} ${_glibconfig_include_DIR} )
         SET ( GLIB2_LIBRARIES ${_glib2_link_DIR} )
         SET ( GLIB2_CORE_FOUND TRUE )
+		IF ( _gthread2_FOUND )
+			SET ( GTHREAD2_LIBRARIES ${_gthread2_link_DIR} )
+		ENDIF ( _gthread2_link_DIR )
     ELSE ( _glib2_FOUND )
         SET ( GLIB2_CORE_FOUND FALSE )
     ENDIF ( _glib2_FOUND )

@@ -105,7 +105,6 @@ gint main(gint argc, gchar** argv) {
 		gint iret;
 		for (gint i = 1; i < argc; i++) {
 			if ((iret = add_hostkey(argv[i], NULL))) {
-				if (err) g_printerr("%s\n", err->message);
 				if (iret > ret) ret = iret;
 			}
 		}

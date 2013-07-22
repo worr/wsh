@@ -107,8 +107,12 @@ gint main(gint argc, gchar** argv) {
 #endif
 
 	if (threads == 0 || argc < 5) {
+		gint iret;
 		for (gint i = 1; i < argc; i++) {
-			if ((ret = add_hostkey(argv[i], NULL))) break;
+			if ((iret = add_hostkey(argv[i], NULL))) {
+				if (err) g_printerr("%s\n", err->message);
+				if (iret > ret) ret = iret;
+			}
 		}
 	} else {
 		GThreadPool* gtp;

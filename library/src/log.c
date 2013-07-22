@@ -46,6 +46,10 @@ void wsh_log_error(gint msg_num, gchar* message) {
 
 void wsh_log_server_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd) {
 	g_assert(type != WSH_LOGGER_CLIENT);
+	g_assert(command != NULL);
+	g_assert(user != NULL);
+	g_assert(source != NULL);
+	g_assert(cwd != NULL);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_server_template) + strlen(command) + strlen(user) + strlen(source) + strlen(cwd);
@@ -64,6 +68,10 @@ void wsh_log_server_cmd(const gchar* command, const gchar* user, const gchar* so
 
 void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd) {
 	g_assert(type != WSH_LOGGER_SERVER);
+	g_assert(command != NULL);
+	g_assert(user != NULL);
+	g_assert(dests != NULL);
+	g_assert(cwd != NULL);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_client_template) + strlen(command) + strlen(user) + strlen(cwd);
@@ -88,6 +96,10 @@ void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests, 
 
 void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd, gint status) {
 	g_assert(type != WSH_LOGGER_CLIENT);
+	g_assert(command != NULL);
+	g_assert(user != NULL);
+	g_assert(source != NULL);
+	g_assert(cwd != NULL);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_server_status_template) + strlen(command) + strlen(user) + strlen(source) + strlen(cwd) + 3;
@@ -106,6 +118,10 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gc
 
 void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status) {
 	g_assert(type != WSH_LOGGER_SERVER);
+	g_assert(command != NULL);
+	g_assert(user != NULL);
+	g_assert(dests != NULL);
+	g_assert(cwd != NULL);
 
 	gsize attempted;
 	gsize str_len = strlen(cmd_client_status_template) + strlen(command) + strlen(user) + strlen(cwd) + 3;

@@ -131,19 +131,6 @@ static void test_run_err(struct test_wsh_run_cmd_data* fixture, gconstpointer us
 	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_CHDIR);
 }
 
-static void test_run_null_cmd(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
-	wsh_cmd_req_t* req = fixture->req;
-	wsh_cmd_res_t* res = fixture->res;
-
-	req->cmd_string = "";
-	wsh_run_cmd(res, req);
-	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING);
-
-	req->cmd_string = NULL;
-	wsh_run_cmd(res, req);
-	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING);
-}
-
 static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 
@@ -297,7 +284,6 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Library/RunCmd/Stdout", struct test_wsh_run_cmd_data, NULL, setup, test_run_stdout, teardown);
 	g_test_add("/Library/RunCmd/Stderr", struct test_wsh_run_cmd_data, NULL, setup, test_run_stderr, teardown);
 	g_test_add("/Library/RunCmd/Errors", struct test_wsh_run_cmd_data, NULL, setup, test_run_err, teardown);
-	g_test_add("/Library/RunCmd/NullCmd", struct test_wsh_run_cmd_data, NULL, setup, test_run_null_cmd, teardown);
 	g_test_add("/Library/RunCmd/EnvironGetEnvOverride", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
 	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideFail", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
 	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);

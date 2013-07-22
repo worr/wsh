@@ -50,6 +50,8 @@ const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 #endif
 
 static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf, gsize* buf_len) {
+	g_assert(res != NULL);
+
 	// Allocate space for a new string pointer and new string
 	if (*buf != NULL) {
 		gchar** buf2 = g_malloc_n(*buf_len + 2, sizeof(gchar*));
@@ -84,6 +86,7 @@ static void wsh_check_if_need_to_close(struct cmd_data* cmd_data) {
 }
 
 static void wsh_kill_proccess(gpointer user_data) {
+	g_assert(user_data != NULL);
 	struct kill_data* kdata = (struct kill_data*)user_data;
 
 	if (kill(kdata->pid, SIGKILL))
@@ -92,8 +95,13 @@ static void wsh_kill_proccess(gpointer user_data) {
 
 // All this should do is log the status code and add it to our data struct
 static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
+	g_assert(user_data != NULL);
+
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
+	g_assert(res != NULL);
+	g_assert(res-> err == NULL);
+	g_assert(req != NULL);
 
 	res->exit_status = WEXITSTATUS(status);
 	wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
@@ -105,8 +113,14 @@ static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
 }
 
 gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+	g_assert(user_data != NULL);
+
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
+	g_assert(res != NULL);
+	g_assert(res-> err == NULL);
+	g_assert(req != NULL);
+
 	gboolean ret = TRUE;
 	GIOStatus stat; 
 
@@ -194,7 +208,12 @@ check_stdout_err:
 }
 
 gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data) {
+	g_assert(user_data != NULL);
+
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+	g_assert(res != NULL);
+	g_assert(res->err == NULL);
+
 	gboolean ret = TRUE;
 	GIOStatus stat;
 
@@ -233,8 +252,15 @@ check_stderr_err:
 }
 
 gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {
+	g_assert(user_data != NULL);
+
 	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+
+	g_assert(req != NULL);
+	g_assert(res != NULL);
+	g_assert(res->err == NULL);
+
 	gboolean sudo_rdy = ((struct cmd_data*)user_data)->sudo_rdy;
 	gsize wrote;
 	gboolean ret = TRUE;
@@ -268,6 +294,8 @@ write_stdin_err:
 
 // retval should be g_free'd
 gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
+	g_assert(req != NULL);
+
 	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
 		return NULL;
 
@@ -296,6 +324,10 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 }
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
+	g_assert(res != NULL);
+	g_assert(res->err == NULL);
+	g_assert(req != NULL);
+
 	gchar** argcv = NULL;
 	gchar* old_path;
 	GMainLoop* loop;
@@ -306,13 +338,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = wsh_construct_sudo_cmd(req);
-
-	if (cmd == NULL) {
-		ret = EXIT_FAILURE;
-
-		res->err = g_error_new(G_SHELL_ERROR, G_SHELL_ERROR_EMPTY_STRING, "Invalid NULL command");
-		goto run_cmd_error_nofree;
-	}
 
 // sorry Russ...
 #if GLIB_CHECK_VERSION ( 2, 34, 0 )
@@ -438,8 +463,6 @@ run_cmd_error_no_log_cmd:
 	}
 
 	g_free(cmd);
-
-run_cmd_error_nofree:
 
 	if (res->err != NULL)
 		wsh_log_error(WSH_ERR_COMMAND_FAILED, res->err->message);

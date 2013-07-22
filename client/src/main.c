@@ -6,6 +6,7 @@
 #endif
 #include "ssh.h"
 
+static gboolean std_out = FALSE;
 static gint port = 22;
 static gboolean sudo = FALSE;
 static gchar* username = NULL;
@@ -15,6 +16,7 @@ static gboolean range = FALSE;
 #endif
 
 static GOptionEntry entries[] = {
+	{ "stdout", 'o', 0, G_OPTION_ARG_NONE, &std_out, "Show stdout of hosts (suppressed by default on success)", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
 	{ "sudo", 's', 0, G_OPTION_ARG_NONE, &sudo, "Use sudo to execute commands", NULL },
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to sudo", NULL },

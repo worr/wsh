@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef RANGE
 # include "range_expansion.h"
@@ -88,7 +89,7 @@ gint main(gint argc, gchar** argv) {
 				return EXIT_FAILURE;
 			}
 			gchar* tmp_str = g_strjoinv(",", exp_res);
-			gchar* tmp_joined_res = g_strconcat(temp_res, tmp_str, NULL);
+			gchar* tmp_joined_res = g_strconcat(temp_res, tmp_str, ",", NULL);
 
 			if (i != 1)
 				g_free(temp_res);
@@ -119,7 +120,8 @@ gint main(gint argc, gchar** argv) {
 		}
 
 		for (gint i = 1; i < argc; i++) {
-			g_thread_pool_push(gtp, argv[i], NULL);
+			if (strncmp("", argv[i], 1))
+				g_thread_pool_push(gtp, argv[i], NULL);
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);

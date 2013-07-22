@@ -41,6 +41,8 @@ typedef struct {
 	const gchar* password;
 } wsh_ssh_session_t;
 
+gint wsh_ssh_init(void);
+gint wsh_ssh_cleanup(void);
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err);
 gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gboolean force_add, GError** err);
 gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err);

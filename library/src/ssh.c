@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <glib.h>
+#include <libssh/callbacks.h>
 #include <libssh/libssh.h>
 #include <string.h>
 
@@ -16,6 +17,15 @@ typedef union {
 	guint32 size;
 	gchar buf[4];
 } wsh_unholy_union;
+
+gint wsh_ssh_init(void) {
+	ssh_threads_set_callbacks(ssh_threads_get_noop());
+	return ssh_init();
+}
+
+gint wsh_ssh_cleanup(void) {
+	return ssh_finalize();
+}
 
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session == NULL);

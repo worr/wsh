@@ -65,6 +65,8 @@ gint main(gint argc, gchar** argv) {
 		g_thread_init(NULL);
 	}
 
+	wsh_ssh_init();
+
 	context = g_option_context_new("[HOSTS] - automatically add hostkeys to your hostkey file");
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
@@ -122,6 +124,7 @@ gint main(gint argc, gchar** argv) {
 		g_thread_pool_free(gtp, FALSE, TRUE);
 	}
 
+	wsh_ssh_cleanup();
 	g_free(username);
 	g_option_context_free(context);
 

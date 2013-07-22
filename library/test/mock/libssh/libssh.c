@@ -1,4 +1,5 @@
 #include "libssh/libssh.h"
+#include "libssh/callbacks.h"
 
 #include <glib.h>
 #include <string.h>
@@ -28,6 +29,22 @@ void ssh_set_blocking() {
 
 void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
+}
+
+gint ssh_init(void) {
+	return 0;
+}
+
+gint ssh_finalize(void) {
+	return 0;
+}
+
+void* ssh_threads_get_noop(void) {
+	return NULL;
+}
+
+gint ssh_threads_set_callbacks() {
+	return 0;
 }
 
 gint ssh_connect() {

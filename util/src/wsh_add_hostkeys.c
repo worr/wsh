@@ -6,14 +6,13 @@
 #endif
 #include "ssh.h"
 
+static gint threads = 0;
+static gchar* username = NULL;
+static gboolean force = FALSE;
+static gint port = 22;
 #ifdef RANGE
 static gboolean range = FALSE;
 #endif
-static gboolean force = FALSE;
-static gchar* username = NULL;
-static gint port = 22;
-static gint threads = 0;
-
 
 static GOptionEntry entries[] = {
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to spawn off (default: none)", NULL },
@@ -102,7 +101,6 @@ gint main(gint argc, gchar** argv) {
 	}
 
 #endif
-
 	if (threads == 0 || argc < 5) {
 		gint iret;
 		for (gint i = 1; i < argc; i++) {
@@ -131,3 +129,4 @@ gint main(gint argc, gchar** argv) {
 
 	return ret;
 }
+

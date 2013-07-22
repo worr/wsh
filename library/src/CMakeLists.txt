@@ -8,7 +8,7 @@ if( LIBCRANGE_LIBRARY )
 	set( WSH_SOURCES ${WSH_SOURCES} range_expansion.c )
 endif( LIBCRANGE_LIBRARY )
 
-add_library( wsh ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
+add_library( wsh SHARED ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
 
 # Find protoc-c compiler
 find_program( PROTO_C protoc-c )

@@ -28,7 +28,6 @@ static GOptionEntry entries[] = {
 
 static gint add_hostkey(const gchar* hostname, gpointer userdata) {
 	GError* err;
-	//static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
 	g_assert(hostname);
 
@@ -37,7 +36,6 @@ static gint add_hostkey(const gchar* hostname, gpointer userdata) {
 	session->username = username;
 	session->port = port;
 
-	//g_static_mutex_lock(&mutex);
 	if (wsh_ssh_host(session, &err)) {
 		g_printerr("Could not add ssh key: %s\n", err->message);
 		g_slice_free(wsh_ssh_session_t, session);
@@ -49,7 +47,6 @@ static gint add_hostkey(const gchar* hostname, gpointer userdata) {
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
-	//g_static_mutex_unlock(&mutex);
 
 	g_slice_free(wsh_ssh_session_t, session);
 

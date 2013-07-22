@@ -6,22 +6,22 @@
 #endif
 #include "ssh.h"
 
+static gint port = 22;
+static gboolean sudo = FALSE;
+static gchar* username = NULL;
+static gint threads = 0;
 #ifdef RANGE
 static gboolean range = FALSE;
 #endif
-static gboolean force = FALSE;
-static gchar* username = NULL;
-static gint port = 22;
-static gboolean sudo = FALSE;
 
 static GOptionEntry entries[] = {
-	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
+	{ "sudo", 's', 0, G_OPTION_ARG_NONE, &sudo, "Use sudo to execute commands", NULL },
+	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to sudo", NULL },
+	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 #ifdef RANGE
 	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
 #endif
-	{ "sudo", 's', 0, G_OPTION_ARG_NONE, &sudo, "Use sudo to execute commands", NULL },
-	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to sudo", NULL },
 	{ NULL }
 };
 
@@ -30,11 +30,21 @@ int main(int argc, char** argv) {
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
 
+	if (glib_major_version < 32) {
+		g_thread_init(NULL);
+	}
+
+	wsh_ssh_init();
+
 	context = g_option_context_new("[HOSTS] - automatically add hostkeys to your hostkey file");
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
 		g_printerr("Option parsing failed: %s\n", err->message);
 		return EXIT_FAILURE;
+	}
+
+	if (username == NULL) {
+		username = g_strdup(g_get_user_name());
 	}
 
 #ifdef RANGE
@@ -63,6 +73,28 @@ int main(int argc, char** argv) {
 	}
 
 #endif
+	if (threads == 0 || argc < 5) {
+		//gint iret;
+		for (gint i = 1; i < argc; i++) {
+		}
+	} else {
+		GThreadPool* gtp;
+		if ((gtp = g_thread_pool_new(NULL, NULL, threads, TRUE, &err)) == NULL) {
+			g_printerr("%s\n", err->message);
+			return EXIT_FAILURE;
+		}
+
+		for (gint i = 1; i < argc; i++) {
+			g_thread_pool_push(gtp, argv[i], NULL);
+		}
+
+		g_thread_pool_free(gtp, FALSE, TRUE);
+	}
+
+	wsh_ssh_cleanup();
+	g_free(username);
+	g_option_context_free(context);
 
 	return ret;
 }
+

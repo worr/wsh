@@ -10,6 +10,7 @@ include_directories(
 target_link_libraries( wshc
 	${WSH_LIBRARIES}
 	${GLIB2_LIBRARIES}
+	${GTHREAD2_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
 	${LIBSSH_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}

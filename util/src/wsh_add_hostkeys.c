@@ -47,6 +47,8 @@ static gint add_hostkey(const gchar* hostname, gpointer userdata) {
 		return EXIT_FAILURE;
 	}
 
+	wsh_ssh_disconnect(session);
+
 	g_slice_free(wsh_ssh_session_t, session);
 
 	return EXIT_SUCCESS;

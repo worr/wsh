@@ -533,6 +533,26 @@ static void recv_result_success(void) {
 	wsh_free_unpacked_response(&res);
 }
 
+static void ssh_init_fails(void) {
+	set_ssh_init_ret(SSH_ERROR);
+
+	g_assert(wsh_ssh_init());
+}
+
+static void ssh_set_callbacks_fails(void) {
+	set_ssh_init_ret(SSH_OK);
+	set_ssh_threads_set_callbacks_ret(SSH_ERROR);
+
+	g_assert(wsh_ssh_init());
+}
+
+static void wsh_ssh_init_success(void) {
+	set_ssh_init_ret(SSH_OK);
+	set_ssh_threads_set_callbacks_ret(SSH_OK);
+
+	g_assert(! wsh_ssh_init());
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -578,6 +598,13 @@ int main(int argc, char** argv) {
 		recv_result_read_failure);
 	g_test_add_func("/Library/SSH/RecvResSuccess",
 		recv_result_success);
+
+	g_test_add_func("/Library/SSH/SSHInitFailure",
+		ssh_init_fails);
+	g_test_add_func("/Library/SSH/SSHSetCallbacksFailure",
+		ssh_set_callbacks_fails);
+	g_test_add_func("/Library/SSH/WshSshInitSuccess",
+		wsh_ssh_init_success);
 
 	return g_test_run();
 }

@@ -4,6 +4,9 @@
 #include <glib.h>
 #include <string.h>
 
+gint ssh_init_ret;
+gint ssh_finalize_ret;
+gint ssh_threads_set_callbacks_ret;
 gint ssh_server_is_known_ret;
 gint ssh_connect_ret;
 gint ssh_write_knownhost_ret;
@@ -31,20 +34,32 @@ void set_ssh_connect_res(gint ret) {
 	ssh_connect_ret = ret;
 }
 
+void set_ssh_init_ret(gint ret) {
+	ssh_init_ret = ret;
+}
+
 gint ssh_init(void) {
-	return 0;
+	return ssh_init_ret;
+}
+
+void set_ssh_finalize_ret(gint ret) {
+	ssh_finalize_ret = ret;
 }
 
 gint ssh_finalize(void) {
-	return 0;
+	return ssh_finalize_ret;
 }
 
 void* ssh_threads_get_noop(void) {
 	return NULL;
 }
 
+void set_ssh_threads_set_callbacks_ret(gint ret) {
+	ssh_threads_set_callbacks_ret = ret;
+}
+
 gint ssh_threads_set_callbacks() {
-	return 0;
+	return ssh_threads_set_callbacks_ret;
 }
 
 gint ssh_connect() {

@@ -19,7 +19,9 @@ typedef union {
 } wsh_unholy_union;
 
 gint wsh_ssh_init(void) {
-	ssh_threads_set_callbacks(ssh_threads_get_noop());
+	gint ret;
+	if ((ret = ssh_threads_set_callbacks(ssh_threads_get_noop())))
+		return ret;
 	return ssh_init();
 }
 

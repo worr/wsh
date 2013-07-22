@@ -1,0 +1,12 @@
+if( LIBCRANGE_INCLUDE_DIR AND LIBCRANGE_LIBRARY )
+	set( LIBCRANGE_FIND_QUIETLY true )
+endif( LIBCRANGE_INCLUDE_DIR AND LIBCRANGE_LIBRARY )
+
+find_path( LIBCRANGE_INCLUDE_DIR libcrange.h )
+
+find_library( LIBCRANGE_LIBRARY NAMES crange )
+
+include( FindPackageHandleStandardArgs )
+find_package_handle_standard_args( LibCRANGE DEFAULT_MSG LIBCRANGE_INCLUDE_DIR LIBCRANGE_LIBRARY )
+
+mark_as_advanced( LIBCRANGE_INCLUDE_DIR LIBCRANGE_LIBRARY )

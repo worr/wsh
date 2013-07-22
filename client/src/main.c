@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
 	wsh_ssh_init();
 
-	context = g_option_context_new("[HOSTS] - automatically add hostkeys to your hostkey file");
+	context = g_option_context_new("[HOSTS] - ssh and exec commands in multiple machines at once");
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
 		g_printerr("Option parsing failed: %s\n", err->message);

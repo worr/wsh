@@ -23,7 +23,7 @@ gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err)
 		char* err_message = g_slice_alloc0(MAX_APR_ERR_MSG_SIZE);
 		apr_strerror(stat, err_message, MAX_APR_ERR_MSG_SIZE);
 		*err = g_error_new(WSH_EXP_ERROR, WSH_EXP_POOL_ALLOC_ERR,
-			err_message);
+			"%s", err_message);
 		// I hope g_error_new makes a copy of that string!
 		g_slice_free1(MAX_APR_ERR_MSG_SIZE, err_message);
 		ret = WSH_EXP_POOL_ALLOC_ERR;
@@ -41,7 +41,7 @@ gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err)
 	range_request* rr = range_expand(lr, pool, string);
 	if (range_request_has_warnings(rr)) {
 		*err = g_error_new(WSH_EXP_ERROR, WSH_EXP_RANGE_EXPANSION_ERR,
-			range_request_warnings(rr));
+			"%s", range_request_warnings(rr));
 		ret = WSH_EXP_RANGE_EXPANSION_ERR;
 		goto wsh_exp_range_expand_err;
 	}

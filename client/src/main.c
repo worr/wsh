@@ -31,10 +31,11 @@ int main(int argc, char** argv) {
 	GError* err = NULL;
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
+#if GLIB_CHECK_VERSION( 2, 32, 0 )
+#else
 
-	if (glib_major_version < 32) {
-		g_thread_init(NULL);
-	}
+	g_thread_init(NULL);
+#endif
 
 	wsh_ssh_init();
 

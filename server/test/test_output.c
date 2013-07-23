@@ -28,7 +28,8 @@ static void test_send_message(void) {
 	res.std_error[0] = "baz";
 	res.std_error[1] = NULL;
 
-	pipe(fds);
+	if (pipe(fds))
+		g_assert_not_reached();
 
 	in = g_io_channel_unix_new(fds[0]);
 	out = g_io_channel_unix_new(fds[1]);

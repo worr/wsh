@@ -203,7 +203,8 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 	gchar* buf;
 	gsize buf_len;
 
-	pipe(fds);
+	if (pipe(fds))
+		g_assert_not_reached();
 
 	GIOChannel* in = g_io_channel_unix_new(fds[0]);
 	GIOChannel* mock_stdin = g_io_channel_unix_new(fds[1]);
@@ -230,7 +231,8 @@ static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture
 	gsize writ;
 	fixture->req->sudo = TRUE;
 
-	pipe(fds);
+	if (pipe(fds))
+		g_assert_not_reached();
 
 	GIOChannel* out = g_io_channel_unix_new(fds[1]);
 	GIOChannel* mock_stdout = g_io_channel_unix_new(fds[0]);

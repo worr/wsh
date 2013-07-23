@@ -31,7 +31,8 @@ static void test_get_message_size(void) {
 	gsize writ;
 	GError* err = NULL;
 
-	pipe(fds);
+	if (pipe(fds))
+		g_assert_not_reached();
 
 	GIOChannel* in = g_io_channel_unix_new(fds[1]);
 	GIOChannel* mock_stdout = g_io_channel_unix_new(fds[0]);
@@ -60,7 +61,8 @@ static void test_get_message(void) {
 	gsize writ;
 	GError* err = NULL;
 
-	pipe(fds);
+	if (pipe(fds))
+		g_assert_not_reached();
 
 	GIOChannel* in = g_io_channel_unix_new(fds[1]);
 	GIOChannel* mock_stdout = g_io_channel_unix_new(fds[0]);

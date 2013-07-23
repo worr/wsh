@@ -8,6 +8,11 @@ before_install:
 
 script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON .. && make && ctest -V
 
+env:
+    - CFLAGS="-O3"
+    - CFLAGS="-O2"
+    -
+
 notifications:
     irc:
         channels:

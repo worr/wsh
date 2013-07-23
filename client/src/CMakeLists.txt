@@ -1,4 +1,4 @@
-add_executable( wshc main.c )
+add_executable( wshc main.c remote.c )
 
 include_directories(
 	${WSH_INCLUDE_DIRS}

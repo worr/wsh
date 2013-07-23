@@ -5,7 +5,9 @@
 #ifdef RANGE
 # include "range_expansion.h"
 #endif
+#include "cmd.h"
 #include "log.h"
+#include "remote.h"
 #include "ssh.h"
 
 static gboolean std_out = FALSE;
@@ -103,16 +105,25 @@ int main(int argc, char** argv) {
 		for (gint i = 1; i < argc; i++) {
 		}
 	} else {
+		wshc_cmd_info_t cmd_info;
+
 		GThreadPool* gtp;
-		if ((gtp = g_thread_pool_new(NULL, NULL, threads, TRUE, &err)) == NULL) {
+		if ((gtp = g_thread_pool_new((GFunc)wshc_try_ssh, &cmd_info, threads, TRUE, &err)) == NULL) {
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
 			return EXIT_FAILURE;
 		}
 
 		for (gsize i = 1; i < num_hosts; i++) {
+			wsh_cmd_res_t* res = NULL;
+
+			wshc_host_info_t host_info = {
+				.hostname = hosts[i],
+				.res = &res,
+			};
+
 			if (strncmp("", hosts[i], 1))
-				g_thread_pool_push(gtp, hosts[i], NULL);
+				g_thread_pool_push(gtp, &host_info, NULL);
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);

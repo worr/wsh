@@ -239,7 +239,7 @@ wsh_ssh_exec_wshd_error:
 	return ret;
 }
 
-gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, wsh_cmd_req_t* req, GError** err) {
+gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->session != NULL);
 	g_assert(session->channel != NULL);

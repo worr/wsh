@@ -329,7 +329,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_assert(req != NULL);
 
 	gchar** argcv = NULL;
-	gchar* old_path;
+	gchar* old_path = "";
 	GMainLoop* loop;
 	GIOChannel* in, * out, * err;
 	gint argcp;

@@ -5,6 +5,7 @@
 #ifdef RANGE
 # include "range_expansion.h"
 #endif
+#include "log.h"
 #include "ssh.h"
 
 static gboolean std_out = FALSE;
@@ -38,6 +39,7 @@ int main(int argc, char** argv) {
 	g_thread_init(NULL);
 #endif
 
+	wsh_init_logger(WSH_LOGGER_CLIENT);
 	wsh_ssh_init();
 
 	context = g_option_context_new("[HOSTS] - ssh and exec commands in multiple machines at once");
@@ -65,6 +67,7 @@ int main(int argc, char** argv) {
 		for (gint i = 1; i < argc; i++) {
 			gchar** exp_res = NULL;
 			if (wsh_exp_range_expand(&exp_res, argv[i], &err)) {
+				wsh_log_error(err->message);
 				g_printerr("%s\n", err->message);
 				g_error_free(err);
 				return EXIT_FAILURE;
@@ -94,6 +97,7 @@ int main(int argc, char** argv) {
 	} else {
 		GThreadPool* gtp;
 		if ((gtp = g_thread_pool_new(NULL, NULL, threads, TRUE, &err)) == NULL) {
+			wsh_log_error(err->message);
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
 			return EXIT_FAILURE;

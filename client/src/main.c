@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef RANGE
 # include "range_expansion.h"

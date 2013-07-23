@@ -35,7 +35,6 @@ int main(int argc, char** argv) {
 	GError* err = NULL;
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
-	gboolean free_username = FALSE;
 	gsize num_hosts;
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else

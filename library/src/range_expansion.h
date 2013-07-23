@@ -12,6 +12,8 @@ typedef enum {
 	WSH_EXP_RANGE_ALLOC_ERR,
 } wsh_exp_err_enum;
 
+gint wsh_exp_range_init(GError** err);
+void wsh_exp_range_cleanup(void);
 gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err);
 
 #endif

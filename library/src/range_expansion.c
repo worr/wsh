@@ -5,16 +5,12 @@
 
 const gsize MAX_APR_ERR_MSG_SIZE = 1024;
 
-gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err) {
+static apr_pool_t* pool;
+
+gint wsh_exp_range_init(GError** err) {
 	g_assert_no_error(*err);
-	g_assert(*host_list == NULL);
-	g_assert(string != NULL);
 
 	apr_initialize();
-
-	gint ret = 0;
-
-	apr_pool_t* pool;
 	apr_status_t stat = apr_pool_create(&pool, NULL);
 
 	WSH_EXP_ERROR = g_quark_from_static_string("wsh_exp_error");
@@ -26,9 +22,26 @@ gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err)
 			"%s", err_message);
 		// I hope g_error_new makes a copy of that string!
 		g_slice_free1(MAX_APR_ERR_MSG_SIZE, err_message);
-		ret = WSH_EXP_POOL_ALLOC_ERR;
-		goto wsh_exp_range_expand_err;
+		return WSH_EXP_POOL_ALLOC_ERR;
 	}
+
+	return 0;
+}
+
+void wsh_exp_range_cleanup(void) {
+	apr_pool_clear(pool);
+	apr_pool_destroy(pool);
+	apr_terminate();
+}
+
+gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err) {
+	g_assert_no_error(*err);
+	g_assert(*host_list == NULL);
+	g_assert(string != NULL);
+
+	apr_initialize();
+
+	gint ret = 0;
 
 	libcrange* lr = libcrange_new(pool, NULL);
 	if (lr == NULL) {
@@ -51,14 +64,9 @@ gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err)
 		*err = g_error_new(WSH_EXP_ERROR, WSH_EXP_NO_HOSTS_ERR,
 			"%s expanded to 0 hosts", string);
 		ret = WSH_EXP_NO_HOSTS_ERR;
-		goto wsh_exp_range_expand_err;
 	}
 
 wsh_exp_range_expand_err:
-	apr_pool_clear(pool);
-	apr_pool_destroy(pool);
-	apr_terminate();
-
 	return ret;
 }
 

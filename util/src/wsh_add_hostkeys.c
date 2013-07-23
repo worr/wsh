@@ -85,6 +85,12 @@ gint main(gint argc, gchar** argv) {
 	// Really fucking ugly code to resolve range
 	if (range) {
 		gchar* temp_res = "null,";
+
+		if (wsh_exp_range_init(&err)) {
+			g_printerr("%s\n", err->message);
+			return EXIT_FAILURE;
+		}
+
 		for (gint i = 1; i < argc; i++) {
 			gchar** exp_res = NULL;
 			if (wsh_exp_range_expand(&exp_res, argv[i], &err)) {
@@ -105,6 +111,7 @@ gint main(gint argc, gchar** argv) {
 		argv = g_strsplit(temp_res, ",", 0);
 		argc = g_strv_length(argv);
 		g_free(temp_res);
+		wsh_exp_range_cleanup();
 	}
 
 #endif

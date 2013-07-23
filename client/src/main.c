@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
 		g_printerr("Option parsing failed: %s\n", err->message);
+		g_error_free(err);
 		return EXIT_FAILURE;
 	}
 
@@ -59,6 +60,7 @@ int main(int argc, char** argv) {
 			gchar** exp_res = NULL;
 			if (wsh_exp_range_expand(&exp_res, argv[i], &err)) {
 				g_printerr("%s\n", err->message);
+				g_error_free(err);
 				return EXIT_FAILURE;
 			}
 			gchar* tmp_str = g_strjoinv(",", exp_res);
@@ -85,6 +87,7 @@ int main(int argc, char** argv) {
 		GThreadPool* gtp;
 		if ((gtp = g_thread_pool_new(NULL, NULL, threads, TRUE, &err)) == NULL) {
 			g_printerr("%s\n", err->message);
+			g_error_free(err);
 			return EXIT_FAILURE;
 		}
 
@@ -99,6 +102,11 @@ int main(int argc, char** argv) {
 	wsh_ssh_cleanup();
 	g_free(username);
 	g_option_context_free(context);
+
+#ifdef RANGE
+	if (range)
+		g_strfreev(argv);
+#endif
 
 	return ret;
 }

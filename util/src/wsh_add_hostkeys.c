@@ -38,12 +38,14 @@ static gint add_hostkey(const gchar* hostname, gpointer userdata) {
 
 	if (wsh_ssh_host(session, &err)) {
 		g_printerr("Could not add ssh key: %s\n", err->message);
+		g_error_free(err);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
 
 	if (wsh_verify_host_key(session, TRUE, force, &err)) {
 		g_printerr("Could not add ssh key: %s\n", err->message);
+		g_error_free(err);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
@@ -71,6 +73,7 @@ gint main(gint argc, gchar** argv) {
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
 		g_printerr("Option parsing failed: %s\n", err->message);
+		g_error_free(err);
 		return EXIT_FAILURE;
 	}
 
@@ -116,6 +119,7 @@ gint main(gint argc, gchar** argv) {
 		GThreadPool* gtp;
 		if ((gtp = g_thread_pool_new((GFunc)add_hostkey, NULL, threads, TRUE, &err)) == NULL) {
 			g_printerr("%s\n", err->message);
+			g_error_free(err);
 			return EXIT_FAILURE;
 		}
 
@@ -130,6 +134,11 @@ gint main(gint argc, gchar** argv) {
 	wsh_ssh_cleanup();
 	g_free(username);
 	g_option_context_free(context);
+
+#ifdef RANGE
+	if (range)
+		g_strfreev(argv);
+#endif
 
 	return ret;
 }

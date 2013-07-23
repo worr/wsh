@@ -57,6 +57,7 @@ gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err)
 wsh_exp_range_expand_err:
 	apr_pool_clear(pool);
 	apr_pool_destroy(pool);
+	apr_terminate();
 
 	return ret;
 }

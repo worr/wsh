@@ -5,6 +5,7 @@
 #include <glib.h>
 #include <libssh/callbacks.h>
 #include <libssh/libssh.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "cmd.h"
@@ -110,6 +111,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 			break;
 	}
 
+	free(hash);
 	return ret;
 }
 

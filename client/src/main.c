@@ -100,13 +100,19 @@ int main(int argc, char** argv) {
 	}
 
 #endif
+	wshc_cmd_info_t cmd_info;
 	if (threads == 0 || argc < 5) {
-		//gint iret;
-		for (gint i = 1; i < argc; i++) {
+		for (gint i = 1; i < num_hosts; i++) {
+			wsh_cmd_res_t* res = NULL;
+
+			wshc_host_info_t host_info = {
+				.hostname = hosts[i],
+				.res = &res,
+			};
+
+			wshc_try_ssh(&host_info, &cmd_info);
 		}
 	} else {
-		wshc_cmd_info_t cmd_info;
-
 		GThreadPool* gtp;
 		if ((gtp = g_thread_pool_new((GFunc)wshc_try_ssh, &cmd_info, threads, TRUE, &err)) == NULL) {
 			g_printerr("%s\n", err->message);

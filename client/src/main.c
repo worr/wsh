@@ -110,9 +110,9 @@ int main(int argc, char** argv) {
 			return EXIT_FAILURE;
 		}
 
-		for (gint i = 1; i < argc; i++) {
-			if (strncmp("", argv[i], 1))
-				g_thread_pool_push(gtp, argv[i], NULL);
+		for (gsize i = 1; i < num_hosts; i++) {
+			if (strncmp("", hosts[i], 1))
+				g_thread_pool_push(gtp, hosts[i], NULL);
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);

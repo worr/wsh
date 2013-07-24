@@ -118,6 +118,7 @@ gint main(gint argc, gchar** argv) {
 	if (threads == 0 || argc < 5) {
 		gint iret;
 		for (gint i = 1; i < argc; i++) {
+			if (!strncmp("", argv[i], 1)) continue;
 			if ((iret = add_hostkey(argv[i], NULL))) {
 				if (iret > ret) ret = iret;
 			}

@@ -205,6 +205,15 @@ int main(int argc, char** argv) {
 	g_option_context_free(context);
 	g_strfreev(hosts);
 
+	if (ask_password) {
+		g_slice_free1(WSHC_MAX_PASSWORD_LEN, password);
+		g_slice_free1(WSHC_MAX_PASSWORD_LEN, sudo_password);
+	}
+
+	if (ask_sudo_password && ! ask_password) {
+		g_slice_free1(WSHC_MAX_PASSWORD_LEN, sudo_password);
+	}
+
 	return ret;
 }
 

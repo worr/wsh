@@ -12,12 +12,12 @@ typedef struct {
 	gchar** env;
 	gchar** std_input;
 	gchar* cmd_string;
-	gchar* username;
-	gchar* password;
+	gchar* username; // root if sudo
+	gchar* password; // required if sudo
 	gchar* cwd;
-	gchar* host; // put here mostly for logging purposes
+	gchar* host; // put here mostly for logging purposes - this is the client
 	gsize std_input_len;
-	gint in_fd;
+	gint in_fd; // Apparently not required
 	guint64 timeout;
 	gboolean sudo;
 } wsh_cmd_req_t;

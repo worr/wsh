@@ -44,6 +44,33 @@ static GOptionEntry entries[] = {
 	{ NULL }
 };
 
+/*
+ * A lot of this includes other features I just haven't implemented in the client yet
+ */
+static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
+	g_assert(req != NULL);
+
+	req->sudo = sudo;
+
+	if (sudo) {
+		req->username = username;
+		req->password = password;
+	}
+
+	req->env = g_listenv();
+	req->std_input = NULL;
+	req->std_input_len = 0;
+	req->timeout = 0;
+	req->cwd = g_get_current_dir();
+	req->host = (gchar*)g_get_host_name();
+}
+ 
+static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
+	g_strfreev(req->env);
+	g_free(req->cwd);
+	g_free(req->host);
+}
+
 static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const gchar* prompt) {
 	struct termios old_flags, new_flags;
 
@@ -163,10 +190,15 @@ int main(int argc, char** argv) {
 	}
 
 #endif
+	gchar* cmd_string = g_strjoinv(" ", argv);
+
 	wshc_cmd_info_t cmd_info;
 	cmd_info.username = username;
 	cmd_info.password = password;
 	cmd_info.port = port;
+
+	wsh_cmd_req_t req;
+	build_wsh_cmd_req(&req, sudo_password, cmd_string);
 
 	if (threads == 0 || argc < 5) {
 		for (gint i = 0; i < num_hosts; i++) {
@@ -216,6 +248,8 @@ int main(int argc, char** argv) {
 	if (ask_sudo_password && ! ask_password) {
 		g_slice_free1(WSHC_MAX_PASSWORD_LEN, sudo_password);
 	}
+
+	free_wsh_cmd_req_fields(&req);
 
 	return ret;
 }

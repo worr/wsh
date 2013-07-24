@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Wsh : A tool that allows you to securely run commands on multiple hosts" />
+    <meta name="description" content="wsh:  Config respecting, sudo-ready, distributed command execution and logging" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Wsh</title>
+    <title>wsh</title>
   </head>
 
   <body>
@@ -18,8 +18,8 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/worr/wsh">View on GitHub</a>
 
-          <h1 id="project_title">Wsh</h1>
-          <h2 id="project_tagline">A tool that allows you to securely run commands on multiple hosts</h2>
+          <h1 id="project_title">wsh (Wʊʃ | woosh)</h1>
+          <h2 id="project_tagline">Config respecting, sudo-ready, distributed command execution and logging</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/worr/wsh/zipball/master">Download this project as a .zip file</a>
@@ -34,7 +34,7 @@
         <h1>
 <a name="wsh" class="anchor" href="#wsh"><span class="octicon octicon-link"></span></a>wsh</h1>
 
-<p>wsh is a shell-like program made for sysadmins that need to administer
+<p>wsh is a shell-like program made for devops and sysadmins that need to administer
 several machines at once. With wsh, you can <code>ssh</code> into multiple
 machines and run one-off commands very simply</p>
 
@@ -47,15 +47,15 @@ machines and run one-off commands very simply</p>
 <li>an <code>ssh</code> replacement</li>
 </ul><h2>
 <a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
-
+<h3>Runtime dependencies</h3>
 <ul>
 <li><code>glib2</code></li>
 <li>
-<code>libssh</code> (**NOT** libssh2) </li>
+<code>libssh</code> NOT <code><del>libssh2</del></code> </li>
 <li><code>protobuf-c</code></li>
 <li><code>sudo</code></li>
 </ul><h3>
-<a name="build-deps" class="anchor" href="#build-deps"><span class="octicon octicon-link"></span></a>Build deps</h3>
+<a name="build-deps" class="anchor" href="#build-deps"><span class="octicon octicon-link"></span></a>Build dependencies</h3>
 
 <ul>
 <li><code>cmake</code></li>
@@ -76,26 +76,25 @@ connection has been established.</p>
 <h2>
 <a name="advantages" class="anchor" href="#advantages"><span class="octicon octicon-link"></span></a>Advantages</h2>
 
-<ul>
-<li>configuration-less</li>
-</ul><p>wsh honors your existing <code>ssh</code> and <code>sudo</code> configuration files, leaving
+
+<h3>configuration-less</h3>
+<p>wsh honors your existing <code>ssh</code> and <code>sudo</code> configuration files, leaving
 all of the work of authorization and authentication to <code>ssh</code> and <code>sudo</code></p>
 
-<ul>
-<li>sudo-ready</li>
-</ul><p>Unlike <code>dsh</code>, wsh has <code>sudo</code> support built in, so that you don't need
+<h3>sudo-ready</h3>
+<p>Unlike <code>dsh</code>, wsh has <code>sudo</code> support built in, so that you don't need
 to use some kind of hack to get your <code>sudo</code> creds over the network.</p>
 
-<ul>
-<li>logging</li>
-</ul><p>wsh logs everything to syslog</p>
+
+<h3>logging</h3>
+<p>wsh logs everything to syslog</p>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Wsh maintained by <a href="https://github.com/worr">worr</a></p>
+        <p class="copyright">wsh is maintained by <a href="https://github.com/worr">worr</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>

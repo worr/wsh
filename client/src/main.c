@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
 	gsize num_hosts;
-	gchar* password;
-	gchar* sudo_password;
+	gchar* password = NULL;
+	gchar* sudo_password = NULL;
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
 

@@ -23,7 +23,7 @@ static gboolean ask_password = FALSE;
 static gchar* sudo_username = NULL;
 static gboolean ask_sudo_password = FALSE;
 static gint threads = 0;
-static gchar** hosts = NULL;
+static gchar* hosts_arg = NULL;
 #ifdef RANGE
 static gboolean range = FALSE;
 #endif
@@ -37,7 +37,7 @@ static GOptionEntry entries[] = {
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
 	{ "sudo-password", 'P', 0, G_OPTION_ARG_NONE, &ask_sudo_password, "Prompt sudo password", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
-	{ "hosts", 'h', 0, G_OPTION_ARG_STRING_ARRAY, &hosts, "Hosts to ssh into", NULL },
+	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
 #ifdef RANGE
 	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
 #endif
@@ -85,6 +85,7 @@ int main(int argc, char** argv) {
 	gsize num_hosts;
 	gchar* password = NULL;
 	gchar* sudo_password = NULL;
+	gchar** hosts = NULL;
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
 
@@ -105,12 +106,10 @@ int main(int argc, char** argv) {
 	if (username == NULL)
 		username = g_strdup(g_get_user_name());
 
-	if (hosts == NULL) {
+	if (hosts_arg == NULL) {
 		g_printerr("You must provide a list of hosts\n");
 		return EXIT_FAILURE;
 	}
-
-	num_hosts = g_strv_length(hosts);
 
 	if (ask_password) {
 		password = g_slice_alloc0(WSHC_MAX_PASSWORD_LEN);
@@ -126,10 +125,13 @@ int main(int argc, char** argv) {
 		if (! sudo_password) return EXIT_FAILURE;
 	}
 
+	hosts = g_strsplit(hosts_arg, ",", 0);
+	num_hosts = g_strv_length(hosts);
+
 #ifdef RANGE
 	// Really fucking ugly code to resolve range
 	if (range) {
-		gchar* temp_res = "null,";
+		gchar* temp_res = "";
 		num_hosts = g_strv_length(hosts);
 
 		if (wsh_exp_range_init(&err)) {
@@ -167,7 +169,7 @@ int main(int argc, char** argv) {
 	cmd_info.port = port;
 
 	if (threads == 0 || argc < 5) {
-		for (gint i = 1; i < num_hosts; i++) {
+		for (gint i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 
 			wshc_host_info_t host_info = {
@@ -185,7 +187,7 @@ int main(int argc, char** argv) {
 			return EXIT_FAILURE;
 		}
 
-		for (gsize i = 1; i < num_hosts; i++) {
+		for (gsize i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 
 			wshc_host_info_t host_info = {
@@ -203,6 +205,7 @@ int main(int argc, char** argv) {
 	wsh_ssh_cleanup();
 	g_free(username);
 	g_option_context_free(context);
+	g_free(hosts_arg);
 	g_strfreev(hosts);
 
 	if (ask_password) {

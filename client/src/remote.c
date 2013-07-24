@@ -17,6 +17,11 @@ void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) 
 	session->password = cmd_info->password;
 	session->port = cmd_info->port;
 
+	if (session->password == NULL)
+		session->auth_type = WSH_SSH_AUTH_PUBKEY;
+	else
+		session->auth_type = WSH_SSH_AUTH_PASSWORD;
+
 	if (wsh_ssh_host(session, &err)) {
 		g_printerr("%s\n", err->message);
 		goto wshc_try_ssh_error;

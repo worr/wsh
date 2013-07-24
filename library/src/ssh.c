@@ -257,7 +257,7 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 		goto wsh_ssh_send_cmd_error;
 	}
 
-	if (ssh_channel_write(session->channel, buf, buf_len)) {
+	if (ssh_channel_write(session->channel, buf, buf_len) == SSH_ERROR) {
 		ret = WSH_SSH_WRITE_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
 			"%s: Error writing out command over ssh: %s",

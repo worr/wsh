@@ -37,7 +37,7 @@ void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) 
 		goto wshc_try_ssh_error;
 	}
 
-	if (wsh_ssh_send_cmd(session, cmd_info->req, &err)) {
+	if (wsh_ssh_send_cmd(session, host_info->req, &err)) {
 		g_printerr("%s\n", err->message);
 		goto wshc_try_ssh_error;
 	}

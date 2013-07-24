@@ -63,6 +63,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->timeout = 0;
 	req->cwd = g_get_current_dir();
 	req->host = (gchar*)g_get_host_name();
+	req->cmd_string = cmd;
 }
  
 static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
@@ -199,6 +200,7 @@ int main(int argc, char** argv) {
 
 	wsh_cmd_req_t req;
 	build_wsh_cmd_req(&req, sudo_password, cmd_string);
+	cmd_info.req = &req;
 
 	if (threads == 0 || argc < 5) {
 		for (gint i = 0; i < num_hosts; i++) {
@@ -239,6 +241,7 @@ int main(int argc, char** argv) {
 	g_option_context_free(context);
 	g_free(hosts_arg);
 	g_strfreev(hosts);
+	g_free(cmd_string);
 
 	if (ask_password) {
 		g_slice_free1(WSHC_MAX_PASSWORD_LEN, password);

@@ -116,14 +116,14 @@ int main(int argc, char** argv) {
 		password = g_slice_alloc0(WSHC_MAX_PASSWORD_LEN);
 		prompt_for_a_fucking_password(password, WSHC_MAX_PASSWORD_LEN, "SSH password: ");
 		if (! password) return EXIT_FAILURE;
+
+		if (! ask_sudo_password) sudo_password = g_strdup(password); // Guaranteed to be NULL terminated bro
 	}
 
 	if (ask_sudo_password) {
 		sudo_password = g_slice_alloc0(WSHC_MAX_PASSWORD_LEN);
 		prompt_for_a_fucking_password(sudo_password, WSHC_MAX_PASSWORD_LEN, "sudo password: ");
 		if (! sudo_password) return EXIT_FAILURE;
-	} else if (ask_password) {
-		sudo_password = g_strdup(password); // Guaranteed to be NULL terminated bro
 	}
 
 #ifdef RANGE

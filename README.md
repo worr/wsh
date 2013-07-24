@@ -1,7 +1,7 @@
 # wsh
 
-wsh is a shell-like program made for sysadmins that need to administer
-several machines at once. With wsh, you can `ssh` into multiple
+wsh is a shell-like program made for devops and sysadmins that need to 
+administer several machines at once. With `wsh`, you can ssh into multiple 
 machines and run one-off commands very simply
 
 ## What wsh isn't
@@ -13,7 +13,7 @@ machines and run one-off commands very simply
 ## Dependencies
 
 * `glib2`
-* `libssh` (**NOT** libssh2) 
+* `libssh` (**NOT** `libssh2`) 
 * `protobuf-c`
 * `sudo`
 

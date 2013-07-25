@@ -1,7 +1,7 @@
 #include "parse.h"
 
-#include <arpa/inet.h>
 #include <glib.h>
+#include <stdio.h>
 
 #include "cmd.h"
 #include "log.h"
@@ -15,7 +15,7 @@ gint wshd_get_message_size(GIOChannel* std_input, GError* err) {
 	if (err != NULL) return -1;
 
 	g_io_channel_read_chars(std_input, out.buf, 4, &read, &err);
-	out.size = ntohl(out.size);
+	out.size = g_ntohl(out.size);
 
 	return out.size;
 }
@@ -35,6 +35,11 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 	buf = g_malloc0(msg_size);
 
 	g_io_channel_read_chars(std_input, buf, msg_size, &read, &err);
+	if (read != msg_size) {
+		gchar* err_msg;
+		asprintf(&err_msg, "Expected %d byts, got %zu\n", msg_size, read);
+		wsh_log_message(err_msg);
+	}
 
 	if (err != NULL) goto wshd_get_message_err;
 

@@ -52,12 +52,10 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 
 	req->sudo = sudo;
 
-	if (sudo) {
-		req->username = username;
-		req->password = password;
-	}
+	req->username = username;
+	req->password = password;
 
-	req->env = g_listenv();
+	req->env = NULL;
 	req->std_input = NULL;
 	req->std_input_len = 0;
 	req->timeout = 0;
@@ -191,6 +189,9 @@ int main(int argc, char** argv) {
 	}
 
 #endif
+	argv++;
+	if (strncmp("--", argv[0], 2))
+		argv++;
 	gchar* cmd_string = g_strjoinv(" ", argv);
 
 	wshc_cmd_info_t cmd_info;

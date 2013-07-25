@@ -25,7 +25,7 @@ void wsh_pack_request(guint8** buf, gsize* buf_len, const wsh_cmd_req_t* req) {
 	cmd_req.timeout = req->timeout;
 
 	cmd_req.n_env = 0;
-	for (gsize i = 0; cmd_req.env[i] != NULL; i++)
+	for (gsize i = 0; cmd_req.env != NULL && cmd_req.env[i] != NULL; i++)
 		cmd_req.n_env++;
 
 	*buf_len = command_request__get_packed_size(&cmd_req);
@@ -40,8 +40,10 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, gsize buf_len) {
 
 	cmd_req = command_request__unpack(NULL, buf_len, buf);
 
-	(*req)->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
-	(*req)->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
+	if (cmd_req->auth->username)
+		(*req)->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
+	if (cmd_req->auth->password)
+		(*req)->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
 
 	(*req)->cmd_string = g_strndup(cmd_req->command, strlen(cmd_req->command));
 
@@ -59,6 +61,8 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, gsize buf_len) {
 	(*req)->cwd = g_strndup(cmd_req->cwd, strlen(cmd_req->cwd));
 	(*req)->timeout = cmd_req->timeout;
 
+	(*req)->host = g_strndup(cmd_req->host, strlen(cmd_req->host));
+
 	command_request__free_unpacked(cmd_req, NULL);
 }
 
@@ -69,6 +73,7 @@ void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
 	g_strfreev((*req)->std_input);
 	g_strfreev((*req)->env);
 	g_free((*req)->cwd);
+	g_free((*req)->host);
 	g_free(*req);
 }
 

@@ -7,6 +7,7 @@ message CommandRequest {
 	repeated string env = 4;
 	optional string cwd = 5;
 	optional int64 timeout = 6;
+	required string host = 7;
 }
 
 message CommandReply {

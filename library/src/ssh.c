@@ -1,6 +1,5 @@
 #include "ssh.h"
 
-#include <arpa/inet.h>
 #include <errno.h>
 #include <glib.h>
 #include <libssh/callbacks.h>
@@ -248,6 +247,7 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 	gint ret = 0;
 	guint8* buf = NULL;
 	gsize buf_len;
+	wsh_unholy_union buf_u;
 
 	wsh_pack_request(&buf, &buf_len, req);
 	if (buf == NULL || buf_len == 0) {
@@ -257,7 +257,16 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 		goto wsh_ssh_send_cmd_error;
 	}
 
-	if (ssh_channel_write(session->channel, buf, buf_len) == SSH_ERROR) {
+	buf_u.size = g_htonl(buf_len);
+	if (ssh_channel_write(session->channel, &buf_u.buf, 4) != 4) {
+		ret = WSH_SSH_WRITE_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
+			"%s: Error writing out command over ssh: %s",
+			session->hostname, ssh_get_error(session->session));
+		goto wsh_ssh_send_cmd_error;
+	}
+
+	if (ssh_channel_write(session->channel, buf, buf_len) != buf_len) {
 		ret = WSH_SSH_WRITE_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
 			"%s: Error writing out command over ssh: %s",
@@ -294,7 +303,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 		goto wsh_ssh_recv_cmd_res_error;
 	}
 
-	buf_u.size = ntohl(buf_u.size);
+	buf_u.size = g_ntohl(buf_u.size);
 
 	// We have our message size, let's make some room and read it in
 	buf = g_slice_alloc0(buf_u.size);

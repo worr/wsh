@@ -44,6 +44,15 @@ if( WITH_RANGE )
 	endif( LIBCRANGE_LIBRARY )
 endif( WITH_RANGE )
 
+# Deal with linker crap
+set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
+list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
+	"${CMAKE_INSTALL_PREFIX}/lib" isSystemDir )
+if( "${isSystemDir}" STREQUAL "-1" )
+	set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+endif( "${isSystemDir}" STREQUAL "-1" )
+
 # This is a hack to get around problems with the custom cmake libs I found
 if( IS_DIRECTORY /usr/local/lib )
 	link_directories( /usr/local/lib )

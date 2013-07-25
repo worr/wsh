@@ -9,6 +9,7 @@ if( LIBCRANGE_LIBRARY )
 endif( LIBCRANGE_LIBRARY )
 
 add_library( wsh SHARED ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
+install( TARGETS wsh LIBRARY DESTINATION lib )
 
 # Find protoc-c compiler
 find_program( PROTO_C protoc-c )

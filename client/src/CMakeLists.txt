@@ -1,4 +1,5 @@
 add_executable( wshc main.c remote.c )
+install( TARGETS wshc RUNTIME DESTINATION bin )
 
 include_directories(
 	${WSH_INCLUDE_DIRS}

@@ -39,8 +39,6 @@ gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err)
 	g_assert(*host_list == NULL);
 	g_assert(string != NULL);
 
-	apr_initialize();
-
 	gint ret = 0;
 
 	libcrange* lr = libcrange_new(pool, NULL);

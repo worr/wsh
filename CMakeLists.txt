@@ -9,6 +9,9 @@ option( WITH_RANGE   "Use libcrange as an host expansion lib" OFF )
 
 set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules )
 
+include( CheckFunctionExists )
+include( CheckC11 )
+
 set( CMAKE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/bin )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
@@ -17,7 +20,14 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/src )
 set( WSH_LIBRARIES wsh )
 
-add_definitions( -std=c99 )
+check_c11( )
+
+if( HAVE_C11 )
+	add_definitions( -std=c11 )
+else( HAVE_C11 )
+	add_definitions( -std=c99 )
+endif( HAVE_C11 )
+
 add_definitions( -Wall -Werror -pedantic )
 add_definitions( -D_GNU_SOURCE )
 
@@ -33,7 +43,6 @@ find_package( GLIB2 REQUIRED )
 find_package( PROTOBUF-C REQUIRED )
 
 find_package( Threads REQUIRED )
-
 find_package( SSH REQUIRED )
 
 # Optional dep
@@ -61,6 +70,10 @@ endif( IS_DIRECTORY /usr/local/lib )
 if( IS_DIRECTORY /usr/pkg/lib )
 	link_directories( /usr/pkg/lib )
 endif( IS_DIRECTORY /usr/pkg/lib )
+
+# Function tests
+check_function_exists( mlock HAVE_MLOCK )
+check_function_exists( memset_s HAVE_MEMSET_S )
 
 add_subdirectory( library/src )
 

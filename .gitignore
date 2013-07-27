@@ -12,3 +12,4 @@ CTestTestfile.cmake
 cmake_install.cmake
 gen
 Makefile
+install_manifest.txt

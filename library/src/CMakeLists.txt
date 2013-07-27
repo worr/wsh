@@ -4,6 +4,10 @@ file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
 set( WSH_SOURCES log.c cmd.c pack.c ssh.c )
 
+if( NOT HAVE_MEMSET_S )
+	set( WSH_SOURCES ${WSH_SOURCES} memset_s.c )
+endif( NOT HAVE_MEMSET_S )
+
 if( LIBCRANGE_LIBRARY )
 	set( WSH_SOURCES ${WSH_SOURCES} range_expansion.c )
 endif( LIBCRANGE_LIBRARY )

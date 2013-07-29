@@ -14,7 +14,7 @@ const gint WSH_SSH_NEED_ADD_HOST_KEY = 1;
 const gint WSH_SSH_HOST_KEY_ERROR = 2;
 
 typedef union {
-	guint32 size;
+	volatile guint32 size;
 	gchar buf[4];
 } wsh_unholy_union;
 

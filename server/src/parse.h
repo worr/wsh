@@ -6,7 +6,7 @@
 #include "cmd.h"
 
 typedef union {
-	guint32 size;
+	volatile guint32 size;
 	gchar buf[4];
 } wshd_message_size_t;
 

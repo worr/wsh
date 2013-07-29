@@ -7,6 +7,9 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifndef HAVE_MEMSET_S
+extern int memset_s(void* v, size_t smax, int c, size_t n);
+#endif
 
 #include "log.h"
 

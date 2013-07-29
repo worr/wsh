@@ -42,8 +42,10 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, gsize buf_len) {
 
 	if (cmd_req->auth->username)
 		(*req)->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
-	if (cmd_req->auth->password)
+	if (cmd_req->auth->password) {
 		(*req)->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
+		(*req)->sudo = TRUE;
+	}
 
 	(*req)->cmd_string = g_strndup(cmd_req->command, strlen(cmd_req->command));
 

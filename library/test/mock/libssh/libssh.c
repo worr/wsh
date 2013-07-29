@@ -19,6 +19,7 @@ gint ssh_channel_open_session_ret;
 gint ssh_channel_request_exec_ret;
 gint ssh_channel_write_ret;
 gint ssh_channel_read_ret;
+gboolean ssh_channel_write_ret_first = TRUE;
 
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
@@ -175,7 +176,17 @@ void set_ssh_channel_write_ret(gint ret) {
 	ssh_channel_write_ret = ret;
 }
 
+/*
+ * we know that we're calling this twice in our unit
+ * test functions, so we can use this dirtiness
+ */
 gint ssh_channel_write() {
+	if (ssh_channel_write_ret_first) {
+		ssh_channel_write_ret_first = FALSE;
+		return 4;
+	} else
+		ssh_channel_write_ret_first = TRUE;
+
 	return ssh_channel_write_ret;
 }
 

@@ -444,7 +444,7 @@ static void send_cmd_write_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
-	set_ssh_channel_write_ret(SSH_OK);
+	set_ssh_channel_write_ret(89);
 
 	wsh_cmd_req_t* req = g_slice_new0(wsh_cmd_req_t);
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);

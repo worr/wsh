@@ -1,7 +1,9 @@
 #include "parse.h"
 
+#include <errno.h>
 #include <glib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "cmd.h"
 #include "log.h"
@@ -37,8 +39,10 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 	g_io_channel_read_chars(std_input, buf, msg_size, &read, &err);
 	if (read != msg_size) {
 		gchar* err_msg;
-		asprintf(&err_msg, "Expected %d byts, got %zu\n", msg_size, read);
-		wsh_log_message(err_msg);
+		if (asprintf(&err_msg, "Expected %d byts, got %zu\n", msg_size, read) == -1) {
+			wsh_log_message("Couldn't allocate memory to generate log message");
+			wsh_log_message(strerror(errno));
+		} else wsh_log_message(err_msg);
 	}
 
 	if (err != NULL) goto wshd_get_message_err;

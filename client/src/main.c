@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
 
 #endif
 	argv++;
-	if (strncmp("--", argv[0], 2))
+	if (! strncmp("--", argv[0], 2))
 		argv++;
 	gchar* cmd_string = g_strjoinv(" ", argv);
 

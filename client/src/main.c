@@ -56,6 +56,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->sudo = sudo;
 
 	req->username = sudo_username;
+	if (!req->username) req->username = username;
 	req->password = password;
 
 	req->env = NULL;

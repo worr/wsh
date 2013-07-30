@@ -268,9 +268,6 @@ int main(int argc, char** argv) {
 
 			wshc_try_ssh(&host_info, &cmd_info);
 		}
-
-		if (password) memset_s(password, WSHC_MAX_PASSWORD_LEN, 0, strlen(password));
-		if (sudo_password) memset_s(sudo_password, WSHC_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
 	} else {
 		GThreadPool* gtp;
 		if ((gtp = g_thread_pool_new((GFunc)wshc_try_ssh, &cmd_info, threads, TRUE, &err)) == NULL) {
@@ -292,10 +289,10 @@ int main(int argc, char** argv) {
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);
-
-		if (password) memset_s(password, WSHC_MAX_PASSWORD_LEN, 0, strlen(password));
-		if (sudo_password) memset_s(sudo_password, WSHC_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
 	}
+
+	if (password) memset_s(password, WSHC_MAX_PASSWORD_LEN, 0, strlen(password));
+	if (sudo_password) memset_s(sudo_password, WSHC_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
 
 	wsh_ssh_cleanup();
 	g_free(username);

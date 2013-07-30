@@ -17,6 +17,7 @@ int main(int argc, char** argv, char** env) {
 	wsh_cmd_res_t* res = g_slice_new0(wsh_cmd_res_t);
 
     wsh_init_logger(WSH_LOGGER_SERVER);
+	wsh_log_message("STARTING WSHD");
 
 	wshd_get_message(in, &req, err);
 	if (err != NULL) {
@@ -30,6 +31,9 @@ int main(int argc, char** argv, char** env) {
 		ret = res->err->code;
 		goto wshd_error;
 	}
+
+	for (gint i = 0; i < res->std_error_len; i++)
+		wsh_log_message(res->std_error[i]);
 
 	wshd_send_message(out, res, err);
 	if (err != NULL) {

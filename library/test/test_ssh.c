@@ -362,6 +362,7 @@ static void exec_wshd_channel_failure(void) {
 static void exec_wshd_channel_exec_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_pty_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_ERROR);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -381,9 +382,33 @@ static void exec_wshd_channel_exec_failure(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
+static void exec_wshd_channel_pty_failure(void) {
+	set_ssh_connect_res(SSH_OK);
+	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_pty_ret(SSH_ERROR);
+	set_ssh_channel_request_exec_ret(SSH_OK);
+
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+	GError* err = NULL;
+
+	wsh_ssh_host(session, &err);
+	gint ret = wsh_ssh_exec_wshd(session, &err);
+
+	g_assert(ret == WSH_SSH_PTY_ERR);
+	g_assert(session->session == NULL);
+	g_assert(session->channel == NULL);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PTY_ERR);
+
+	g_error_free(err);
+	g_slice_free(wsh_ssh_session_t, session);
+}
+
 static void exec_wshd_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
+	set_ssh_channel_request_pty_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -584,8 +609,10 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/SSH/ExecWshdChannelFailure",
 		exec_wshd_channel_failure);
-	g_test_add_func("/Library/SSH/ExecWshExecError",
+	g_test_add_func("/Library/SSH/ExecWshdExecError",
 		exec_wshd_channel_exec_failure);
+	g_test_add_func("/Library/SSH/ExecWshdRequestPtyError",
+		exec_wshd_channel_pty_failure);
 	g_test_add_func("/Library/SSH/ExecWshSuccess",
 		exec_wshd_success);
 

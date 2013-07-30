@@ -295,7 +295,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 	/* Just like in server/src/parse.c we need to grab an int first that
 	 * represents the size of the following protobuf object
 	 */
-	if (ssh_channel_read(session->channel, buf_u.buf, 4, FALSE)) {
+	if (ssh_channel_read(session->channel, buf_u.buf, 4, FALSE) != 4) {
 		ret = WSH_SSH_READ_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_READ_ERR,
 			"%s: Couldn't read size bytes: %s", session->hostname,
@@ -307,7 +307,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 
 	// We have our message size, let's make some room and read it in
 	buf = g_slice_alloc0(buf_u.size);
-	if (ssh_channel_read(session->channel, buf, buf_u.size, FALSE)) {
+	if (ssh_channel_read(session->channel, buf, buf_u.size, FALSE) != buf_u.size) {
 		ret = WSH_SSH_READ_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_READ_ERR,
 			"%s: Couldn't read response: %s", session->hostname,

@@ -93,11 +93,25 @@ static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const
 
 	g_print("%s", prompt);
 
-	if (!fgets(target, target_len, stdin)) {
-		g_printerr("%s\n", strerror(errno));
+	gchar* buf = g_slice_alloc0(WSHC_MAX_PASSWORD_LEN);
+	if (setvbuf(stdin, buf, _IOLBF, WSHC_MAX_PASSWORD_LEN)) {
 		target = NULL;
 		return;
 	}
+
+	if (!fgets(target, target_len, stdin)) {
+		g_printerr("%s\n", strerror(errno));
+		target = NULL;
+
+		memset_s(buf, WSHC_MAX_PASSWORD_LEN, 0, strlen(buf));
+		g_slice_free1(WSHC_MAX_PASSWORD_LEN, buf);
+		buf = NULL;
+		return;
+	}
+
+	memset_s(buf, WSHC_MAX_PASSWORD_LEN, 0, strlen(buf));
+	g_slice_free1(WSHC_MAX_PASSWORD_LEN, buf);
+	buf = NULL;
 
 	g_strchomp(target);
 

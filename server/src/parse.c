@@ -8,9 +8,10 @@
 #include "cmd.h"
 #include "log.h"
 #include "pack.h"
+#include "types.h"
 
 gint wshd_get_message_size(GIOChannel* std_input, GError* err) {
-	wshd_message_size_t out;
+	wsh_message_size_t out;
 	gsize read;
 
 	g_io_channel_set_encoding(std_input, NULL, &err);

@@ -1,8 +1,10 @@
 #include <errno.h>
 #include <glib.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <termios.h>
 
 #ifdef RANGE
@@ -15,6 +17,8 @@
 #ifndef HAVE_MEMSET_S
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
+
+static volatile sig_atomic_t signos[NSIG];
 
 const gsize WSHC_MAX_PASSWORD_LEN = 1024;
 
@@ -74,8 +78,12 @@ static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
 	g_free(req->host);
 }
 
+/* Save our signals */
+static void pw_int_handler(int sig) { signos[sig] = 1; }
 static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const gchar* prompt) {
 	struct termios old_flags, new_flags;
+	struct sigaction sa, saveint, savehup, savequit, saveterm, savetstp, savettin, savettou;
+	error_t save_errno = 0;
 
 	if (tcgetattr(fileno(stdin), &old_flags)) {
 		g_printerr("%s\n", strerror(errno));
@@ -91,27 +99,55 @@ static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const
 		return;
 	}
 
-	g_print("%s", prompt);
+	memset(&sa, 0, sizeof(sa));
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_INTERRUPT;
+	sa.sa_handler = pw_int_handler;
+	(void) sigaction(SIGINT, &sa, &saveint);
+	(void) sigaction(SIGHUP, &sa, &savehup);
+	(void) sigaction(SIGQUIT, &sa, &savequit);
+	(void) sigaction(SIGTERM, &sa, &saveterm);
+	(void) sigaction(SIGTSTP, &sa, &savetstp);
+	(void) sigaction(SIGTTIN, &sa, &savettin);
+	(void) sigaction(SIGTTOU, &sa, &savettou);
 
 	gchar* buf = g_slice_alloc0(BUFSIZ);
 	if (setvbuf(stdin, buf, _IOLBF, BUFSIZ)) {
+		save_errno = errno;
 		target = NULL;
-		return;
+		goto restore_sigs;
 	}
+
+	g_print("%s", prompt);
 
 	if (!fgets(target, target_len, stdin)) {
-		g_printerr("%s\n", strerror(errno));
+		save_errno = errno;
 		target = NULL;
-
-		memset_s(buf, BUFSIZ, 0, strlen(buf));
-		g_slice_free1(BUFSIZ, buf);
-		buf = NULL;
-		return;
+		goto restore_sigs;
 	}
 
+restore_sigs:
 	memset_s(buf, BUFSIZ, 0, strlen(buf));
 	g_slice_free1(BUFSIZ, buf);
 	buf = NULL;
+
+	(void) sigaction(SIGINT, &saveint, NULL);
+	(void) sigaction(SIGHUP, &savehup, NULL);
+	(void) sigaction(SIGQUIT, &savequit, NULL);
+	(void) sigaction(SIGTERM, &saveterm, NULL);
+	(void) sigaction(SIGTSTP, &savetstp, NULL);
+	(void) sigaction(SIGTTIN, &savettin, NULL);
+	(void) sigaction(SIGTTOU, &savettou, NULL);
+
+	if (!target) {
+		g_printerr("%s\n", strerror(save_errno));
+		return;
+	}
+
+	// Resend all of our signals
+	for (int i = 0; i < NSIG; i++) {
+		if (signos[i]) kill(getpid(), i);
+	}
 
 	g_strchomp(target);
 

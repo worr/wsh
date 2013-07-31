@@ -77,8 +77,13 @@ gint main(gint argc, gchar** argv) {
 		return EXIT_FAILURE;
 	}
 
-	if (username == NULL) {
+	if (username == NULL)
 		username = g_strdup(g_get_user_name());
+
+	if (argc == 1) {
+		g_free(username);
+		g_printerr("Missing a list of hosts\n");
+		return EXIT_FAILURE;
 	}
 
 #ifdef RANGE

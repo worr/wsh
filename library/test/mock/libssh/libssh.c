@@ -20,6 +20,7 @@ gint ssh_channel_request_exec_ret;
 gint ssh_channel_write_ret;
 gint ssh_channel_read_ret;
 gboolean ssh_channel_write_ret_first = TRUE;
+gboolean ssh_channel_read_ret_first = TRUE;
 
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
@@ -202,8 +203,16 @@ gint ssh_channel_read(ssh_channel channel, void* buf, guint32 buf_len, gboolean 
 	if (buf_len == 4) {
 		g_memmove(buf, ssh_channel_read_size, buf_len);
 	} else {
-		g_memmove(buf, ssh_channel_read_set, buf_len);
+		if (ssh_channel_read_set != NULL)
+			g_memmove(buf, ssh_channel_read_set, buf_len);
+		else buf = NULL;
 	}
+
+	if (ssh_channel_read_ret_first) {
+		ssh_channel_read_ret_first = FALSE;
+		return 4;
+	} else ssh_channel_read_ret_first = TRUE;
+
 	return ssh_channel_read_ret;
 }
 

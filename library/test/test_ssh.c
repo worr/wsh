@@ -481,7 +481,7 @@ static void recv_result_read_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
-	set_ssh_channel_read_ret(SSH_ERROR);
+	set_ssh_channel_read_ret(0);
 	set_ssh_channel_read_set(NULL);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -508,7 +508,7 @@ static void recv_result_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
-	set_ssh_channel_read_ret(SSH_OK);
+	set_ssh_channel_read_ret(sizeof(encoded_res));
 	set_ssh_channel_read_set(encoded_res);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);

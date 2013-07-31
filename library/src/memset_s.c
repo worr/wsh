@@ -1,5 +1,3 @@
-#include "memset_s.h"
-
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>

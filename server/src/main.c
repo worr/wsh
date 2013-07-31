@@ -9,9 +9,6 @@
 #include "log.h"
 #include "output.h"
 #include "parse.h"
-#ifndef HAVE_MEMSET_S
-extern int memset_s(void* v, size_t smax, int c, size_t n);
-#endif
 
 int main(int argc, char** argv, char** env) {
 	GIOChannel* in = g_io_channel_unix_new(STDIN_FILENO);

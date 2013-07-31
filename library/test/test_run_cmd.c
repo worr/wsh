@@ -28,7 +28,7 @@ static void setup(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data
 	data->req->cwd = "/tmp";
 	data->req->host = "127.0.0.1";
 	data->req->username = "root";
-	data->req->password = "test";
+	data->req->password = g_strdup("test");
 
 	wsh_init_logger(WSH_LOGGER_SERVER);
 }
@@ -219,6 +219,9 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 	g_io_channel_read_line(in, &buf, &buf_len, NULL, NULL);
 
 	g_assert_cmpstr(g_strchomp(buf), ==, "test");
+
+	for (int i = 0; i < 4; i++)
+		g_assert(fixture->req->password[i] == 0);
 
 	g_io_channel_shutdown(in, FALSE, NULL);
 	g_io_channel_shutdown(mock_stdin, FALSE, NULL);

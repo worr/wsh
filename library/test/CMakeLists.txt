@@ -26,6 +26,10 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c
 )
 
+if( NOT HAVE_MEMSET_S )
+	set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/memset_s.c ${SOURCES} )
+endif( NOT HAVE_MEMSET_S )
+
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 	add_executable( ${TEST_EXECUTABLE} ${TEST_EXECUTABLE}.c ${SOURCES} )
 	add_test( ${TEST_EXECUTABLE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXECUTABLE} )

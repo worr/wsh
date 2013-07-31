@@ -163,6 +163,9 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data
 			gchar* line_remainder = NULL;
 			gchar* comb = NULL;
 
+			if (req->password[0] != 0)
+				memset_s(req->password, strlen(req->password), 0, strlen(req->password));
+
 			stat = g_io_channel_read_line(out, &line_remainder, &buf_len, NULL, &res->err);
 			if (stat == G_IO_STATUS_EOF) {
 				ret = FALSE;
@@ -274,6 +277,8 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 			ret = FALSE;
 			goto write_stdin_err;
 		}
+
+		memset_s(req->password, strlen(req->password), 0, strlen(req->password));
 
 		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
 		if (res->err || wrote == 0) {

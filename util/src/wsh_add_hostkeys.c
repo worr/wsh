@@ -69,7 +69,7 @@ gint main(gint argc, gchar** argv) {
 
 	wsh_ssh_init();
 
-	context = g_option_context_new("[HOSTS] - automatically add hostkeys to your hostkey file");
+	context = g_option_context_new("HOSTS... - automatically add hostkeys to your hostkey file");
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
 		g_printerr("Option parsing failed: %s\n", err->message);
@@ -82,7 +82,8 @@ gint main(gint argc, gchar** argv) {
 
 	if (argc == 1) {
 		g_free(username);
-		g_printerr("Missing a list of hosts\n");
+		g_printerr("Error: Missing a list of hosts\n\n");
+		g_printerr("%s", g_option_context_get_help(context, TRUE, NULL));
 		return EXIT_FAILURE;
 	}
 

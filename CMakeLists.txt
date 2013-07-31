@@ -72,8 +72,9 @@ if( IS_DIRECTORY /usr/pkg/lib )
 endif( IS_DIRECTORY /usr/pkg/lib )
 
 # Function tests
-check_function_exists( mlock HAVE_MLOCK )
-check_function_exists( memset_s HAVE_MEMSET_S )
+if( HAVE_C11 )
+	check_function_exists( memset_s HAVE_MEMSET_S )
+endif( HAVE_C11 )
 
 add_subdirectory( library/src )
 

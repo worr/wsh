@@ -1,9 +1,9 @@
-#include <arpa/inet.h>
 #include <glib.h>
 #include <unistd.h>
 
 #include "cmd.h"
 #include "parse.h"
+#include "types.h"
 
 static gchar* req_username = "will";
 static gchar* req_password = "test";
@@ -25,7 +25,7 @@ static const gchar encoded_req[]
 		0x05, 0x3a, 0x00 } ;
 
 static void test_get_message_size(void) {
-	wshd_message_size_t size;
+	wsh_message_size_t size;
 	gint recv;
 	gint fds[2];
 	gsize writ;
@@ -39,23 +39,23 @@ static void test_get_message_size(void) {
 	g_io_channel_set_encoding(in, NULL, NULL);
 	g_io_channel_set_encoding(mock_stdout, NULL, NULL);
 
-	size.size = htonl(0);
+	size.size = g_htonl(0);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_flush(in, NULL);
 	recv = wshd_get_message_size(mock_stdout, err);
 	g_assert_no_error(err);
-	g_assert(recv == ntohl(size.size));
+	g_assert(recv == g_ntohl(size.size));
 
-	size.size = htonl(200);
+	size.size = g_htonl(200);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_flush(in, NULL);
 	recv = wshd_get_message_size(mock_stdout, err);
 	g_assert_no_error(err);
-	g_assert(recv == ntohl(size.size));
+	g_assert(recv == g_ntohl(size.size));
 }
 
 static void test_get_message(void) {
-	wshd_message_size_t size;
+	wsh_message_size_t size;
 	wsh_cmd_req_t* req = g_new0(wsh_cmd_req_t, 1);
 	gint fds[2];
 	gsize writ;
@@ -69,7 +69,7 @@ static void test_get_message(void) {
 	g_io_channel_set_encoding(in, NULL, NULL);
 	g_io_channel_set_encoding(mock_stdout, NULL, NULL);
 
-	size.size = htonl(encoded_req_len);
+	size.size = g_htonl(encoded_req_len);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_write_chars(in, encoded_req, encoded_req_len, &writ, NULL);
 	g_io_channel_flush(in, NULL);

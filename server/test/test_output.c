@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "output.h"
+#include "types.h"
 
 static const gsize encoded_res_len = 17;
 static const guint8 encoded_res[17]
@@ -11,6 +12,8 @@ static void test_send_message(void) {
 	GIOChannel* in, * out;
 	gint fds[2];
 	GError* err = NULL;
+	wsh_message_size_t msg_size;
+
 	wsh_cmd_res_t res = {
 		.std_output_len = 2,
 		.std_error_len = 1,
@@ -37,8 +40,10 @@ static void test_send_message(void) {
 	wshd_send_message(out, &res, err);
 
 	g_io_channel_set_encoding(in, NULL, NULL);
-	g_io_channel_read_chars(in, buf, encoded_res_len, &read, NULL);
+	g_io_channel_read_chars(in, msg_size.buf, 4, &read, NULL);
+	g_assert(g_ntohl(msg_size.size) == encoded_res_len);
 
+	g_io_channel_read_chars(in, buf, encoded_res_len, &read, NULL);
 	g_assert_no_error(err);
 	g_assert(read == encoded_res_len);
 

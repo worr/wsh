@@ -1,9 +1,11 @@
 #include <errno.h>
 #include <glib.h>
+#include <math.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <termios.h>
 
@@ -34,6 +36,8 @@ static gchar* hosts_arg = NULL;
 #ifdef RANGE
 static gboolean range = FALSE;
 #endif
+
+static void* passwd_mem;
 
 static GOptionEntry entries[] = {
 	{ "stdout", 'o', 0, G_OPTION_ARG_NONE, &std_out, "Show stdout of hosts (suppressed by default on success)", NULL },
@@ -111,7 +115,7 @@ static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const
 	(void) sigaction(SIGTTIN, &sa, &savettin);
 	(void) sigaction(SIGTTOU, &sa, &savettou);
 
-	gchar* buf = g_slice_alloc0(BUFSIZ);
+	gchar* buf = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 3);
 	if (setvbuf(stdin, buf, _IOLBF, BUFSIZ)) {
 		save_errno = errno;
 		target = NULL;
@@ -128,7 +132,6 @@ static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const
 
 restore_sigs:
 	memset_s(buf, BUFSIZ, 0, strlen(buf));
-	g_slice_free1(BUFSIZ, buf);
 	buf = NULL;
 
 	(void) sigaction(SIGINT, &saveint, NULL);
@@ -154,6 +157,28 @@ restore_sigs:
 	if (tcsetattr(fileno(stdin), TCSANOW, &old_flags)) {
 		g_printerr("%s\n", strerror(errno));
 		target = NULL;
+		return;
+	}
+}
+
+static void lock_password_pages(void) {
+	if ((gintptr)(passwd_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1) {
+		g_printerr("mmap: %s\n", strerror(errno));
+		return;
+	}
+
+	if (mlock(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3)) {
+		g_printerr("mlock: %s\n", strerror(errno));
+		return;
+	}
+}
+
+static void unlock_password_pages(void) {
+	if (munlock(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3))
+		g_printerr("%s\n", strerror(errno));
+
+	if (munmap(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3)) {
+		g_printerr("%s\n", strerror(errno));
 		return;
 	}
 }
@@ -191,16 +216,17 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
+	if (ask_password || ask_sudo_password)
+		lock_password_pages();
+
 	if (ask_password) {
-		password = g_slice_alloc0(WSHC_MAX_PASSWORD_LEN);
+		password = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 0);
 		prompt_for_a_fucking_password(password, WSHC_MAX_PASSWORD_LEN, "SSH password: ");
 		if (! password) return EXIT_FAILURE;
-
-		if (! ask_sudo_password) sudo_password = g_strdup(password); // Guaranteed to be NULL terminated bro
 	}
 
 	if (ask_sudo_password) {
-		sudo_password = g_slice_alloc0(WSHC_MAX_PASSWORD_LEN);
+		sudo_password = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 1);
 		prompt_for_a_fucking_password(sudo_password, WSHC_MAX_PASSWORD_LEN, "sudo password: ");
 		if (! sudo_password) return EXIT_FAILURE;
 	}
@@ -293,6 +319,7 @@ int main(int argc, char** argv) {
 
 	if (password) memset_s(password, WSHC_MAX_PASSWORD_LEN, 0, strlen(password));
 	if (sudo_password) memset_s(sudo_password, WSHC_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
+	if (password || sudo_password) unlock_password_pages();
 
 	wsh_ssh_cleanup();
 	g_free(username);
@@ -300,15 +327,6 @@ int main(int argc, char** argv) {
 	g_free(hosts_arg);
 	g_strfreev(hosts);
 	g_free(cmd_string);
-
-	if (ask_password) {
-		g_slice_free1(WSHC_MAX_PASSWORD_LEN, password);
-		g_slice_free1(WSHC_MAX_PASSWORD_LEN, sudo_password);
-	}
-
-	if (ask_sudo_password && ! ask_password) {
-		g_slice_free1(WSHC_MAX_PASSWORD_LEN, sudo_password);
-	}
 
 	free_wsh_cmd_req_fields(&req);
 

@@ -13,3 +13,5 @@ cmake_install.cmake
 gen
 Makefile
 install_manifest.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake

@@ -11,6 +11,7 @@ set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules )
 
 include( CheckFunctionExists )
 include( CheckC11 )
+include( CPack )
 
 set( CMAKE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/bin )

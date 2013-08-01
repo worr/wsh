@@ -14,6 +14,7 @@ typedef struct {
 } wshd_output_info_t;
 
 void wshd_init_output(wshd_output_info_t** out, gboolean show_stdout);
+void wshd_cleanup_output(wshd_output_info_t** out);
 
 #endif
 

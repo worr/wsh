@@ -31,6 +31,8 @@ void wshd_init_output(wshd_output_info_t** out, gboolean show_stdout) {
 }
 
 void wshd_cleanup_output(wshd_output_info_t** out) {
+	g_assert(*out);
+
 	g_mutex_free((*out)->mut);
 	g_slice_free(wshd_output_info_t, *out);
 	*out = NULL;

@@ -7,6 +7,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef UNIT_TESTING
+extern gint fchmod_t();
+extern gint mkstemp_t();
+extern gint close_t();
+#define fchmod(X, Y) fchmod_t(X, Y)
+#define mkstemp(X) mkstemp_t(X)
+#define close(X) close_t(X)
+#endif
+
 #include "cmd.h"
 
 static const gint WSHD_MAX_OUT_LEN = 50;
@@ -14,12 +23,6 @@ static const gint WSHD_MAX_HOSTS = 20;
 static const gint WSHD_SCORE_THRESHOLD = 2;
 
 static GOnce check_write_out_once = G_ONCE_INIT;
-
-struct check_write_out_args {
-	wshd_output_info_t* out;
-	const wsh_cmd_res_t* res;
-	guint num_hosts;
-};
 
 void wshd_init_output(wshd_output_info_t** out, gboolean show_stdout) {
 	g_assert(out);
@@ -38,11 +41,11 @@ void wshd_cleanup_output(wshd_output_info_t** out) {
 	*out = NULL;
 }
 
-static int wshd_write_output_mem(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
+static gint wshd_write_output_mem(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
 	return 0;
 }
 
-static int wshd_write_output_file(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
+static gint wshd_write_output_file(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
 	return 0;
 }
 
@@ -56,10 +59,15 @@ static int wshd_write_output_file(wshd_output_info_t* out, const wsh_cmd_res_t* 
  * This is very static right now, and should be implemented more dynamically/
  * intelligently
  */
-static int wshd_check_write_output(struct check_write_out_args* args) {
+gint wshd_check_write_output(struct check_write_out_args* args) {
+	g_assert(args);
+	g_assert(args->num_hosts);
+	g_assert(args->out);
+	g_assert(args->res);
+
 	gint score = 0;
 	gint ret = EXIT_SUCCESS;
-	gboolean write = TRUE;
+	gboolean write = FALSE;
 	wshd_output_info_t* out = args->out;
 	const wsh_cmd_res_t* res = args->res;
 	guint num_hosts = args->num_hosts;
@@ -74,6 +82,7 @@ static int wshd_check_write_output(struct check_write_out_args* args) {
 			g_printerr("Could not create temp output file: %s\n", strerror(errno));
 			g_printerr("Continuing without\n");
 			write = FALSE;
+			ret = EXIT_FAILURE;
 			goto wshd_check_write_output_error;
 		}
 
@@ -84,8 +93,11 @@ static int wshd_check_write_output(struct check_write_out_args* args) {
 			g_printerr("Continuing without\n");
 			write = FALSE;
 			(void)close(out->out_fd);
+			ret = EXIT_FAILURE;
 			goto wshd_check_write_output_error;
 		}
+
+		write = TRUE;
 	}
 
 wshd_check_write_output_error:
@@ -94,7 +106,7 @@ wshd_check_write_output_error:
 	return ret;
 }
 
-int wshd_write_output(wshd_output_info_t* out, guint num_hosts, const wsh_cmd_res_t* res) {
+gint wshd_write_output(wshd_output_info_t* out, guint num_hosts, const wsh_cmd_res_t* res) {
 	struct check_write_out_args args = {
 		.out = out,
 		.res = res,
@@ -107,7 +119,7 @@ int wshd_write_output(wshd_output_info_t* out, guint num_hosts, const wsh_cmd_re
 	else				return wshd_write_output_mem(out, res);
 }
 
-int wshd_collate_output(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
+gint wshd_collate_output(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
 	return 0;
 }
 

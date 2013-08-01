@@ -13,8 +13,15 @@ typedef struct {
 	GHashTable* output;
 } wshd_output_info_t;
 
+struct check_write_out_args {
+	wshd_output_info_t* out;
+	const wsh_cmd_res_t* res;
+	guint num_hosts;
+};
+
 void wshd_init_output(wshd_output_info_t** out, gboolean show_stdout);
 void wshd_cleanup_output(wshd_output_info_t** out);
+int wshd_check_write_output(struct check_write_out_args* args);
 
 #endif
 

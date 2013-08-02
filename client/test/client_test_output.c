@@ -194,6 +194,31 @@ static void write_output_mem(void) {
 	wshd_cleanup_output(&out);
 }
 
+static void write_output_mem_null(void) {
+	gchar* a_err[] = { NULL };
+	gchar* a_out[] = { NULL };
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+	};
+
+	wshd_output_info_t* out;
+	wshd_init_output(&out, TRUE);
+
+	gint ret = wshd_write_output(out, 1, "localhost", &res);
+
+	gchar** test_error_res = g_hash_table_lookup(out->error, "localhost");
+	gchar** test_output_res = g_hash_table_lookup(out->output, "localhost");
+
+	g_assert(ret == EXIT_SUCCESS);
+
+	g_assert(*test_error_res == NULL);
+	g_assert(*test_output_res == NULL);
+
+	wshd_cleanup_output(&out);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -214,6 +239,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestOutputSuccessNoWrite", check_output_success_no_write);
 
 	g_test_add_func("/Client/TestWriteOutputMem", write_output_mem);
+	g_test_add_func("/Client/TestWriteOutputMemNull", write_output_mem_null);
 
 	return g_test_run();
 }

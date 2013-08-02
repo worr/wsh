@@ -190,6 +190,8 @@ static void write_output_mem(void) {
 		g_assert_cmpstr(*p, ==, test_output_res[p - res.std_output]);
 		p++;
 	}
+
+	wshd_cleanup_output(&out);
 }
 
 int main(int argc, char** argv) {

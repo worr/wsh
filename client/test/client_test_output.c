@@ -160,6 +160,38 @@ static void check_output_success_no_write(void) {
 	g_assert(close_called == FALSE);
 }
 
+static void write_output_mem(void) {
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+	};
+
+	wshd_output_info_t* out;
+	wshd_init_output(&out, TRUE);
+
+	gint ret = wshd_write_output(out, 1, "localhost", &res);
+
+	gchar** test_error_res = g_hash_table_lookup(out->error, "localhost");
+	gchar** test_output_res = g_hash_table_lookup(out->output, "localhost");
+
+	g_assert(ret == EXIT_SUCCESS);
+
+	gchar** p = res.std_error;
+	while (*p != NULL) {
+		g_assert_cmpstr(*p, ==, test_error_res[p - res.std_error]);
+		p++;
+	}
+
+	p = res.std_output;
+	while (*p != NULL) {
+		g_assert_cmpstr(*p, ==, test_output_res[p - res.std_output]);
+		p++;
+	}
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -178,6 +210,8 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestOutputFchownFail", check_output_fchown_failure);
 	g_test_add_func("/Client/TestOutputSuccess", check_output_success);
 	g_test_add_func("/Client/TestOutputSuccessNoWrite", check_output_success_no_write);
+
+	g_test_add_func("/Client/TestWriteOutputMem", write_output_mem);
 
 	return g_test_run();
 }

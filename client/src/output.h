@@ -11,6 +11,7 @@ typedef struct {
 	gint show_stdout;
 	GMutex* mut;
 	GHashTable* output;
+	GHashTable* error;
 } wshd_output_info_t;
 
 struct check_write_out_args {
@@ -22,6 +23,7 @@ struct check_write_out_args {
 void wshd_init_output(wshd_output_info_t** out, gboolean show_stdout);
 void wshd_cleanup_output(wshd_output_info_t** out);
 int wshd_check_write_output(struct check_write_out_args* args);
+gint wshd_write_output(wshd_output_info_t* out, guint num_hosts, const gchar* hostname, const wsh_cmd_res_t* res);
 
 #endif
 

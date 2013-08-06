@@ -16,7 +16,7 @@ gint close_t() { close_called = TRUE; return EXIT_SUCCESS; }
 
 static void init_output_failure(void) {
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
-		wshd_init_output(NULL, TRUE);
+		wshc_init_output(NULL, TRUE);
 		exit(0);
 	}
 
@@ -25,8 +25,8 @@ static void init_output_failure(void) {
 
 static void init_output_success(void) {
 	if (g_test_trap_fork(0, 0)) {
-		wshd_output_info_t* out;
-		wshd_init_output(&out, TRUE);
+		wshc_output_info_t* out;
+		wshc_init_output(&out, TRUE);
 		exit(0);
 	}
 
@@ -35,8 +35,8 @@ static void init_output_success(void) {
 
 static void cleanup_output_failure(void) {
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDERR|G_TEST_TRAP_SILENCE_STDOUT)) {
-		wshd_output_info_t* out = NULL;
-		wshd_cleanup_output(&out);
+		wshc_output_info_t* out = NULL;
+		wshc_cleanup_output(&out);
 		exit(0);
 	}
 
@@ -45,9 +45,9 @@ static void cleanup_output_failure(void) {
 
 static void cleanup_output_success(void) {
 	if (g_test_trap_fork(0, 0)) {
-		wshd_output_info_t* out;
-		wshd_init_output(&out, TRUE);
-		wshd_cleanup_output(&out);
+		wshc_output_info_t* out;
+		wshc_init_output(&out, TRUE);
+		wshc_cleanup_output(&out);
 		g_assert(out == NULL);
 		exit(0);
 	}
@@ -59,20 +59,20 @@ static void check_output_mkstemp_failure(void) {
 	mkstemp_ret = -1;
 	mkstemp_called = FALSE;
 	fchown_called = FALSE;
-	wshd_output_info_t* out;
+	wshc_output_info_t* out;
 	wsh_cmd_res_t res = {
 		.std_output_len = 1000,
 		.std_error_len = 1000,
 	};
 
-	wshd_init_output(&out, TRUE);
+	wshc_init_output(&out, TRUE);
 	struct check_write_out_args args = {
 		.out = out,
 		.num_hosts = 51,
 		.res = &res,
 	};
 
-	gint ret = wshd_check_write_output(&args);
+	gint ret = wshc_check_write_output(&args);
 
 	g_assert(ret == EXIT_FAILURE);
 	g_assert(fchown_called == FALSE);
@@ -85,21 +85,21 @@ static void check_output_fchown_failure(void) {
 	mkstemp_called = FALSE;
 	fchown_called = FALSE;
 	close_called = FALSE;
-	wshd_output_info_t* out;
+	wshc_output_info_t* out;
 
 	wsh_cmd_res_t res = {
 		.std_output_len = 1000,
 		.std_error_len = 1000,
 	};
 
-	wshd_init_output(&out, TRUE);
+	wshc_init_output(&out, TRUE);
 	struct check_write_out_args args = {
 		.out = out,
 		.num_hosts = 51,
 		.res = &res,
 	};
 
-	gint ret = wshd_check_write_output(&args);
+	gint ret = wshc_check_write_output(&args);
 
 	g_assert(ret == EXIT_FAILURE);
 	g_assert(out->write_out == FALSE);
@@ -112,21 +112,21 @@ static void check_output_success(void) {
 	mkstemp_called = FALSE;
 	fchown_called = FALSE;
 	close_called = FALSE;
-	wshd_output_info_t* out;
+	wshc_output_info_t* out;
 
 	wsh_cmd_res_t res = {
 		.std_output_len = 1000,
 		.std_error_len = 100,
 	};
 
-	wshd_init_output(&out, TRUE);
+	wshc_init_output(&out, TRUE);
 	struct check_write_out_args args = {
 		.out = out,
 		.num_hosts = 51,
 		.res = &res,
 	};
 
-	gint ret = wshd_check_write_output(&args);
+	gint ret = wshc_check_write_output(&args);
 
 	g_assert(ret == EXIT_SUCCESS);
 	g_assert(out->write_out == TRUE);
@@ -139,21 +139,21 @@ static void check_output_success_no_write(void) {
 	mkstemp_called = FALSE;
 	fchown_called = FALSE;
 	close_called = FALSE;
-	wshd_output_info_t* out;
+	wshc_output_info_t* out;
 
 	wsh_cmd_res_t res = {
 		.std_output_len = 1,
 		.std_error_len = 1,
 	};
 
-	wshd_init_output(&out, TRUE);
+	wshc_init_output(&out, TRUE);
 	struct check_write_out_args args = {
 		.out = out,
 		.num_hosts = 5,
 		.res = &res,
 	};
 
-	gint ret = wshd_check_write_output(&args);
+	gint ret = wshc_check_write_output(&args);
 
 	g_assert(ret == EXIT_SUCCESS);
 	g_assert(out->write_out == FALSE);
@@ -169,29 +169,28 @@ static void write_output_mem(void) {
 		.std_output = a_out,
 	};
 
-	wshd_output_info_t* out;
-	wshd_init_output(&out, TRUE);
+	wshc_output_info_t* out;
+	wshc_init_output(&out, TRUE);
 
-	gint ret = wshd_write_output(out, 1, "localhost", &res);
+	gint ret = wshc_write_output(out, 1, "localhost", &res);
 
-	gchar** test_error_res = g_hash_table_lookup(out->error, "localhost");
-	gchar** test_output_res = g_hash_table_lookup(out->output, "localhost");
+	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output, "localhost");
 
 	g_assert(ret == EXIT_SUCCESS);
 
 	gchar** p = res.std_error;
 	while (*p != NULL) {
-		g_assert_cmpstr(*p, ==, test_error_res[p - res.std_error]);
+		g_assert_cmpstr(*p, ==, test_output_res->error[p - res.std_error]);
 		p++;
 	}
 
 	p = res.std_output;
 	while (*p != NULL) {
-		g_assert_cmpstr(*p, ==, test_output_res[p - res.std_output]);
+		g_assert_cmpstr(*p, ==, test_output_res->output[p - res.std_output]);
 		p++;
 	}
 
-	wshd_cleanup_output(&out);
+	wshc_cleanup_output(&out);
 }
 
 static void write_output_mem_null(void) {
@@ -203,20 +202,54 @@ static void write_output_mem_null(void) {
 		.std_output = a_out,
 	};
 
-	wshd_output_info_t* out;
-	wshd_init_output(&out, TRUE);
+	wshc_output_info_t* out;
+	wshc_init_output(&out, TRUE);
 
-	gint ret = wshd_write_output(out, 1, "localhost", &res);
+	gint ret = wshc_write_output(out, 1, "localhost", &res);
 
-	gchar** test_error_res = g_hash_table_lookup(out->error, "localhost");
-	gchar** test_output_res = g_hash_table_lookup(out->output, "localhost");
+	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output, "localhost");
 
 	g_assert(ret == EXIT_SUCCESS);
 
-	g_assert(*test_error_res == NULL);
-	g_assert(*test_output_res == NULL);
+	g_assert(*test_output_res->output == NULL);
+	g_assert(*test_output_res->error == NULL);
 
-	wshd_cleanup_output(&out);
+	wshc_cleanup_output(&out);
+}
+
+static void collate_output(void) {
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+	gint ret;
+
+	gsize output_size = 0;
+	gchar** printable_output;
+	gchar* expected_out[] = {
+		"localhost, otherhost stdout:",
+		"other", "test",
+		"localhost, otherhost stderr:",
+		"testing", "1", "2", "3", NULL
+	};
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+	};
+
+	wshc_output_info_t* out;
+	wshc_init_output(&out, TRUE);
+
+	(void)wshc_write_output(out, 2, "localhost", &res);
+	(void)wshc_write_output(out, 2, "otherhost", &res);
+
+	ret = wshc_collate_output(out, &printable_output, &output_size);
+
+	g_assert(ret == EXIT_SUCCESS);
+
+	for (gchar** p = expected_out; *p != NULL; p++)
+		g_assert_cmpstr(*p, ==, printable_output[p - printable_output]);
+
+	g_strfreev(printable_output);
 }
 
 int main(int argc, char** argv) {
@@ -240,6 +273,8 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Client/TestWriteOutputMem", write_output_mem);
 	g_test_add_func("/Client/TestWriteOutputMemNull", write_output_mem_null);
+
+	g_test_add_func("/Client/TestCollateOutput", collate_output);
 
 	return g_test_run();
 }

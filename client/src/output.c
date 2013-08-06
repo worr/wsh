@@ -24,48 +24,60 @@ static const gint WSHD_MAX_OUT_LEN = 50;
 static const gint WSHD_MAX_HOSTS = 20;
 static const gint WSHD_SCORE_THRESHOLD = 2;
 
+enum collate_output_type {
+	WSHC_STDOUT_COLLATE,
+	WSHC_STDERR_COLLATE,
+};
+
+struct collate {
+	GPtrArray* hosts;
+	gchar** output;
+	enum collate_output_type type;
+};
+
+static void free_output(wshc_host_output_t* out) {
+	if (out->error) g_strfreev(out->error);
+	if (out->output) g_strfreev(out->output);
+	g_slice_free(wshc_host_output_t, out);
+}
+
 /* This expects not to be threaded */
-void wshd_init_output(wshd_output_info_t** out, gboolean show_stdout) {
+void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout) {
 	g_assert(out);
 
-	*out = g_slice_new0(wshd_output_info_t);
+	*out = g_slice_new0(wshc_output_info_t);
 
 	(*out)->show_stdout = show_stdout;
 	(*out)->mut = g_mutex_new();
-	(*out)->error = g_hash_table_new_full(g_str_hash, g_str_equal,
-		(GDestroyNotify)g_free, (GDestroyNotify)g_strfreev);
 	(*out)->output = g_hash_table_new_full(g_str_hash, g_str_equal,
-		(GDestroyNotify)g_free, (GDestroyNotify)g_strfreev);
+		(GDestroyNotify)g_free, (GDestroyNotify)free_output);
 }
 
 /* This expects not to be threaded */
-void wshd_cleanup_output(wshd_output_info_t** out) {
+void wshc_cleanup_output(wshc_output_info_t** out) {
 	g_assert(*out);
 
 	g_hash_table_destroy((*out)->output);
-	g_hash_table_destroy((*out)->error);
 	g_mutex_free((*out)->mut);
-	g_slice_free(wshd_output_info_t, *out);
+	g_slice_free(wshc_output_info_t, *out);
 	*out = NULL;
 }
 
-static gint write_output_mem(wshd_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
-	g_assert(out);
-	g_assert(res);
+static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
+	// Freed on destruction
+	wshc_host_output_t* host_out = g_slice_new0(wshc_host_output_t);
+	host_out->error = g_strdupv(res->std_error);
+	host_out->output = g_strdupv(res->std_output);
+	host_out->exit_code = res->exit_status;
 
 	g_mutex_lock(out->mut);
-	g_hash_table_insert(out->error, g_strdup(hostname), g_strdupv(res->std_error));
-	if (out->show_stdout)
-		g_hash_table_insert(out->output, g_strdup(hostname), g_strdupv(res->std_output));
+	g_hash_table_insert(out->output, g_strdup(hostname), host_out);
 	g_mutex_unlock(out->mut);
 
 	return EXIT_SUCCESS;
 }
 
-static gint write_output_file(wshd_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
-	g_assert(out);
-	g_assert(res);
-
+static gint write_output_file(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
 	return 0;
 }
 
@@ -79,7 +91,7 @@ static gint write_output_file(wshd_output_info_t* out, const gchar* hostname, co
  * This is very static right now, and should be implemented more dynamically/
  * intelligently
  */
-gint wshd_check_write_output(struct check_write_out_args* args) {
+gint wshc_check_write_output(struct check_write_out_args* args) {
 	g_assert(args);
 	g_assert(args->num_hosts);
 	g_assert(args->out);
@@ -88,7 +100,7 @@ gint wshd_check_write_output(struct check_write_out_args* args) {
 	gint score = 0;
 	gint ret = EXIT_SUCCESS;
 	gboolean write = FALSE;
-	wshd_output_info_t* out = args->out;
+	wshc_output_info_t* out = args->out;
 	const wsh_cmd_res_t* res = args->res;
 	guint num_hosts = args->num_hosts;
 
@@ -103,7 +115,7 @@ gint wshd_check_write_output(struct check_write_out_args* args) {
 			g_printerr("Continuing without\n");
 			write = FALSE;
 			ret = EXIT_FAILURE;
-			goto wshd_check_write_output_error;
+			goto wshc_check_write_output_error;
 		}
 
 		// This should be done by mkstemp on most UNIXes, but older versions
@@ -114,19 +126,19 @@ gint wshd_check_write_output(struct check_write_out_args* args) {
 			write = FALSE;
 			(void)close(out->out_fd);
 			ret = EXIT_FAILURE;
-			goto wshd_check_write_output_error;
+			goto wshc_check_write_output_error;
 		}
 
 		write = TRUE;
 	}
 
-wshd_check_write_output_error:
+wshc_check_write_output_error:
 	out->write_out = write;
 	g_mutex_unlock(out->mut);
 	return ret;
 }
 
-gint wshd_write_output(wshd_output_info_t* out, guint num_hosts, const gchar* hostname, const wsh_cmd_res_t* res) {
+gint wshc_write_output(wshc_output_info_t* out, guint num_hosts, const gchar* hostname, const wsh_cmd_res_t* res) {
 	struct check_write_out_args args = {
 		.out = out,
 		.res = res,
@@ -137,14 +149,22 @@ gint wshd_write_output(wshd_output_info_t* out, guint num_hosts, const gchar* ho
 	check_write_out_once.status = G_ONCE_STATUS_READY;
 #endif
 
-	g_once(&check_write_out_once, (GThreadFunc)wshd_check_write_output, &args);
+	g_once(&check_write_out_once, (GThreadFunc)wshc_check_write_output, &args);
 
 	if (out->write_out) return write_output_file(out, hostname, res);
 	else				return write_output_mem(out, hostname, res);
 }
 
 /* This expects not to be threaded */
-gint wshd_collate_output(wshd_output_info_t* out, const wsh_cmd_res_t* res) {
+gint wshc_collate_output(wshc_output_info_t* out, gchar*** output, gsize* output_size) {
+	g_assert(output);
+	g_assert(out);
+
+	const gsize alloc_len = 4096;
+	*output_size = alloc_len;
+
+	*output = g_slice_alloc0(*output_size);
+
 	return 0;
 }
 

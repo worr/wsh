@@ -29,7 +29,7 @@ void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout);
 void wshc_cleanup_output(wshc_output_info_t** out);
 int wshc_check_write_output(struct check_write_out_args* args);
 gint wshc_write_output(wshc_output_info_t* out, guint num_hosts, const gchar* hostname, const wsh_cmd_res_t* res);
-gint wshc_collate_output(wshc_output_info_t* out, gchar*** output, gsize* output_size);
+gint wshc_collate_output(wshc_output_info_t* out, gchar** output, gsize* output_size);
 
 #endif
 

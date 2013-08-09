@@ -20,19 +20,26 @@ extern gint close_t();
 
 #include "cmd.h"
 
-static const gint WSHD_MAX_OUT_LEN = 50;
-static const gint WSHD_MAX_HOSTS = 20;
-static const gint WSHD_SCORE_THRESHOLD = 2;
-
-enum collate_output_type {
-	WSHC_STDOUT_COLLATE,
-	WSHC_STDERR_COLLATE,
-};
+static const gint WSHC_MAX_OUT_LEN = 50;
+static const gint WSHC_MAX_HOSTS = 20;
+static const gint WSHC_SCORE_THRESHOLD = 2;
+static const gsize WSHC_ALLOC_LEN = 4096;
+static const gchar* WSHC_STDERR_TAIL = "stderr:\n";
+static const gchar* WSHC_STDOUT_TAIL = "stdout:\n";
+static const gsize WSHC_STDERR_TAIL_SIZE = 9;
+static const gsize WSHC_STDOUT_TAIL_SIZE = 9;
 
 struct collate {
-	GPtrArray* hosts;
+	GSList* hosts;
 	gchar** output;
-	enum collate_output_type type;
+	gchar** error;
+	gint exit_code;
+};
+
+// Struct for final collate info
+struct f_collate {
+	gchar** out;
+	gsize* size;
 };
 
 static void free_output(wshc_host_output_t* out) {
@@ -104,12 +111,12 @@ gint wshc_check_write_output(struct check_write_out_args* args) {
 	const wsh_cmd_res_t* res = args->res;
 	guint num_hosts = args->num_hosts;
 
-	if (res->std_error_len > WSHD_MAX_OUT_LEN) 						score++;
-	if (out->show_stdout && res->std_output_len > WSHD_MAX_OUT_LEN)	score++;
-	if (num_hosts > WSHD_MAX_HOSTS)									score++;
+	if (res->std_error_len > WSHC_MAX_OUT_LEN) 						score++;
+	if (out->show_stdout && res->std_output_len > WSHC_MAX_OUT_LEN)	score++;
+	if (num_hosts > WSHC_MAX_HOSTS)									score++;
 
 	g_mutex_lock(out->mut);
-	if (score >= WSHD_SCORE_THRESHOLD) {
+	if (score >= WSHC_SCORE_THRESHOLD) {
 		if ((out->out_fd = mkstemp("/tmp/wshc_out.tmp.XXXXXX")) == -1) {
 			g_printerr("Could not create temp output file: %s\n", strerror(errno));
 			g_printerr("Continuing without\n");
@@ -155,16 +162,93 @@ gint wshc_write_output(wshc_output_info_t* out, guint num_hosts, const gchar* ho
 	else				return write_output_mem(out, hostname, res);
 }
 
+static void hash_compare(gchar* hostname, wshc_host_output_t* out, GSList** clist) {
+	for (GSList* p = *clist; p != NULL && p->data != NULL; p = p->next) {
+		if (((struct collate*)(p->data))->exit_code == out->exit_code) {
+			((struct collate*)(p->data))->hosts =
+				g_slist_prepend(((struct collate*)(p->data))->hosts, hostname);
+			return;
+		}
+	}
+
+	struct collate* c = g_slice_new0(struct collate);
+	c->output = out->output;
+	c->error = out->error;
+	c->exit_code = out->exit_code;
+	c->hosts = NULL;
+	c->hosts = g_slist_prepend(c->hosts, hostname);
+
+	*clist = g_slist_prepend(*clist, c);
+}
+
+static void construct_out(struct collate* c, struct f_collate* f) {
+	gsize new_len = 0;
+
+	gsize host_list_len = 0;
+	for (GSList* host_list = c->hosts; host_list != NULL; host_list = host_list->next) {
+		host_list_len += strlen(host_list->data) + 2;
+	}
+
+	gchar* host_list_str_stderr = g_slice_alloc0(host_list_len + WSHC_STDERR_TAIL_SIZE);
+	for (GSList* host_list = c->hosts; host_list != NULL; host_list = host_list->next) {
+		g_strlcat(host_list_str_stderr, host_list->data, host_list_len);
+		g_strlcat(host_list_str_stderr, " ", host_list_len);
+	}
+
+	gchar* host_list_str_stdout = g_slice_copy(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stderr);
+
+	g_strlcat(host_list_str_stderr, WSHC_STDERR_TAIL, host_list_len + WSHC_STDERR_TAIL_SIZE);
+	g_strlcat(host_list_str_stdout, WSHC_STDOUT_TAIL, host_list_len + WSHC_STDOUT_TAIL_SIZE);
+
+	gsize stderr_len = 0;
+	for (gchar** p = c->error; *p != NULL; p++) stderr_len += (strlen(*p) + 1);
+
+	gsize stdout_len = 0;
+	for (gchar** p = c->output; *p != NULL; p++) stdout_len += (strlen(*p) + 1);
+
+	new_len = stderr_len + stdout_len + host_list_len * 2 + WSHC_STDOUT_TAIL_SIZE + WSHC_STDERR_TAIL_SIZE;
+	while (new_len > *f->size) {
+		gchar* new_output = g_slice_alloc0(*f->size + WSHC_ALLOC_LEN);
+		g_memmove(new_output, *f->out, *f->size);
+		g_slice_free1(*f->size, *f->out);
+		*f->out = new_output; *f->size += WSHC_ALLOC_LEN;
+	}
+
+	// Start copying data into out
+	g_strlcat(*f->out, host_list_str_stderr, *f->size);
+
+	for (gint i = 0; i < g_strv_length(c->error); i++) {
+		g_strlcat(*f->out, c->error[i], *f->size);
+		g_strlcat(*f->out, "\n", *f->size);
+	}
+
+	g_strlcat(*f->out, "\n", *f->size);
+	g_strlcat(*f->out, host_list_str_stdout, *f->size);
+
+	for (gint i = 0; i < g_strv_length(c->output); i++) {
+		g_strlcat(*f->out, c->output[i], *f->size);
+		g_strlcat(*f->out, "\n", *f->size);
+	}
+	
+	g_slice_free1(host_list_len + WSHC_STDERR_TAIL_SIZE, host_list_str_stderr);
+	g_slice_free1(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stdout);
+}
+
 /* This expects not to be threaded */
-gint wshc_collate_output(wshc_output_info_t* out, gchar*** output, gsize* output_size) {
+gint wshc_collate_output(wshc_output_info_t* out, gchar** output, gsize* output_size) {
 	g_assert(output);
 	g_assert(out);
+	g_assert(! *output_size);
 
-	const gsize alloc_len = 4096;
-	*output_size = alloc_len;
+	GSList* clist = NULL;
+	struct f_collate f = {
+		.size = output_size,
+		.out = output,
+	};
 
-	*output = g_slice_alloc0(*output_size);
+	g_hash_table_foreach(out->output, (GHFunc)hash_compare, &clist);
+	g_slist_foreach(clist, (GFunc)construct_out, &f);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 

@@ -223,11 +223,11 @@ static void collate_output(void) {
 	gint ret;
 
 	gsize output_size = 0;
-	gchar** printable_output;
+	gchar* printable_output = NULL;
 	gchar* expected_out[] = {
-		"localhost, otherhost stdout:",
+		"localhost otherhost stdout:",
 		"other", "test",
-		"localhost, otherhost stderr:",
+		"localhost otherhost stderr:",
 		"testing", "1", "2", "3", NULL
 	};
 
@@ -246,10 +246,11 @@ static void collate_output(void) {
 
 	g_assert(ret == EXIT_SUCCESS);
 
+	gchar** testable_output = g_strsplit(printable_output, "\n", 10);
 	for (gchar** p = expected_out; *p != NULL; p++)
-		g_assert_cmpstr(*p, ==, printable_output[p - printable_output]);
+		g_assert_cmpstr(*p, ==, testable_output[p - testable_output]);
 
-	g_strfreev(printable_output);
+	g_strfreev(testable_output);
 }
 
 int main(int argc, char** argv) {

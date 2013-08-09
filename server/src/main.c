@@ -19,6 +19,7 @@ int main(int argc, char** argv, char** env) {
 	wsh_cmd_res_t* res = g_slice_new0(wsh_cmd_res_t);
 
     wsh_init_logger(WSH_LOGGER_SERVER);
+	wsh_log_message("STARTING WSHD");
 
 	if ((gintptr)(req = mmap(NULL, sizeof(*req), PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
 		wsh_log_message(strerror(errno));

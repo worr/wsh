@@ -234,7 +234,7 @@ gint ssh_channel_request_shell() {
 	return ssh_channel_request_shell_ret;
 }
 
-void reset_ssh_channel_write_first(void) {
-	ssh_channel_write_ret_first = TRUE;
+void reset_ssh_channel_write_first(gboolean first) {
+	ssh_channel_write_ret_first = first;
 }
 

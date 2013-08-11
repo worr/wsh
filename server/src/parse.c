@@ -46,7 +46,7 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 			wsh_log_message(strerror(errno));
 		} else {
 			wsh_log_message(err_msg);
-			free(err_mesg);
+			free(err_msg);
 		}
 	}
 

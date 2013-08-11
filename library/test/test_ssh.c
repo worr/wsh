@@ -410,7 +410,8 @@ static void exec_wshd_success(void) {
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_pty_ret(SSH_OK);
 	set_ssh_channel_request_shell_ret(SSH_OK);
-	set_ssh_channel_write_ret(6);
+	reset_ssh_channel_write_first(FALSE);
+	set_ssh_channel_write_ret(11);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
 	session->hostname = remote;
@@ -434,7 +435,8 @@ static void send_cmd_write_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
-	set_ssh_channel_write_ret(SSH_ERROR);
+	set_ssh_channel_write_ret(11);
+	reset_ssh_channel_write_first(FALSE);
 
 	wsh_cmd_req_t* req = g_slice_new0(wsh_cmd_req_t);
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -454,6 +456,8 @@ static void send_cmd_write_failure(void) {
 
 	wsh_ssh_host(session, &err);
 	wsh_ssh_exec_wshd(session, &err);
+
+	set_ssh_channel_write_ret(SSH_ERROR);
 	gint ret = wsh_ssh_send_cmd(session, req, &err);
 
 	g_assert(ret != 0);
@@ -470,7 +474,8 @@ static void send_cmd_write_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
-	set_ssh_channel_write_ret(6);
+	set_ssh_channel_write_ret(11);
+	reset_ssh_channel_write_first(FALSE);
 
 	wsh_cmd_req_t* req = g_slice_new0(wsh_cmd_req_t);
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -491,7 +496,7 @@ static void send_cmd_write_success(void) {
 	wsh_ssh_host(session, &err);
 	wsh_ssh_exec_wshd(session, &err);
 
-	reset_ssh_channel_write_first();
+	reset_ssh_channel_write_first(TRUE);
 	set_ssh_channel_write_ret(89);
 	gint ret = wsh_ssh_send_cmd(session, req, &err);
 
@@ -510,6 +515,8 @@ static void recv_result_read_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_write_ret(11);
+	reset_ssh_channel_write_first(FALSE);
 	set_ssh_channel_read_ret(0);
 	set_ssh_channel_read_set(NULL);
 
@@ -539,6 +546,8 @@ static void recv_result_success(void) {
 	set_ssh_channel_request_exec_ret(SSH_OK);
 	set_ssh_channel_read_ret(sizeof(encoded_res));
 	set_ssh_channel_read_set(encoded_res);
+	set_ssh_channel_write_ret(11);
+	reset_ssh_channel_write_first(FALSE);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
 	wsh_cmd_res_t* res = NULL;

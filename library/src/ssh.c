@@ -238,7 +238,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
-	if (ssh_channel_write(session->channel, "exec wshd\n", 11) == 0) {
+	if (ssh_channel_write(session->channel, "exec wshd\n", 11) != 11) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
 			"%s: Error exec'ing wshd: %s", session->hostname,
 			ssh_get_error(session->session));

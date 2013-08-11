@@ -43,7 +43,10 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 		if (asprintf(&err_msg, "Expected %d byts, got %zu\n", msg_size, read) == -1) {
 			wsh_log_message("Couldn't allocate memory to generate log message");
 			wsh_log_message(strerror(errno));
-		} else wsh_log_message(err_msg);
+		} else {
+			wsh_log_message(err_msg);
+			free(err_mesg);
+		}
 	}
 
 	if (err != NULL) goto wshd_get_message_err;

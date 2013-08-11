@@ -230,6 +230,14 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
+	if (ssh_channel_change_pty_size(session->channel, 80, 24)) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PTY_ERR,
+			"%s: Error getting a pty: %s", session->hostname,
+			ssh_get_error(session->session));
+		ret = WSH_SSH_PTY_ERR;
+		goto wsh_ssh_exec_wshd_error;
+	}
+
 	if (ssh_channel_request_shell(session->channel)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
 			"%s: Error exec'ing a shell: %s", session->hostname,
@@ -290,9 +298,9 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 		goto wsh_ssh_send_cmd_error;
 	}
 
-	/*if (ssh_channel_send_eof(session->channel)) {
+	if (ssh_channel_send_eof(session->channel)) {
 		return -1;
-	}*/
+	}
 
 	return ret;
 

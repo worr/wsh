@@ -74,6 +74,9 @@ gint ssh_channel_request_pty();
 void set_ssh_channel_request_shell_ret(gint ret);
 gint ssh_channel_request_shell();
 void reset_ssh_channel_write_first(gboolean first);
+void set_ssh_channel_change_pty_size_ret(gint ret);
+gint ssh_channel_change_pty_size();
+gint ssh_channel_send_eof();
 
 void set_ssh_threads_set_callbacks_ret(gint ret);
 

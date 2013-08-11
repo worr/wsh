@@ -23,6 +23,7 @@ gboolean ssh_channel_write_ret_first = TRUE;
 gboolean ssh_channel_read_ret_first = TRUE;
 gint ssh_channel_request_pty_ret;
 gint ssh_channel_request_shell_ret;
+gint ssh_channel_change_pty_size_ret;
 
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
@@ -236,5 +237,17 @@ gint ssh_channel_request_shell() {
 
 void reset_ssh_channel_write_first(gboolean first) {
 	ssh_channel_write_ret_first = first;
+}
+
+void set_ssh_channel_change_pty_size_ret(gint ret) {
+	ssh_channel_change_pty_size_ret = ret;
+}
+
+gint ssh_channel_change_pty_size() {
+	return ssh_channel_change_pty_size_ret;
+}
+
+gint ssh_channel_send_eof() {
+	return 0;
 }
 

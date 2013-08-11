@@ -363,6 +363,7 @@ static void exec_wshd_channel_exec_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_pty_ret(SSH_OK);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_request_shell_ret(SSH_ERROR);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -386,6 +387,7 @@ static void exec_wshd_channel_pty_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_pty_ret(SSH_ERROR);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -409,6 +411,7 @@ static void exec_wshd_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_pty_ret(SSH_OK);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_request_shell_ret(SSH_OK);
 	reset_ssh_channel_write_first(FALSE);
 	set_ssh_channel_write_ret(11);
@@ -435,6 +438,7 @@ static void send_cmd_write_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_write_ret(11);
 	reset_ssh_channel_write_first(FALSE);
 
@@ -474,6 +478,7 @@ static void send_cmd_write_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_write_ret(11);
 	reset_ssh_channel_write_first(FALSE);
 
@@ -515,6 +520,7 @@ static void recv_result_read_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_write_ret(11);
 	reset_ssh_channel_write_first(FALSE);
 	set_ssh_channel_read_ret(0);
@@ -546,6 +552,7 @@ static void recv_result_success(void) {
 	set_ssh_channel_request_exec_ret(SSH_OK);
 	set_ssh_channel_read_ret(sizeof(encoded_res));
 	set_ssh_channel_read_set(encoded_res);
+	set_ssh_channel_change_pty_size_ret(SSH_OK);
 	set_ssh_channel_write_ret(11);
 	reset_ssh_channel_write_first(FALSE);
 

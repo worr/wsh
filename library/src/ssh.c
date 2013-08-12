@@ -132,6 +132,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session != NULL);
 	g_assert(session->hostname != NULL);
 
+	// Are you fucking serious?
+	(void)ssh_userauth_none(session->session, NULL);
 	gint method = ssh_userauth_list(session->session, NULL);
 	gint ret = -1;
 

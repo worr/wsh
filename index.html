@@ -12,104 +12,24 @@
   </head>
 
   <body>
+  <div id="main">
+      <h1><i>wsh</i></h1> 
+      <h2>(Wʊʃ | whoosh)</h2>
+      <p>Config respecting, sudo-ready, distributed command execution and logging</p>
+      <p>
+      You can find wsh on <a href="//github.com/worr/wsh">Github</a>, or download it as a <a href="https://github.com/worr/wsh/tarball/master">tarball</a> or <a href="https://github.com/worr/wsh/zipball/master">zip archive</a>.
+      </p>
+      <p> wsh is configurationless, which means it honors your existing ssh and 
+      sudo config files, relying on ssh and sudo for authentication. It's sudo 
+      ready, unlike dsh, which means no hacks are required to move sudo credentials 
+      over the network. And wsh logs everything to syslog, making issue diagnosis pain free.</p>
+      <p>
+      wsh isn't a configuration manament tool, a shell, an ssh 
+      replacment, or your next lover.
+      </p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/worr/wsh">View on GitHub</a>
-
-          <h1 id="project_title">wsh (Wʊʃ | whoosh)</h1>
-          <h2 id="project_tagline">Config respecting, sudo-ready, distributed command execution and logging</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/worr/wsh/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/worr/wsh/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a name="wsh" class="anchor" href="#wsh"><span class="octicon octicon-link"></span></a>wsh</h1>
-
-<p>wsh is a shell-like program made for devops and sysadmins that need to administer
-several machines at once. With wsh, you can <code>ssh</code> into multiple
-machines and run one-off commands very simply</p>
-
-<h2>
-<a name="what-wsh-isnt" class="anchor" href="#what-wsh-isnt"><span class="octicon octicon-link"></span></a>What wsh isn't</h2>
-
-<ul>
-<li>configuration management </li>
-<li>a shell </li>
-<li>an <code>ssh</code> replacement</li>
-</ul><h2>
-<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
-<h3>Runtime dependencies</h3>
-<ul>
-<li><code>glib2</code></li>
-<li>
-<code>libssh</code> NOT <code><del>libssh2</del></code> </li>
-<li><code>protobuf-c</code></li>
-<li><code>sudo</code></li>
-</ul><h3>
-<a name="build-deps" class="anchor" href="#build-deps"><span class="octicon octicon-link"></span></a>Build dependencies</h3>
-
-<ul>
-<li><code>cmake</code></li>
-<li>c compiler (<code>gcc</code>/<code>clang</code>) </li>
-<li>
-<code>make</code>/<code>ninja</code>
-</li>
-</ul><h2>
-<a name="architecture" class="anchor" href="#architecture"><span class="octicon octicon-link"></span></a>Architecture</h2>
-
-<p><code>wshd</code> is a program that resides on remote hosts. <code>wshc</code> ssh's into
-them, honoring your ssh config and exec's <code>wshd</code>. Over the secure ssh
-pipe, <code>wshc</code> issues instructions to <code>wshd</code>, and <code>wshd</code> executes them on
-the remote host. If privileges need to be raised, <code>wshc</code> will prompt
-you for creds prior to ssh'ing, and submit them once the ssh
-connection has been established.</p>
-
-<h2>
-<a name="advantages" class="anchor" href="#advantages"><span class="octicon octicon-link"></span></a>Advantages</h2>
-
-
-<h3>configuration-less</h3>
-<p>wsh honors your existing <code>ssh</code> and <code>sudo</code> configuration files, leaving
-all of the work of authorization and authentication to <code>ssh</code> and <code>sudo</code></p>
-
-<h3>sudo-ready</h3>
-<p>Unlike <code>dsh</code>, wsh has <code>sudo</code> support built in, so that you don't need
-to use some kind of hack to get your <code>sudo</code> creds over the network.</p>
-
-
-<h3>logging</h3>
-<p>wsh logs everything to syslog</p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">wsh is maintained by <a href="https://github.com/worr">worr</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-11164924-5");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
-
-
+      <br>
+      <p> wsh is maintained by <a href="//github.com/worr">William Orr</a>, its creator.
+  </div>
   </body>
 </html>

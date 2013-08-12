@@ -11,6 +11,7 @@ static gint threads = 0;
 static gchar* username = NULL;
 static gboolean force = FALSE;
 static gint port = 22;
+static gchar* password = NULL;
 #ifdef RANGE
 static gboolean range = FALSE;
 #endif
@@ -20,6 +21,7 @@ static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to ssh", NULL },
 	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
+	{ "password", 'P', 0, G_OPTION_ARG_INT, &password, "SSH password", NULL },
 #ifdef RANGE
 	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
 #endif
@@ -36,15 +38,25 @@ static gint add_hostkey(const gchar* hostname, gpointer userdata) {
 	session->username = username;
 	session->port = port;
 
+	if (password) session->password = password;
+	else session->auth_type = WSH_SSH_AUTH_PUBKEY;
+
 	if (wsh_ssh_host(session, &err)) {
-		g_printerr("Could not add ssh key: %s\n", err->message);
+		g_printerr("%s\n", err->message);
 		g_error_free(err);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;
 	}
 
 	if (wsh_verify_host_key(session, TRUE, force, &err)) {
-		g_printerr("Could not add ssh key: %s\n", err->message);
+		g_printerr("%s\n", err->message);
+		g_error_free(err);
+		g_slice_free(wsh_ssh_session_t, session);
+		return EXIT_FAILURE;
+	}
+
+	if (wsh_ssh_authenticate(session, &err)) {
+		g_printerr("%s\n", err->message);
 		g_error_free(err);
 		g_slice_free(wsh_ssh_session_t, session);
 		return EXIT_FAILURE;

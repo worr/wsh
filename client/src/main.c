@@ -87,7 +87,7 @@ static void pw_int_handler(int sig) { signos[sig] = 1; }
 static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const gchar* prompt) {
 	struct termios old_flags, new_flags;
 	struct sigaction sa, saveint, savehup, savequit, saveterm, savetstp, savettin, savettou;
-	error_t save_errno = 0;
+	gint save_errno = 0;
 
 	if (tcgetattr(fileno(stdin), &old_flags)) {
 		g_printerr("%s\n", strerror(errno));
@@ -105,7 +105,7 @@ static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const
 
 	memset(&sa, 0, sizeof(sa));
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_INTERRUPT;
+	sa.sa_flags = 0;
 	sa.sa_handler = pw_int_handler;
 	(void) sigaction(SIGINT, &sa, &saveint);
 	(void) sigaction(SIGHUP, &sa, &savehup);

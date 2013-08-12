@@ -251,3 +251,7 @@ gint ssh_channel_send_eof() {
 	return 0;
 }
 
+gint ssh_userauth_none() {
+	return 0;
+}
+

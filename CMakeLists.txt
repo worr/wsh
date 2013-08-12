@@ -80,6 +80,10 @@ if( HAVE_C11 )
 	check_function_exists( memset_s HAVE_MEMSET_S )
 endif( HAVE_C11 )
 
+set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} )
+set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} )
+check_function_exists( ssh_userauth_none HAVE_SSH_USERAUTH_NONE )
+
 add_subdirectory( library/src )
 
 if( BUILD_TESTS )

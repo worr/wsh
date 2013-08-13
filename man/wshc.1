@@ -1,0 +1,119 @@
+.Dd $Mdocdate$
+.Dt WSHC 1
+.Os
+.Sh NAME
+.Nm wshc
+.Nd execute commands on multiple remote machines
+.Sh SYNOPSIS
+.Nm wshc
+.Op Fl o | -stdout
+.Op Fl -port Ar port
+.Op Fl u | -username Ar username
+.Op Fl p | -password
+.Op Fl U | -sudo-username Ar username
+.Op Fl P | -sudo-password
+.Op Fl t | -threads Ar threads
+.Op Fl h | -hosts Ar hosts
+.Op Fl r | -range
+.Op Fl -
+.Op Ar command
+.Sh DESCRIPTION
+.Nm
+logs in to multiple hosts and executes commands on them, in parallel. It's
+suitable for executing commands on large numbers of hosts and collating their
+results in a format that's easy to read.
+.Ss Arguments
+.Bl -tag -width u
+.It Fl o | -stdout
+Display stdout. stdout is suppressed by default.
+.It Fl -port Ar port
+Use a different port for ssh. By default, 22 is used.
+.It Fl u | -username Ar username
+Use a different username for SSH. By default, the username of the current
+user is used.
+.It Fl p | -password
+Prompt for the SSH password. If this argument is not provided, then
+.Nm
+will assume that you are using pubkeys or an agent.
+.It Fl U | -sudo-username Ar username
+Use sudo with the given username. If this option is not provided, it's assumed
+that you're not going to use sudo.
+.It Fl P | -sudo-password
+Prompt for sudo password. You 
+.Sy MUST
+provide this option if
+.Fl U
+is present.
+.It Fl t | -threads Ar threads
+Spawn off
+.Ar threads
+number of threads. If this flag is not given, then
+.Nm
+will execute sequentially.
+.It Fl h | -hosts Ar hosts
+A comma separated list of hosts to ssh into.
+.It Fl r | -range
+If
+.Nm
+is built with range support, the argument to
+.Fl h
+will be resolved by libcrange.
+.El
+.Ss Executing commands
+.Pp
+The remainder of the line will be executed on the remote hosts. If the command
+takes arguments
+.Fl -
+should be provided before the command. You ought not prefix the command with
+.Li sudo
+if you're planning on using
+.Li sudo
+.
+.Pp
+Commands will be sent to
+.Li wshd
+on the remote host using a binary protocol over
+.Li SSH
+.
+The results will be sent back to
+.Nm
+and output to the user. They're collated based on the output and
+the exit code of the command. Normally stdout is suppressed so that it's
+easier to see errors with commands.
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+.Dl wshc -h localhost -- ls -l
+.Pp
+SSH's into localhost and runs ls -l. Won't print anything but stderr (probably
+nothing).
+.Pp
+.Dl wshc -h app01,app02,app03,app04,app05 -o -t 5 -- uname -a
+.Pp
+SSH's into app01-5 with 5 threads, runs uname -a and prints stdout.
+.Sh SEE ALSO
+.Xr wshd 1
+.Xr wsh-add-hostkeys 1
+.Sh AUTHORS
+.An William Orr Aq Mt will@worrbase.com
+.Sh SECURITY CONSIDERATIONS
+.Pp
+.Nm
+prompts for your passwords and stores them in memory. A page of memory is
+.Xr mlock 2
+and the password is kept encrypted in memory. With some knowledge of the
+source and some time, it is possible to fetch the password from memory and
+decrypt it.
+.Pp
+As soon as
+.Nm
+is done with the password, it is scrubbed from memory with
+.Xr memset_s 3
+.Pp
+The input buffer is directed to the
+.Xr mlock 2
+page of memory with
+.Xr setvbuf 3
+and also scrubbed with
+.Xr memset_s 3
+after use.

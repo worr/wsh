@@ -21,6 +21,8 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/bin )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/lib )
 
+set( CMAKE_INSTALL_FULL_MANDIR ${CMAKE_INSTALL_PREFIX}/share )
+
 set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/src )
 set( WSH_LIBRARIES wsh )
 
@@ -95,6 +97,11 @@ if( BUILD_UTILS )
 	if( BUILD_TESTS )
 		#add_subdirectory( util/test )
 	endif( BUILD_TESTS )
+	install(
+		FILES man/wsh-add-hostkeys.1
+		DESTINATION ${CMAKE_INSTALL_FULL_MANDIR}/man/man1
+		COMPONENT doc
+	)
 endif( BUILD_UTILS )
 
 if( BUILD_SERVER )
@@ -102,6 +109,11 @@ if( BUILD_SERVER )
 	if( BUILD_TESTS )
 		add_subdirectory( server/test )
 	endif( BUILD_TESTS )
+	install(
+		FILES man/wshd.1
+		DESTINATION ${CMAKE_INSTALL_FULL_MANDIR}/man/man1
+		COMPONENT doc
+	)
 endif( BUILD_SERVER )
 
 if( BUILD_CLIENT )
@@ -109,4 +121,10 @@ if( BUILD_CLIENT )
 	if( BUILD_TESTS )
 		add_subdirectory( client/test )
 	endif( BUILD_TESTS )
+
+	install(
+		FILES man/wshc.1
+		DESTINATION ${CMAKE_INSTALL_FULL_MANDIR}/man/man1
+		COMPONENT doc
+	)
 endif( BUILD_CLIENT )

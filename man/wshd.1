@@ -1,0 +1,42 @@
+.Dd $Mdocdate$
+.Dt WSHD 1
+.Os
+.Sh NAME
+.Nm wshd
+.Nd receives commands from
+.Xr wshc 1
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+.Pp
+.Nm
+is executed by
+.Xr wshc 1
+and sent binaries commands over stdin. Usually
+.Nm
+is executed after
+.Xr wshc 1
+has initiated an ssh session.
+.Pp
+It's generally a bad idea to execute
+.Nm
+explicitly.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr wshc 1
+.Xr wsh-add-hostkeys 1
+.Sh AUTHORS
+.An William Orr Aq Mt will@worrbase.com
+.Sh SECURITY CONSIDERATIONS
+.Nm
+prompts for your passwords and stores them in memory. A page of memory is
+.Xr mlock 2
+and the password is kept encrypted in memory. With some knowledge of the
+source and some time, it is possible to fetch the password from memory and
+decrypt it.
+.Pp
+As soon as
+.Nm
+is done with the password, it is scrubbed from memory with
+.Xr memset_s 3

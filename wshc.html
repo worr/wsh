@@ -1,0 +1,184 @@
+<!-- Creator     : groff version 1.19.2 -->
+<!-- CreationDate: Mon Aug 12 23:04:36 2013 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p     { margin-top: 0; margin-bottom: 0; }
+       pre   { margin-top: 0; margin-bottom: 0; }
+       table { margin-top: 0; margin-bottom: 0; }
+</style>
+<title></title>
+</head>
+<body>
+
+<hr>
+
+
+<p valign="top">WSHC(1) BSD General Commands Manual
+WSHC(1)</p>
+
+<p style="margin-top: 1em" valign="top"><b>NAME</b></p>
+
+<p style="margin-left:8%;"><b>wshc</b> &mdash; execute
+commands on multiple remote machines</p>
+
+
+<p style="margin-top: 1em" valign="top"><b>SYNOPSIS</b></p>
+
+<p style="margin-left:15%;"><b>wshc</b>
+[<b>&minus;o&nbsp;</b>|&nbsp;<b>&minus;-stdout</b>]
+[<b>&minus;-port&nbsp;</b><i>port</i>]
+[<b>&minus;u&nbsp;</b>|&nbsp;<b>&minus;-username&nbsp;</b><i>username</i>]
+[<b>&minus;p&nbsp;</b>|&nbsp;<b>&minus;-password</b>]
+[<b>&minus;U&nbsp;</b>|&nbsp;<b>&minus;-sudo-username&nbsp;</b><i>username</i>]
+[<b>&minus;P&nbsp;</b>|&nbsp;<b>&minus;-sudo-password</b>]
+[<b>&minus;t&nbsp;</b>|&nbsp;<b>&minus;-threads&nbsp;</b><i>threads</i>]
+[<b>&minus;h&nbsp;</b>|&nbsp;<b>&minus;-hosts&nbsp;</b><i>hosts</i>]
+[<b>&minus;r&nbsp;</b>|&nbsp;<b>&minus;-range</b>]
+[<b>&minus;&minus;</b>] [<i>command</i>]</p>
+
+
+<p style="margin-top: 1em" valign="top"><b>DESCRIPTION</b></p>
+
+<p style="margin-left:8%;"><b>wshc</b> logs in to multiple
+hosts and executes commands on them, in parallel. It&rsquo;s
+suitable for executing commands on large numbers of hosts
+and collating their results in a format that&rsquo;s easy to
+read.</p>
+
+
+<p style="margin-left:8%; margin-top: 1em"><b>Arguments</b></p>
+
+<p valign="top"><b>&minus;o</b> | <b>&minus;-stdout</b></p>
+
+<p style="margin-left:12%;">Display stdout. stdout is
+suppressed by default.</p>
+
+
+<p style="margin-top: 1em" valign="top"><b>&minus;-port</b>
+<i>port</i></p>
+
+<p style="margin-left:12%;">Use a different port for ssh.
+By default, 22 is used.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;u</b> |
+<b>&minus;-username</b> <i>username</i></p>
+
+<p style="margin-left:12%;">Use a different username for
+SSH. By default, the username of the current user is
+used.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;p</b> |
+<b>&minus;-password</b></p>
+
+<p style="margin-left:12%;">Prompt for the SSH password. If
+this argument is not provided, then <b>wshc</b> will assume
+that you are using pubkeys or an agent.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;U</b> |
+<b>&minus;-sudo-username</b> <i>username</i></p>
+
+<p style="margin-left:12%;">Use sudo with the given
+username. If this option is not provided, it&rsquo;s assumed
+that you&rsquo;re not going to use sudo.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;P</b> |
+<b>&minus;-sudo-password</b></p>
+
+<p style="margin-left:12%;">Prompt for sudo password. You
+<b>MUST</b> provide this option if <b>&minus;U</b> is
+present.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;t</b> |
+<b>&minus;-threads</b> <i>threads</i></p>
+
+<p style="margin-left:12%;">Spawn off <i>threads</i> number
+of threads. If this flag is not given, then <b>wshc</b> will
+execute sequentially.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;h</b> |
+<b>&minus;-hosts</b> <i>hosts</i></p>
+
+<p style="margin-left:12%;">A comma separated list of hosts
+to ssh into.</p>
+
+<p style="margin-top: 1em" valign="top"><b>&minus;r</b> |
+<b>&minus;-range</b></p>
+
+<p style="margin-left:12%;">If <b>wshc</b> is built with
+range support, the argument to <b>&minus;h</b> will be
+resolved by libcrange.</p>
+
+<p style="margin-left:8%; margin-top: 1em"><b>Executing
+commands</b> <br>
+The remainder of the line will be executed on the remote
+hosts. If the command takes arguments <b>&minus;&minus;</b>
+should be provided before the command. You ought not prefix
+the command with sudo if you&rsquo;re planning on using
+sudo</p>
+
+<p style="margin-left:8%; margin-top: 1em">Commands will be
+sent to wshd on the remote host using a binary protocol over
+SSH The results will be sent back to <b>wshc</b> and output
+to the user. They&rsquo;re collated based on the output and
+the exit code of the command. Normally stdout is suppressed
+so that it&rsquo;s easier to see errors with commands.</p>
+
+<p style="margin-top: 1em" valign="top"><b>EXIT
+STATUS</b></p>
+
+<p style="margin-left:8%;">The <b>wshc</b> utility
+exits&nbsp;0 on success, and&nbsp;&gt;0 if an error
+occurs.</p>
+
+
+<p style="margin-top: 1em" valign="top"><b>EXAMPLES</b></p>
+
+<p style="margin-left:17%;">wshc -h localhost -- ls -l</p>
+
+<p style="margin-left:8%; margin-top: 1em">SSH&rsquo;s into
+localhost and runs ls -l. Won&rsquo;t print anything but
+stderr (probably nothing).</p>
+
+<p style="margin-left:17%; margin-top: 1em">wshc -h
+app01,app02,app03,app04,app05 -o -t 5 -- uname -a</p>
+
+<p style="margin-left:8%; margin-top: 1em">SSH&rsquo;s into
+app01-5 with 5 threads, runs uname -a and prints stdout.</p>
+
+<p style="margin-top: 1em" valign="top"><b>SEE ALSO</b></p>
+
+<p style="margin-left:8%;">wshd(1) wsh-add-hostkeys(1)</p>
+
+<p style="margin-top: 1em" valign="top"><b>AUTHORS</b></p>
+
+<p style="margin-left:8%;">William Orr
+&lang;<i>will@worrbase.com</i>&rang;</p>
+
+<p style="margin-top: 1em" valign="top"><b>SECURITY
+CONSIDERATIONS</b></p>
+
+<p style="margin-left:8%;"><b>wshc</b> prompts for your
+passwords and stores them in memory. A page of memory is
+mlock(2) and the password is kept encrypted in memory. With
+some knowledge of the source and some time, it is possible
+to fetch the password from memory and decrypt it.</p>
+
+<p style="margin-left:8%; margin-top: 1em">As soon as
+<b>wshc</b> is done with the password, it is scrubbed from
+memory with memset_s(3)</p>
+
+<p style="margin-left:8%; margin-top: 1em">The input buffer
+is directed to the mlock(2) page of memory with setvbuf(3)
+and also scrubbed with memset_s(3) after use.</p>
+
+<p style="margin-left:8%; margin-top: 1em">BSD
+August&nbsp;12, 2013 BSD</p>
+<hr>
+</body>
+</html>

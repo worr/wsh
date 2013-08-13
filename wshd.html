@@ -1,0 +1,79 @@
+<!-- Creator     : groff version 1.19.2 -->
+<!-- CreationDate: Mon Aug 12 23:04:42 2013 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p     { margin-top: 0; margin-bottom: 0; }
+       pre   { margin-top: 0; margin-bottom: 0; }
+       table { margin-top: 0; margin-bottom: 0; }
+</style>
+<title></title>
+</head>
+<body>
+
+<hr>
+
+
+<p valign="top">WSHD(1) BSD General Commands Manual
+WSHD(1)</p>
+
+<p style="margin-top: 1em" valign="top"><b>NAME</b></p>
+
+<p style="margin-left:8%;"><b>wshd</b> &mdash; receives
+commands from wshc(1)</p>
+
+
+<p style="margin-top: 1em" valign="top"><b>SYNOPSIS</b></p>
+
+<p style="margin-left:15%;"><b>wshd</b></p>
+
+
+<p style="margin-top: 1em" valign="top"><b>DESCRIPTION</b></p>
+
+<p style="margin-left:8%;"><b>wshd</b> is executed by
+wshc(1) and sent binaries commands over stdin. Usually
+<b>wshd</b> is executed after wshc(1) has initiated an ssh
+session.</p>
+
+<p style="margin-left:8%; margin-top: 1em">It&rsquo;s
+generally a bad idea to execute <b>wshd</b> explicitly.</p>
+
+<p style="margin-top: 1em" valign="top"><b>EXIT
+STATUS</b></p>
+
+<p style="margin-left:8%;">The <b>wshd</b> utility
+exits&nbsp;0 on success, and&nbsp;&gt;0 if an error
+occurs.</p>
+
+<p style="margin-top: 1em" valign="top"><b>SEE ALSO</b></p>
+
+<p style="margin-left:8%;">wshc(1) wsh-add-hostkeys(1)</p>
+
+<p style="margin-top: 1em" valign="top"><b>AUTHORS</b></p>
+
+<p style="margin-left:8%;">William Orr
+&lang;<i>will@worrbase.com</i>&rang;</p>
+
+<p style="margin-top: 1em" valign="top"><b>SECURITY
+CONSIDERATIONS</b></p>
+
+<p style="margin-left:8%;"><b>wshd</b> prompts for your
+passwords and stores them in memory. A page of memory is
+mlock(2) and the password is kept encrypted in memory. With
+some knowledge of the source and some time, it is possible
+to fetch the password from memory and decrypt it.</p>
+
+<p style="margin-left:8%; margin-top: 1em">As soon as
+<b>wshd</b> is done with the password, it is scrubbed from
+memory with memset_s(3)</p>
+
+<p style="margin-left:8%; margin-top: 1em">BSD
+August&nbsp;12, 2013 BSD</p>
+<hr>
+</body>
+</html>

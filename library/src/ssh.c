@@ -9,19 +9,27 @@
 
 #include "cmd.h"
 #include "pack.h"
+#include "types.h"
 
 const gint WSH_SSH_NEED_ADD_HOST_KEY = 1;
 const gint WSH_SSH_HOST_KEY_ERROR = 2;
-
-typedef union {
-	volatile guint32 size;
-	gchar buf[4];
-} wsh_unholy_union;
+#ifdef DEBUG
+static ssh_pcap_file pfile;
+#endif
 
 gint wsh_ssh_init(void) {
 	gint ret;
 	if ((ret = ssh_threads_set_callbacks(ssh_threads_get_noop())))
 		return ret;
+
+#ifdef DEBUG
+	pfile = ssh_pcap_file_new();
+	if (ssh_pcap_file_open(pfile, "/home/worr/ssh.pcap")) {
+		g_printerr("%s\n", strerror(errno));
+		return -1;
+	}
+#endif
+
 	return ssh_init();
 }
 
@@ -38,6 +46,12 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	gint ret = 0;
 	session->session = ssh_new();
 	if (session == NULL) return -1;
+
+#ifdef DEBUG
+	if (ssh_set_pcap_file(session->session, pfile)) {
+		g_printerr("%s\n", ssh_get_error(session->session));
+	}
+#endif
 
 	ssh_options_set(session->session, SSH_OPTIONS_HOST, session->hostname);
 	ssh_options_set(session->session, SSH_OPTIONS_PORT, &(session->port));
@@ -226,33 +240,9 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
-	if (ssh_channel_request_pty(session->channel)) {
-		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PTY_ERR,
-			"%s: Error getting a pty: %s", session->hostname,
-			ssh_get_error(session->session));
-		ret = WSH_SSH_PTY_ERR;
-		goto wsh_ssh_exec_wshd_error;
-	}
-
-	if (ssh_channel_change_pty_size(session->channel, 80, 24)) {
-		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PTY_ERR,
-			"%s: Error getting a pty: %s", session->hostname,
-			ssh_get_error(session->session));
-		ret = WSH_SSH_PTY_ERR;
-		goto wsh_ssh_exec_wshd_error;
-	}
-
-	if (ssh_channel_request_shell(session->channel)) {
+	if (ssh_channel_request_exec(session->channel, "wshd")) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
 			"%s: Error exec'ing a shell: %s", session->hostname,
-			ssh_get_error(session->session));
-		ret = WSH_SSH_EXEC_WSHD_ERR;
-		goto wsh_ssh_exec_wshd_error;
-	}
-
-	if (ssh_channel_write(session->channel, "exec wshd\n", 11) != 11) {
-		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
-			"%s: Error exec'ing wshd: %s", session->hostname,
 			ssh_get_error(session->session));
 		ret = WSH_SSH_EXEC_WSHD_ERR;
 		goto wsh_ssh_exec_wshd_error;
@@ -274,8 +264,8 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 
 	gint ret = 0;
 	guint8* buf = NULL;
-	gsize buf_len;
-	wsh_unholy_union buf_u;
+	guint32 buf_len;
+	wsh_message_size_t buf_u;
 
 	wsh_pack_request(&buf, &buf_len, req);
 	if (buf == NULL || buf_len == 0) {
@@ -303,7 +293,11 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 	}
 
 	if (ssh_channel_send_eof(session->channel)) {
-		return -1;
+		ret = WSH_SSH_WRITE_ERR;
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
+			"%s: Error writing out command over ssh: %s",
+			session->hostname, ssh_get_error(session->session));
+		goto wsh_ssh_send_cmd_error;	
 	}
 
 	return ret;
@@ -321,7 +315,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 	g_assert(*res == NULL);
 
 	gint ret = 0;
-	wsh_unholy_union buf_u;
+	wsh_message_size_t buf_u;
 	guchar* buf = NULL;
 
 	/* Just like in server/src/parse.c we need to grab an int first that

@@ -11,6 +11,14 @@ const int WSHC_MAX_PASSWORD_LEN = 1024;
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
 
+/*
+ * We define our own askpass so I don't have to wrestle with odd command line
+ * parsing or anything like that. I can simplify the logic significantly in
+ * run command, and I don't need to try and parse out the motd and prompt.
+ *
+ * This is like a slightly more secure version of cat, in that it mlocks the
+ * memory and memset_s's it after it's done being used.
+ */
 int main(gint argc, gchar** argv) {
 	gchar* peedubs_mem = NULL;
 	gint ret = EXIT_SUCCESS;

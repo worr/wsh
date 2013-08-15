@@ -1,0 +1,77 @@
+.Dd $Mdocdate$
+.Dt WSH-ADD-HOSTKEYS 1
+.Os
+.Sh NAME
+.Nm wsh-add-hostkeys
+.Nd add hostkeys of multiple machines to known_hosts
+.Sh SYNOPSIS
+.Nm wsh-add-hostkeys
+.Op Fl p | -port Ar port
+.Op Fl u | -username Ar username
+.Op Fl P | -password
+.Op Fl t | -threads Ar threads
+.Op Fl f | -force
+.Op Fl r | -range
+.Ar hostnames
+.Sh DESCRIPTION
+.Nm
+logs into multiple hosts and adds their hostkeys to your known_hosts files.
+.Bl -tag -width u
+.It Fl p | -port Ar port
+Use a different port for ssh. By default, 22 is used.
+.It Fl u | -username Ar username
+Use a different username for SSH. By default, the username of the current
+user is used.
+.It Fl p | -password
+Prompt for the SSH password. If this argument is not provided, then
+.Nm
+will assume that you are using pubkeys or an agent.
+.It Fl t | -threads Ar threads
+Spawn off
+.Ar threads
+number of threads. If this flag is not given, then
+.Nm
+will execute sequentially.
+.It Fl f | -force
+Add hostkeys even if they have changed.
+.It Fl r | -range
+If
+.Nm
+is built with range support, the argument to
+.Ar hostnames
+will be resolved by libcrange.
+.It Ar hostnames
+A comma separated list of hostnames to SSH into.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr wshc 1
+.Xr wshd 1
+.Sh AUTHORS
+.An William Orr Aq Mt will@worrbase.com
+.Sh SECURITY CONSIDERATIONS
+.Pp
+This will add hostkeys of all of the remote servers specified. Make sure your
+network and your hosts are in a known, good state prior to running
+.Nm
+.Pp
+.Nm
+prompts for your passwords and stores them in memory. A page of memory is
+.Xr mlock 2
+and the password is kept encrypted in memory. With some knowledge of the
+source and some time, it is possible to fetch the password from memory and
+decrypt it.
+.Pp
+As soon as
+.Nm
+is done with the password, it is scrubbed from memory with
+.Xr memset_s 3
+.Pp
+The input buffer is directed to the
+.Xr mlock 2
+page of memory with
+.Xr setvbuf 3
+and also scrubbed with
+.Xr memset_s 3
+after use.

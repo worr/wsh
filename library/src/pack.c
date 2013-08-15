@@ -7,7 +7,7 @@
 #include "cmd-messages.pb-c.h"
 
 // buf MUST be g_free()d
-void wsh_pack_request(guint8** buf, gsize* buf_len, const wsh_cmd_req_t* req) {
+void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) {
 	AuthInfo ai = AUTH_INFO__INIT;
 	CommandRequest cmd_req = COMMAND_REQUEST__INIT;
 
@@ -35,7 +35,7 @@ void wsh_pack_request(guint8** buf, gsize* buf_len, const wsh_cmd_req_t* req) {
 }
 
 // req ought to be allocated
-void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, gsize buf_len) {
+void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, guint32 buf_len) {
 	CommandRequest* cmd_req;
 
 	cmd_req = command_request__unpack(NULL, buf_len, buf);
@@ -79,7 +79,7 @@ void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
 	g_free(*req);
 }
 
-void wsh_pack_response(guint8** buf, gsize* buf_len, const wsh_cmd_res_t* res) {
+void wsh_pack_response(guint8** buf, guint32* buf_len, const wsh_cmd_res_t* res) {
 	CommandReply cmd_res = COMMAND_REPLY__INIT;
 
 	cmd_res.stdout = res->std_output;
@@ -94,7 +94,7 @@ void wsh_pack_response(guint8** buf, gsize* buf_len, const wsh_cmd_res_t* res) {
 	command_reply__pack(&cmd_res, *buf);
 }
 
-void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf, gsize buf_len) {
+void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf, guint32 buf_len) {
 	CommandReply* cmd_res;
 
 	cmd_res = command_reply__unpack(NULL, buf_len, buf);

@@ -9,7 +9,7 @@
 #pragma GCC diagnostic ignored "-Wpointer-sign"
 void wshd_send_message(GIOChannel* std_output, wsh_cmd_res_t* res, GError* err) {
 	guint8* buf;
-	gsize buf_len;
+	guint32 buf_len;
 	gsize writ;
 	wsh_message_size_t buf_size;
 

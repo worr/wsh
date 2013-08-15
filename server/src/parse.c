@@ -11,7 +11,7 @@
 #include "pack.h"
 #include "types.h"
 
-gint wshd_get_message_size(GIOChannel* std_input, GError* err) {
+guint32 wshd_get_message_size(GIOChannel* std_input, GError* err) {
 	wsh_message_size_t out;
 	gsize read;
 
@@ -26,7 +26,7 @@ gint wshd_get_message_size(GIOChannel* std_input, GError* err) {
 
 #pragma GCC diagnostic ignored "-Wpointer-sign"
 void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
-	gint msg_size;
+	guint32 msg_size;
 	guint8* buf;
 	gsize read;
 

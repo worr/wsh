@@ -20,7 +20,3 @@ target_link_libraries( wsh-add-hostkeys
 	${PROTOBUF_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
 )
-
-target_link_libraries( wsh-askpass
-	${GLIB2_LIBRARIES}
-)

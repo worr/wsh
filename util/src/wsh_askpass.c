@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,11 +18,11 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
  * This is like a slightly more secure version of cat, in that it mlocks the
  * memory and memset_s's it after it's done being used.
  */
-int main(gint argc, gchar** argv) {
-	gchar* peedubs_mem = NULL;
-	gint ret = EXIT_SUCCESS;
+int main(int argc, char** argv) {
+	char* peedubs_mem = NULL;
+	int ret = EXIT_SUCCESS;
 
-	if ((gintptr)(peedubs_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 2, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
+	if ((long)(peedubs_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 2, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
 		perror("mmap");
 		return EXIT_FAILURE;
 	}
@@ -44,7 +43,7 @@ int main(gint argc, gchar** argv) {
 		goto bad;
 	}
 
-	g_strchomp(peedubs_mem);
+	*strchr(peedubs_mem, '\n') = '\0';
 
 	if (puts(peedubs_mem) == EOF) {
 		perror("puts");

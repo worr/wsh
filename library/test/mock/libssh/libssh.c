@@ -255,3 +255,15 @@ gint ssh_userauth_none() {
 	return 0;
 }
 
+ssh_pcap_file ssh_pcap_file_new() {
+	return NULL;
+}
+
+gint ssh_pcap_file_open() {
+	return 0;
+}
+
+gint ssh_set_pcap_file() {
+	return 0;
+}
+

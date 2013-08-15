@@ -35,7 +35,7 @@ static const guint8 encoded_res[]
 static void test_wsh_pack_request(void) {
 	wsh_cmd_req_t req;
 	guint8* buf = NULL;
-	gsize buf_len;
+	guint32 buf_len;
 
 	req.cmd_string = req_cmd;
 	req.std_input = req_stdin;
@@ -79,7 +79,7 @@ static void test_wsh_unpack_request(void) {
 static void test_wsh_pack_response(void) {
 	wsh_cmd_res_t res;
 	guint8* buf = NULL;
-	gsize buf_len;
+	guint32 buf_len;
 
 	res.std_output = res_stdout;
 	res.std_error = res_stderr;

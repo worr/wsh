@@ -28,6 +28,7 @@
 
 typedef void* ssh_session;
 typedef void* ssh_channel;
+typedef void* ssh_pcap_file;
 
 gint ssh_get_pubkey_hash();
 void ssh_set_blocking();
@@ -78,6 +79,9 @@ void set_ssh_channel_change_pty_size_ret(gint ret);
 gint ssh_channel_change_pty_size();
 gint ssh_channel_send_eof();
 gint ssh_userauth_none();
+ssh_pcap_file ssh_pcap_file_new();
+gint ssh_pcap_file_open();
+gint ssh_set_pcap_file();
 
 void set_ssh_threads_set_callbacks_ret(gint ret);
 

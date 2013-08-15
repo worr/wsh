@@ -26,6 +26,10 @@ set( CMAKE_INSTALL_FULL_MANDIR ${CMAKE_INSTALL_PREFIX}/share )
 set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/src )
 set( WSH_LIBRARIES wsh )
 
+if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+	add_definitions( -DDEBUG )
+endif( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+
 check_c11( )
 
 if( HAVE_C11 )

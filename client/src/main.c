@@ -163,24 +163,22 @@ restore_sigs:
 
 static void lock_password_pages(void) {
 	if ((gintptr)(passwd_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1) {
-		g_printerr("mmap: %s\n", strerror(errno));
+		perror("mmap");
 		return;
 	}
 
 	if (mlock(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3)) {
-		g_printerr("mlock: %s\n", strerror(errno));
+		perror("mlock");
 		return;
 	}
 }
 
 static void unlock_password_pages(void) {
 	if (munlock(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3))
-		g_printerr("%s\n", strerror(errno));
+		perror("munlock");
 
-	if (munmap(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3)) {
-		g_printerr("%s\n", strerror(errno));
-		return;
-	}
+	if (munmap(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3))
+		perror("munmap");
 }
 
 int main(int argc, char** argv) {
@@ -229,6 +227,11 @@ int main(int argc, char** argv) {
 		sudo_password = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 1);
 		prompt_for_a_fucking_password(sudo_password, WSHC_MAX_PASSWORD_LEN, "sudo password: ");
 		if (! sudo_password) return EXIT_FAILURE;
+	}
+
+	if ((ask_sudo_password || ask_sudo_password) && mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ)) {
+		perror("mprotect");
+		return EXIT_FAILURE;
 	}
 
 	hosts = g_strsplit(hosts_arg, ",", 0);

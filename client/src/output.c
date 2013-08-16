@@ -136,7 +136,7 @@ gint wshc_check_write_output(struct check_write_out_args* args) {
 			goto wshc_check_write_output_error;
 		}
 
-		//write = TRUE;
+		write = TRUE;
 	}
 
 wshc_check_write_output_error:

@@ -342,7 +342,7 @@ int main(int argc, char** argv) {
 	gchar* output;
 	gsize output_len = 0;
 	wshc_collate_output(out_info, &output, &output_len);
-	g_print(output);
+	g_print("%s", output);
 
 	return ret;
 }

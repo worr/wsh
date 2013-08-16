@@ -2,11 +2,14 @@
 #define __WSHC_REMOTE_H
 
 #include "cmd.h"
+#include "output.h"
 
 typedef struct {
 	const gchar* username;
 	const gchar* password;
 	const wsh_cmd_req_t* req;
+	wshc_output_info_t* out;
+	gsize hosts;
 	gint port;
 } wshc_cmd_info_t;
 

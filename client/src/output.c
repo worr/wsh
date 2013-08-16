@@ -136,7 +136,7 @@ gint wshc_check_write_output(struct check_write_out_args* args) {
 			goto wshc_check_write_output_error;
 		}
 
-		write = TRUE;
+		//write = TRUE;
 	}
 
 wshc_check_write_output_error:
@@ -210,7 +210,8 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	while (new_len > *f->size) {
 		gchar* new_output = g_slice_alloc0(*f->size + WSHC_ALLOC_LEN);
 		g_memmove(new_output, *f->out, *f->size);
-		g_slice_free1(*f->size, *f->out);
+		if (*f->size)
+			g_slice_free1(*f->size, *f->out);
 		*f->out = new_output; *f->size += WSHC_ALLOC_LEN;
 	}
 

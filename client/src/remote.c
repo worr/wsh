@@ -52,6 +52,8 @@ void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) 
 		goto wshc_try_ssh_error;
 	}
 
+	wshc_write_output(cmd_info->out, cmd_info->hosts, host_info->hostname, *host_info->res);
+
 	wsh_ssh_disconnect(session);
 
 wshc_try_ssh_error:

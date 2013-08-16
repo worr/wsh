@@ -281,6 +281,12 @@ int main(int argc, char** argv) {
 	cmd_info.username = username;
 	cmd_info.password = password;
 	cmd_info.port = port;
+	cmd_info.hosts = num_hosts;
+
+	wshc_output_info_t* out_info = NULL;
+	wshc_init_output(&out_info, std_out);
+
+	cmd_info.out = out_info;
 
 	wsh_cmd_req_t req;
 	build_wsh_cmd_req(&req, sudo_password, cmd_string);
@@ -332,6 +338,11 @@ int main(int argc, char** argv) {
 	g_free(cmd_string);
 
 	free_wsh_cmd_req_fields(&req);
+
+	gchar* output;
+	gsize output_len = 0;
+	wshc_collate_output(out_info, &output, &output_len);
+	g_print(output);
 
 	return ret;
 }

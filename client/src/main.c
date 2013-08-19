@@ -71,14 +71,16 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->std_input = NULL;
 	req->std_input_len = 0;
 	req->timeout = 0;
-	req->cwd = g_get_current_dir();
+	req->cwd = "";
 	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
 }
  
 static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
-	g_strfreev(req->env);
-	g_free(req->cwd);
+	if (req->env != NULL)
+		g_strfreev(req->env);
+	if (strncmp(req->cwd, "", 1))
+		g_free(req->cwd);
 	g_free(req->host);
 }
 

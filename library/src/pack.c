@@ -62,6 +62,8 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, guint32 buf_len)
 	(*req)->env[cmd_req->n_env] = NULL;
 
 	(*req)->cwd = g_strndup(cmd_req->cwd, strlen(cmd_req->cwd));
+	if (! strlen((*req)->cwd))
+		(*req)->cwd = g_get_current_dir();
 	(*req)->timeout = cmd_req->timeout;
 
 	(*req)->host = g_strndup(cmd_req->host, strlen(cmd_req->host));

@@ -23,6 +23,7 @@ void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) 
 	if (req->timeout != 0)
 		cmd_req.has_timeout = TRUE;
 	cmd_req.timeout = req->timeout;
+	cmd_req.host = req->host;
 
 	cmd_req.n_env = 0;
 	for (gsize i = 0; cmd_req.env != NULL && cmd_req.env[i] != NULL; i++)

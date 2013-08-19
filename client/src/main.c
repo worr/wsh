@@ -72,7 +72,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->std_input_len = 0;
 	req->timeout = 0;
 	req->cwd = g_get_current_dir();
-	req->host = (gchar*)g_get_host_name();
+	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
 }
  

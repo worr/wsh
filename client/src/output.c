@@ -218,19 +218,19 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	// Start copying data into out
 	g_strlcat(*f->out, host_list_str_stderr, *f->size);
 
-	for (gint i = 0; i < g_strv_length(c->error); i++) {
-		g_strlcat(*f->out, c->error[i], *f->size);
+	for (gchar** p = c->error; *p != NULL; p++) {
+		g_strlcat(*f->out, *p, *f->size);
 		g_strlcat(*f->out, "\n", *f->size);
 	}
 
 	g_strlcat(*f->out, "\n", *f->size);
 	g_strlcat(*f->out, host_list_str_stdout, *f->size);
 
-	for (gint i = 0; i < g_strv_length(c->output); i++) {
-		g_strlcat(*f->out, c->output[i], *f->size);
+	for (gchar** p = c->output; *p != NULL; p++) {
+		g_strlcat(*f->out, *p, *f->size);
 		g_strlcat(*f->out, "\n", *f->size);
 	}
-	
+
 	g_slice_free1(host_list_len + WSHC_STDERR_TAIL_SIZE, host_list_str_stderr);
 	g_slice_free1(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stdout);
 }

@@ -63,10 +63,10 @@ static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf, gs
 		*buf = buf2;
 	} else {
 		*buf = g_new0(gchar*, 2);
-    }
+	}
 
 	(*buf)[*buf_len] = g_malloc0(strlen(line) + 1);
-    (*buf)[*buf_len + 1] = NULL;
+	(*buf)[*buf_len + 1] = NULL;
 
 	// memmove() the string into the struct
 	g_memmove((*buf)[*buf_len], line, strlen(line + 1));
@@ -115,7 +115,7 @@ static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
 	wsh_check_if_need_to_close(user_data);
 }
 
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer user_data, gboolean std_err) {
 	g_assert(user_data != NULL);
 
 	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
@@ -131,130 +131,47 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data
 	gsize buf_len = 0;
 
 	if (cond & G_IO_HUP) {
-		((struct cmd_data*)user_data)->out_closed = TRUE;
-		wsh_check_if_need_to_close((struct cmd_data*)user_data);
+		if (std_err) {
+			((struct cmd_data*)user_data)->err_closed = TRUE;
+			wsh_check_if_need_to_close((struct cmd_data*)user_data);
+		} else {
+			((struct cmd_data*)user_data)->out_closed = TRUE;
+			wsh_check_if_need_to_close((struct cmd_data*)user_data);
+		}
+
 		ret = FALSE;
 
 		if (! (cond & G_IO_IN))
 			return ret;
 	}
 
-	if (req->sudo) {
-		buf_len = strlen(SUDO_PROMPT) + 1;
-		buf = g_malloc0(buf_len);
-
-		stat = g_io_channel_read_chars(out, buf, strlen(SUDO_PROMPT), &buf_len, &res->err);
-		if (stat == G_IO_STATUS_EOF) {
-			((struct cmd_data*)user_data)->out_closed = TRUE;
-			wsh_check_if_need_to_close((struct cmd_data*)user_data);
-			ret = FALSE;
-
-			goto check_stdout_err;
-		}
-
+	stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
+	while (stat != G_IO_STATUS_EOF) {
 		if (res->err) {
 			ret = FALSE;
-			goto check_stdout_err;
+			goto check_stream_err;
 		}
 
-		if (g_strcmp0(buf, SUDO_PROMPT) == 0) {
-			((struct cmd_data*)user_data)->sudo_rdy = TRUE;
-		} else {
-			gchar* line_remainder = NULL;
-			gchar* comb = NULL;
-
-			if (req->password[0] != 0)
-				memset_s(req->password, strlen(req->password), 0, strlen(req->password));
-
-			stat = g_io_channel_read_line(out, &line_remainder, &buf_len, NULL, &res->err);
-			if (stat == G_IO_STATUS_EOF) {
-				ret = FALSE;
-				((struct cmd_data*)user_data)->out_closed = TRUE;
-				wsh_check_if_need_to_close((struct cmd_data*)user_data);
-
-				goto check_stdout_sudo_err;
-			}
-
-			if (res->err) {
-				ret = FALSE;
-				goto check_stdout_sudo_err;
-			}
-
-			g_strconcat(comb, buf, line_remainder, NULL);
-			wsh_add_line_stdout(res, comb);
-			g_free(comb);
-
-check_stdout_sudo_err:
-			g_free(line_remainder);
-		}
-	} else {
-		stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
-		if (stat == G_IO_STATUS_EOF) {
-			ret = FALSE;
-			((struct cmd_data*)user_data)->out_closed = TRUE;
-			wsh_check_if_need_to_close((struct cmd_data*)user_data);
-
-			goto check_stdout_err;
-		}
-
-		if (res->err) {
-			ret = FALSE;
-
-			goto check_stdout_err;
-		}
-
-		if (buf)
+		if (buf && std_err)
+			wsh_add_line_stderr(res, buf);
+		else if (buf)
 			wsh_add_line_stdout(res, buf);
+
+		stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
 	}
 
-check_stdout_err:
+check_stream_err:
 	g_free(buf);
 
 	return ret;
 }
 
-gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data) {
-	g_assert(user_data != NULL);
+gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+	return wsh_check_stream(out, cond, user_data, FALSE);
+}
 
-	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
-	g_assert(res != NULL);
-	g_assert(res->err == NULL);
-
-	gboolean ret = TRUE;
-	GIOStatus stat;
-
-	gchar* buf = NULL;
-	gsize buf_len = 0;
-
-	if (cond & G_IO_HUP) {
-		((struct cmd_data*)user_data)->err_closed = TRUE;
-		wsh_check_if_need_to_close(user_data);
-		ret =  FALSE;
-
-		if (! (cond & G_IO_IN))
-			return ret;
-	}
-
-	stat = g_io_channel_read_line(err, &buf, &buf_len, NULL, &res->err);
-	if (stat == G_IO_STATUS_EOF) {
-		ret = FALSE;
-		((struct cmd_data*)user_data)->err_closed = TRUE;
-		wsh_check_if_need_to_close(user_data);
-
-		goto check_stderr_err;
-	}
-
-	if (buf)
-		wsh_add_line_stderr(res, buf);
-
-	if (res->err != NULL) {
-		ret = FALSE;
-	}
-
-check_stderr_err:
-	g_free(buf);
-
-	return ret;
+gboolean wsh_check_stderr(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+	return wsh_check_stream(out, cond, user_data, TRUE);
 }
 
 gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {

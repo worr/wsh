@@ -322,8 +322,12 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 			g_setenv(new_path, "PATH", TRUE);
 	}
 
-	if (req->sudo)
-		(void)g_environ_setenv(req->env, "SUDO_ASKPASS", "/usr/libexec/wsh-askpass", TRUE);
+	if (req->sudo) {
+		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", "/usr/libexec/wsh-askpass", TRUE)) {
+			ret = EXIT_FAILURE;
+			goto run_cmd_error_no_log_cmd;
+		}
+	}
 
 	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &res->err)) {
 		ret = EXIT_FAILURE;

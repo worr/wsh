@@ -14,15 +14,13 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 #include "log.h"
 
 const guint MAX_CMD_ARGS = 255;
-const gchar* SUDO_CMD = "sudo -p 'wsh-sudo: ' -u ";
-const gchar* SUDO_PROMPT = "wsh-sudo: ";
+const gchar* SUDO_CMD = "sudo -A -u ";
 
 // Struct that we pass to most of our main loop callbacks
 struct cmd_data {
 	GMainLoop* loop;
 	wsh_cmd_req_t* req;
 	wsh_cmd_res_t* res;
-	gboolean sudo_rdy;
 	gboolean cmd_exited;
 	gboolean out_closed;
 	gboolean err_closed;
@@ -45,10 +43,35 @@ const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable) {
 	return NULL;
 }
 
+gchar** g_environ_setenv_ov(gchar** envp, const gchar* variable, const gchar* value, gboolean overwrite) {
+	gchar* var;
+
+	for (var = *envp; var != NULL; var = *(envp++)) {
+		if (strstr(var, variable) == var)
+			break;
+	}
+
+	if (var != NULL && overwrite) {
+		g_free(var);
+		var = g_strdup_printf("%s=%s", variable, value);
+	} else {
+		gint length = g_strv_length(envp);
+		envp = g_renew(gchar*, envp, length + 2);
+		envp[length] = g_strdup_printf("%s=%s", variable, value);
+		envp[length + 1] = NULL;
+	}
+
+	return envp;
+}
+
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
 const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
 	return g_environ_getenv_ov(envp, variable);
+}
+
+gchar** g_environ_setenv(gchar** envp, const gchar* variable, const gchar* value, gboolean overwrite) {
+	return g_environ_setenv_ov(envp, variable, value, overwrite);
 }
 #endif
 
@@ -184,11 +207,10 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 	g_assert(res != NULL);
 	g_assert(res->err == NULL);
 
-	gboolean sudo_rdy = ((struct cmd_data*)user_data)->sudo_rdy;
 	gsize wrote;
 	gboolean ret = TRUE;
 
-	if (sudo_rdy) {
+	if (req->sudo) {
 		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
 		if (res->err || wrote < strlen(req->password)) {
 			ret = FALSE;
@@ -196,6 +218,7 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 		}
 
 		memset_s(req->password, strlen(req->password), 0, strlen(req->password));
+		req->sudo = FALSE;
 
 		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
 		if (res->err || wrote == 0) {
@@ -208,9 +231,24 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 			ret = FALSE;
 			goto write_stdin_err;
 		}
-
-		((struct cmd_data*)user_data)->sudo_rdy = FALSE;
 	}
+
+	for (guint i = 0; i < req->std_input_len; i++) {
+		g_io_channel_write_chars(in, req->std_input[i], strlen(req->std_input[i]), &wrote, &res->err);
+		if (res->err) {
+			ret = FALSE;
+			goto write_stdin_err;
+		}
+
+		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
+		if (res->err) {
+			ret = FALSE;
+			goto write_stdin_err;
+		}
+	}
+
+	g_io_channel_flush(in, &res->err);
+	if (res->err) ret = FALSE;
 
 write_stdin_err:
 
@@ -284,6 +322,9 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 			g_setenv(new_path, "PATH", TRUE);
 	}
 
+	if (req->sudo)
+		g_environ_setenv(req->env, "SUDO_ASKPASS", "/usr/libexec/wsh-askpass", TRUE);
+
 	if (! g_shell_parse_argv(cmd, &argcp, &argcv, &res->err)) {
 		ret = EXIT_FAILURE;
 		goto run_cmd_error_no_log_cmd;
@@ -317,7 +358,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 		.loop = loop,
 		.req = req,
 		.res = res,
-		.sudo_rdy = FALSE,
 		.cmd_exited = FALSE,
 		.out_closed = FALSE,
 		.err_closed = FALSE,

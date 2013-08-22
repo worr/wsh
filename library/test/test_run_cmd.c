@@ -12,10 +12,6 @@ extern char** environ;
 struct test_wsh_run_cmd_data {
 	wsh_cmd_req_t* req;
 	wsh_cmd_res_t* res;
-	GIOChannel* in_test_channel;
-	GIOChannel* out_test_channel;
-	char** envp;
-	gboolean status;
 };
 
 static void setup(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
@@ -24,7 +20,7 @@ static void setup(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data
 	data->res = g_slice_new0(wsh_cmd_res_t);
 
 	data->req->in_fd = dup(1);
-	data->req->env = environ;
+	data->req->env = g_strdupv(environ);
 	data->req->cwd = "/tmp";
 	data->req->host = "127.0.0.1";
 	data->req->username = "root";
@@ -46,6 +42,9 @@ static void teardown(struct test_wsh_run_cmd_data* fixture, gconstpointer user_d
 	for (gint i = 0; i < data->res->std_error_len; i++) {
 		g_free(data->res->std_error[i]);
 	}
+
+	g_strfreev(data->req->env);
+	g_free(data->req->password);
 
 	g_slice_free(wsh_cmd_req_t, data->req);
 	g_slice_free(wsh_cmd_res_t, data->res);
@@ -141,22 +140,22 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture, gcons
 
 	req->sudo = TRUE;
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -p 'wsh-sudo: ' -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -A -u root /bin/ls");
 	g_free(res);
 
 	req->username = "worr";
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -p 'wsh-sudo: ' -u worr /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -A -u worr /bin/ls");
 	g_free(res);
 
 	req->username = "";
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -p 'wsh-sudo: ' -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -A -u root /bin/ls");
 	g_free(res);
 
 	req->username = " ";
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -p 'wsh-sudo: ' -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -A -u root /bin/ls");
 	g_free(res);
 
 	req->cmd_string = "";
@@ -198,7 +197,7 @@ static void g_environ_getenv_override_mid(struct test_wsh_run_cmd_data* fixture,
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
 
-static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_wsh_write_stdin_sudo(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
 	gint fds[2];
 	gchar* buf;
 	gsize buf_len;
@@ -210,11 +209,11 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 	GIOChannel* mock_stdin = g_io_channel_unix_new(fds[1]);
 
 	struct test_cmd_data data = {
-		.sudo_rdy = TRUE,
 		.req = fixture->req,
 		.res = fixture->res,
 	};
 
+	fixture->req->sudo = TRUE;
 	wsh_write_stdin(mock_stdin, G_IO_IN, &data);
 	g_io_channel_read_line(in, &buf, &buf_len, NULL, NULL);
 
@@ -225,46 +224,6 @@ static void test_wsh_write_stdin(struct test_wsh_run_cmd_data* fixture, gconstpo
 
 	g_io_channel_shutdown(in, FALSE, NULL);
 	g_io_channel_shutdown(mock_stdin, FALSE, NULL);
-	close(fds[0]);
-	close(fds[1]);
-}
-
-static void test_wsh_check_stdout_sudo_rdy(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
-	gint fds[2];
-	gsize writ;
-	fixture->req->sudo = TRUE;
-
-	if (pipe(fds))
-		g_assert_not_reached();
-
-	GIOChannel* out = g_io_channel_unix_new(fds[1]);
-	GIOChannel* mock_stdout = g_io_channel_unix_new(fds[0]);
-
-	struct test_cmd_data data = {
-		.sudo_rdy = FALSE,
-		.req = fixture->req,
-		.res = fixture->res,
-	};
-
-	g_io_channel_write_chars(out, SUDO_PROMPT, strlen(SUDO_PROMPT), &writ, NULL);
-	g_io_channel_flush(out, NULL);
-	wsh_check_stdout(mock_stdout, G_IO_IN, &data);
-
-	g_assert(data.sudo_rdy);
-
-	// Test to see if sudo_rdy isn't always set
-	data.sudo_rdy = FALSE;
-	fixture->req->sudo = FALSE;
-
-	g_io_channel_write_chars(out, "TEST\n", strlen("TEST\n"), &writ, NULL);
-	g_io_channel_flush(out, NULL);
-
-	wsh_check_stdout(mock_stdout, G_IO_IN, &data);
-
-	g_assert(!data.sudo_rdy);
-
-	g_io_channel_shutdown(out, FALSE, NULL);
-	g_io_channel_shutdown(mock_stdout, FALSE, NULL);
 	close(fds[0]);
 	close(fds[1]);
 }
@@ -293,8 +252,7 @@ int main(int argc, char** argv, char** env) {
 	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideFail", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
 	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
 	g_test_add("/Library/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
-	g_test_add("/Library/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin, teardown);
-	g_test_add("/Library/RunCmd/SudoRdy", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_check_stdout_sudo_rdy, teardown);
+	g_test_add("/Library/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin_sudo, teardown);
 	g_test_add("/Library/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_timeout, teardown);
 
 	return g_test_run();

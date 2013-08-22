@@ -6,7 +6,6 @@
 
 extern const guint MAX_CMD_ARGS;
 extern const gchar* SUDO_CMD;
-extern const gchar* SUDO_PROMPT;
 
 typedef struct {
 	gchar** env;
@@ -45,7 +44,6 @@ struct test_cmd_data {
 	GMainLoop* loop;
 	wsh_cmd_req_t* req;
 	wsh_cmd_res_t* res;
-	gboolean sudo_rdy;
 	gboolean cmd_exited;
 	gboolean out_closed;
 	gboolean err_closed;

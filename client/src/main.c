@@ -328,6 +328,13 @@ int main(int argc, char** argv) {
 		g_thread_pool_free(gtp, FALSE, TRUE);
 	}
 
+	if (password || sudo_password) {
+		if (mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE)) {
+			perror("mprotect");
+			return EXIT_FAILURE;
+		}
+	}
+
 	if (password) memset_s(password, WSHC_MAX_PASSWORD_LEN, 0, strlen(password));
 	if (sudo_password) memset_s(sudo_password, WSHC_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
 	if (password || sudo_password) unlock_password_pages();

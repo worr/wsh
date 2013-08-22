@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
 	build_wsh_cmd_req(&req, sudo_password, cmd_string);
 	cmd_info.req = &req;
 
-	if (threads == 0 || argc < 5) {
+	if (threads == 0 || num_hosts < 5) {
 		for (gint i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 

@@ -1,79 +1,106 @@
-<!-- Creator     : groff version 1.19.2 -->
-<!-- CreationDate: Mon Aug 12 23:04:42 2013 -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+<!-- Creator     : groff version 1.18.1.4 -->
+<!-- CreationDate: Mon Aug 26 16:48:06 2013 -->
 <html>
 <head>
 <meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
 <meta name="Content-Style" content="text/css">
-<style type="text/css">
-       p     { margin-top: 0; margin-bottom: 0; }
-       pre   { margin-top: 0; margin-bottom: 0; }
-       table { margin-top: 0; margin-bottom: 0; }
-</style>
 <title></title>
 </head>
 <body>
 
 <hr>
 
+<p><b>NAME</b></p>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p><tt><b>wshd</b></tt> &minus; receives commands from
+<tt>wshc</tt>(1)</p></td>
+</table>
 
-<p valign="top">WSHD(1) BSD General Commands Manual
-WSHD(1)</p>
+<p><b>SYNOPSIS</b></p>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p><tt><b>wshd</b></tt></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="18%"></td>
+<td width="81%">
+<p><b>DESCRIPTION</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p><tt><b>wshd</b></tt> is executed by <tt>wshc</tt>(1) and
+sent binaries commands over stdin. Usually
+<tt><b>wshd</b></tt> is executed after <tt>wshc</tt>(1) has
+initiated an ssh session.<br>
+It&rsquo;s generally a bad idea to execute
+<tt><b>wshd</b></tt> explicitly.</p></td>
+</table>
 
-<p style="margin-top: 1em" valign="top"><b>NAME</b></p>
+<p><b>EXIT STATUS</b></p>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p>The <tt><b>wshd</b></tt> utility exits 0 on success, and
+&gt;0 if an error occurs.</p></td>
+</table>
 
-<p style="margin-left:8%;"><b>wshd</b> &mdash; receives
-commands from wshc(1)</p>
+<p><b>SEE ALSO</b></p>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p><tt>wshc</tt>(1) <tt>wsh-add-hostkeys</tt>(1)</p></td>
+</table>
 
+<p><b>AUTHORS</b></p>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p>William Orr
+&lang;<tt>will@worrbase.com</tt>&rang;</p></td>
+</table>
 
-<p style="margin-top: 1em" valign="top"><b>SYNOPSIS</b></p>
-
-<p style="margin-left:15%;"><b>wshd</b></p>
-
-
-<p style="margin-top: 1em" valign="top"><b>DESCRIPTION</b></p>
-
-<p style="margin-left:8%;"><b>wshd</b> is executed by
-wshc(1) and sent binaries commands over stdin. Usually
-<b>wshd</b> is executed after wshc(1) has initiated an ssh
-session.</p>
-
-<p style="margin-left:8%; margin-top: 1em">It&rsquo;s
-generally a bad idea to execute <b>wshd</b> explicitly.</p>
-
-<p style="margin-top: 1em" valign="top"><b>EXIT
-STATUS</b></p>
-
-<p style="margin-left:8%;">The <b>wshd</b> utility
-exits&nbsp;0 on success, and&nbsp;&gt;0 if an error
-occurs.</p>
-
-<p style="margin-top: 1em" valign="top"><b>SEE ALSO</b></p>
-
-<p style="margin-left:8%;">wshc(1) wsh-add-hostkeys(1)</p>
-
-<p style="margin-top: 1em" valign="top"><b>AUTHORS</b></p>
-
-<p style="margin-left:8%;">William Orr
-&lang;<i>will@worrbase.com</i>&rang;</p>
-
-<p style="margin-top: 1em" valign="top"><b>SECURITY
-CONSIDERATIONS</b></p>
-
-<p style="margin-left:8%;"><b>wshd</b> prompts for your
-passwords and stores them in memory. A page of memory is
-mlock(2) and the password is kept encrypted in memory. With
-some knowledge of the source and some time, it is possible
-to fetch the password from memory and decrypt it.</p>
-
-<p style="margin-left:8%; margin-top: 1em">As soon as
-<b>wshd</b> is done with the password, it is scrubbed from
-memory with memset_s(3)</p>
-
-<p style="margin-left:8%; margin-top: 1em">BSD
-August&nbsp;12, 2013 BSD</p>
+<p><b>SECURITY CONSIDERATIONS</b></p>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%"></td>
+<td width="90%">
+<p><tt><b>wshd</b></tt> prompts for your passwords and
+stores them in memory. A page of memory is <tt>mlock</tt>(2)
+and the password is kept encrypted in memory. With some
+knowledge of the source and some time, it is possible to
+fetch the password from memory and decrypt it.<br>
+As soon as <tt><b>wshd</b></tt> is done with the password,
+it is scrubbed from memory with <tt>memset_s</tt>(3)</p>
+<!-- INDENTATION -->
+<p>BSD August 26, 2013 1</p></td>
+</table>
 <hr>
 </body>
 </html>

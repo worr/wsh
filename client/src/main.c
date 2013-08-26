@@ -249,6 +249,7 @@ int main(int argc, char** argv) {
 	hosts = g_strsplit(hosts_arg, ",", 0);
 	num_hosts = g_strv_length(hosts);
 #endif
+
 	argv++;
 	if (! strncmp("--", argv[0], 2))
 		argv++;

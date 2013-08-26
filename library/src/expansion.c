@@ -112,7 +112,7 @@ gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts, const gchar* filena
 	gchar* new_filename = NULL;
 	gint ret = EXIT_SUCCESS;
 
-	if (! strncmp(g_basename(filename), filename, strlen(filename)))
+	if (! g_path_is_absolute(filename))
 		new_filename = g_strdup_printf("./%s", filename);
 	else
 		new_filename = g_strdup(filename);

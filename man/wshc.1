@@ -14,7 +14,8 @@
 .Op Fl P | -sudo-password
 .Op Fl t | -threads Ar threads
 .Op Fl h | -hosts Ar hosts
-.Op Fl r | -range
+.Op Fl f | -file Ar filename
+.Op Fl r | -range Ar range_query
 .Op Fl -
 .Op Ar command
 .Sh DESCRIPTION
@@ -52,12 +53,18 @@ number of threads. If this flag is not given, then
 will execute sequentially.
 .It Fl h | -hosts Ar hosts
 A comma separated list of hosts to ssh into.
-.It Fl r | -range
+.It Fl f | -file Ar filename
+A file to read a newline delimited set of hosts from. If
+.Ar filename
+is executable,
+.Nm
+will execute the file and use the output as the list of hosts.
+.It Fl r | -range Ar range_query
 If
 .Nm
-is built with range support, the argument to
-.Fl h
-will be resolved by libcrange.
+is built with range support,
+.Ar range_query
+will be resolved with range
 .El
 .Ss Executing commands
 .Pp

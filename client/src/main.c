@@ -31,8 +31,9 @@ static gchar* sudo_username = NULL;
 static gboolean ask_sudo_password = FALSE;
 static gint threads = 0;
 static gchar* hosts_arg = NULL;
+static gchar* file_arg = NULL;
 #ifdef RANGE
-static gboolean range = FALSE;
+static gchar* range = NULL;
 #endif
 
 static void* passwd_mem;
@@ -47,8 +48,9 @@ static GOptionEntry entries[] = {
 	{ "sudo-password", 'P', 0, G_OPTION_ARG_NONE, &ask_sudo_password, "Prompt sudo password", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
+	{ "file", 'f', 0, G_OPTION_ARG_STRING, &file_arg, "Filename to read hosts from", NULL },
 #ifdef RANGE
-	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
+	{ "range", 'r', 0, G_OPTION_ARG_STRING, &range, "Range query for hostname expansion", NULL },
 #endif
 	{ NULL }
 };
@@ -181,6 +183,20 @@ static void unlock_password_pages(void) {
 		perror("munmap");
 }
 
+static gboolean valid_arguments(gchar** mesg) {
+	if ((hosts_arg && (file_arg || range)) || (file_arg && range)) {
+		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		return FALSE;
+	}
+
+	if (!(hosts_arg || file_arg || range)) {
+		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 int main(int argc, char** argv) {
 	GError* err = NULL;
 	GOptionContext* context;
@@ -206,13 +222,17 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
-	if (username == NULL)
-		username = g_strdup(g_get_user_name());
+	gchar* mesg = NULL;
+	if (! valid_arguments(&mesg)) {
+		g_printerr("%s\n", mesg);
+		g_free(mesg);
 
-	if (hosts_arg == NULL) {
-		g_printerr("You must provide a list of hosts\n");
+		g_printerr("%s", g_option_context_get_help(context, FALSE, NULL));
 		return EXIT_FAILURE;
 	}
+
+	if (username == NULL)
+		username = g_strdup(g_get_user_name());
 
 	if (ask_password || ask_sudo_password)
 		lock_password_pages();
@@ -234,6 +254,20 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
+	// Done with checking options, expand hosts
+	if (file_arg) {
+		if (wsh_exp_filename(&hosts, &num_hosts, file_arg, &err)) {
+			g_printerr("%s\n", err->message);
+			g_error_free(err);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (hosts_arg) {
+		hosts = g_strsplit(hosts_arg, ",", 0);
+		num_hosts = g_strv_length(hosts);
+	}
+
 #ifdef RANGE
 	if (range) {
 		if (wsh_exp_range(&hosts, &num_hosts, hosts_arg, &err)) {
@@ -241,13 +275,7 @@ int main(int argc, char** argv) {
 			g_error_free(err);
 			return EXIT_FAILURE;
 		}
-	} else {
-		hosts = g_strsplit(hosts_arg, ",", 0);
-		num_hosts = g_strv_length(hosts);
 	}
-#else
-	hosts = g_strsplit(hosts_arg, ",", 0);
-	num_hosts = g_strv_length(hosts);
 #endif
 
 	argv++;

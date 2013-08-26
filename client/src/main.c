@@ -31,9 +31,7 @@ static gboolean ask_sudo_password = FALSE;
 static gint threads = 0;
 static gchar* hosts_arg = NULL;
 static gchar* file_arg = NULL;
-#ifdef RANGE
 static gchar* range = NULL;
-#endif
 
 static void* passwd_mem;
 

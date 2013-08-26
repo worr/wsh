@@ -24,7 +24,6 @@ const gsize WSHC_MAX_PASSWORD_LEN = 1024;
 
 static gboolean std_out = FALSE;
 static gint port = 22;
-static gboolean sudo = FALSE;
 static gchar* username = NULL;
 static gboolean ask_password = FALSE;
 static gchar* sudo_username = NULL;
@@ -41,7 +40,6 @@ static void* passwd_mem;
 static GOptionEntry entries[] = {
 	{ "stdout", 'o', 0, G_OPTION_ARG_NONE, &std_out, "Show stdout of hosts (suppressed by default on success)", NULL },
 	{ "port", 0, 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
-	{ "sudo", 's', 0, G_OPTION_ARG_NONE, &sudo, "Use sudo to execute commands", NULL },
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "SSH username", NULL },
 	{ "password", 'p', 0, G_OPTION_ARG_NONE, &ask_password, "Prompt for SSH password", NULL },
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
@@ -61,7 +59,7 @@ static GOptionEntry entries[] = {
 static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	g_assert(req != NULL);
 
-	req->sudo = sudo;
+	req->sudo = (sudo_username || ask_sudo_password);
 
 	req->username = sudo_username;
 	if (!req->username) req->username = username;
@@ -249,7 +247,7 @@ int main(int argc, char** argv) {
 		if (! sudo_password) return EXIT_FAILURE;
 	}
 
-	if ((ask_sudo_password || ask_sudo_password) && mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ)) {
+	if ((ask_password || ask_sudo_password) && mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ)) {
 		perror("mprotect");
 		return EXIT_FAILURE;
 	}

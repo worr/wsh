@@ -8,7 +8,8 @@ const gsize MAX_APR_ERR_MSG_SIZE = 1024;
 static apr_pool_t* pool;
 
 gint wsh_exp_range_init(GError** err) {
-	g_assert_no_error(*err);
+	if (err != NULL)
+		g_assert_no_error(*err);
 
 	apr_initialize();
 	apr_status_t stat = apr_pool_create(&pool, NULL);
@@ -35,7 +36,8 @@ void wsh_exp_range_cleanup(void) {
 }
 
 gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err) {
-	g_assert_no_error(*err);
+	if (err != NULL)
+		g_assert_no_error(*err);
 	g_assert(*host_list == NULL);
 	g_assert(string != NULL);
 

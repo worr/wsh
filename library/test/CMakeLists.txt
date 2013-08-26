@@ -1,7 +1,7 @@
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
-set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto test_pack test_ssh )
+set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto test_pack test_ssh test_expansion )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
@@ -22,6 +22,7 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/src/cmd.c
 	${CMAKE_SOURCE_DIR}/library/src/pack.c
 	${CMAKE_SOURCE_DIR}/library/src/ssh.c
+	${CMAKE_SOURCE_DIR}/library/src/expansion.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c
 )
@@ -29,6 +30,12 @@ set( SOURCES
 if( NOT HAVE_MEMSET_S )
 	set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/memset_s.c ${SOURCES} )
 endif( NOT HAVE_MEMSET_S )
+
+if ( WITH_RANGE )
+	set( SOURCES ${SOURCES} ${CMAKE_SOURCE_DIR}/library/src/range_expansion.c )
+	set( TEST_EXECUTABLES ${TEST_EXECUTABLES} test_range_expansion )
+	include_directories( ${LIBCRANGE_INCLUDE_DIR} ${LIBAPR_INCLUDE_DIR} )
+endif( WITH_RANGE )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 	add_executable( ${TEST_EXECUTABLE} ${TEST_EXECUTABLE}.c ${SOURCES} )
@@ -39,4 +46,12 @@ foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 		${CMAKE_THREAD_LIBS_INIT}
 		${PROTOBUF_LIBRARIES}
 	)
+
+	if( WITH_RANGE )
+		target_link_libraries(
+			${TEST_EXECUTABLE}
+			${LIBCRANGE_LIBRARY}
+			${APR_LIBRARY}
+		)
+	endif( WITH_RANGE )
 endforeach( TEST_EXECUTABLE )

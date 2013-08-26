@@ -9,10 +9,8 @@
 #include <sys/types.h>
 #include <termios.h>
 
-#ifdef RANGE
-# include "range_expansion.h"
-#endif
 #include "cmd.h"
+#include "expansion.h"
 #include "log.h"
 #include "remote.h"
 #include "ssh.h"
@@ -236,43 +234,20 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
-	hosts = g_strsplit(hosts_arg, ",", 0);
-	num_hosts = g_strv_length(hosts);
-
 #ifdef RANGE
-	// Really fucking ugly code to resolve range
 	if (range) {
-		gchar* temp_res = "";
-		num_hosts = g_strv_length(hosts);
-
-		if (wsh_exp_range_init(&err)) {
+		if (wsh_exp_range(&hosts, &num_hosts, hosts_arg, &err)) {
 			g_printerr("%s\n", err->message);
+			g_error_free(err);
 			return EXIT_FAILURE;
 		}
-
-		for (gsize i = 0; i < num_hosts; i++) {
-			gchar** exp_res = NULL;
-			if (wsh_exp_range_expand(&exp_res, hosts[i], &err)) {
-				g_printerr("%s\n", err->message);
-				g_error_free(err);
-				return EXIT_FAILURE;
-			}
-			gchar* tmp_str = g_strjoinv(",", exp_res);
-			gchar* tmp_joined_res = g_strconcat(temp_res, tmp_str, ",", NULL);
-
-			if (i != 0)
-				g_free(temp_res);
-			g_free(tmp_str);
-			g_strfreev(exp_res);
-
-			temp_res = tmp_joined_res;
-		}
-
-		hosts = g_strsplit(temp_res, ",", 0);
-		g_free(temp_res);
-		wsh_exp_range_cleanup();
+	} else {
+		hosts = g_strsplit(hosts_arg, ",", 0);
+		num_hosts = g_strv_length(hosts);
 	}
-
+#else
+	hosts = g_strsplit(hosts_arg, ",", 0);
+	num_hosts = g_strv_length(hosts);
 #endif
 	argv++;
 	if (! strncmp("--", argv[0], 2))

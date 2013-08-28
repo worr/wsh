@@ -48,7 +48,6 @@ static void free_output(wshc_host_output_t* out) {
 	g_slice_free(wshc_host_output_t, out);
 }
 
-/* This expects not to be threaded */
 void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout) {
 	g_assert(out);
 
@@ -60,7 +59,6 @@ void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout) {
 		(GDestroyNotify)g_free, (GDestroyNotify)free_output);
 }
 
-/* This expects not to be threaded */
 void wshc_cleanup_output(wshc_output_info_t** out) {
 	g_assert(*out);
 
@@ -235,7 +233,6 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	g_slice_free1(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stdout);
 }
 
-/* This expects not to be threaded */
 gint wshc_collate_output(wshc_output_info_t* out, gchar** output, gsize* output_size) {
 	g_assert(output);
 	g_assert(out);

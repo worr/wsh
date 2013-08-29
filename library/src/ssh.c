@@ -300,7 +300,6 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
 		goto wsh_ssh_send_cmd_error;	
 	}
 
-
 	g_slice_free1(buf_len, buf);
 	return ret;
 

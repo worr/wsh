@@ -1,4 +1,5 @@
-/** @file
+/** @internal
+ *  @file
  *  @brief Client code for output manipulation
  */
 #ifndef __WSHC_OUTPUT_H

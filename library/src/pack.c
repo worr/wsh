@@ -80,6 +80,7 @@ void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
 	g_free((*req)->cwd);
 	g_free((*req)->host);
 	g_free(*req);
+	*req = NULL;
 }
 
 void wsh_pack_response(guint8** buf, guint32* buf_len, const wsh_cmd_res_t* res) {
@@ -123,5 +124,6 @@ void wsh_free_unpacked_response(wsh_cmd_res_t** res) {
 	g_strfreev((*res)->std_output);
 	g_strfreev((*res)->std_error);
 	g_free(*res);
+	*res = NULL;
 }
 

@@ -142,3 +142,9 @@ if( BUILD_CLIENT )
 		COMPONENT doc
 	)
 endif( BUILD_CLIENT )
+
+## Build docs
+
+add_custom_target( doc 
+	COMMAND doxygen ../Doxyfile
+)

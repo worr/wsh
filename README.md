@@ -22,6 +22,7 @@ machines and run one-off commands very simply
 * `cmake`
 * c compiler (`gcc`/`clang`) 
 * `make`/`ninja`
+* `doxygen` if you want API docs
 
 ## Architecture
 
@@ -48,3 +49,12 @@ to use some kind of hack to get your `sudo` creds over the network.
 
 wsh logs everything to syslog
 
+# BUILDING
+
+```bash
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ sudo make install
+```

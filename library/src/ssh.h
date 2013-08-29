@@ -143,6 +143,8 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 /**
  * @brief Disconnects from a remote host
  *
+ * @param[in] session wsh_ssh_session_t to disconnect from
+ *
  * @returns 0 on success, anything else on failure
  */
 void wsh_ssh_disconnect(wsh_ssh_session_t* session);

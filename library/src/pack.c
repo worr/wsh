@@ -30,7 +30,7 @@ void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) 
 		cmd_req.n_env++;
 
 	*buf_len = command_request__get_packed_size(&cmd_req);
-	*buf = g_malloc0(*buf_len);
+	*buf = g_slice_alloc0(*buf_len);
 
 	command_request__pack(&cmd_req, *buf);
 }
@@ -92,7 +92,7 @@ void wsh_pack_response(guint8** buf, guint32* buf_len, const wsh_cmd_res_t* res)
 	cmd_res.ret_code = res->exit_status;
 
 	*buf_len = command_reply__get_packed_size(&cmd_res);
-	*buf = g_malloc0(*buf_len);
+	*buf = g_slice_alloc0(*buf_len);
 
 	command_reply__pack(&cmd_res, *buf);
 }

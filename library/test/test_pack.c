@@ -54,7 +54,7 @@ static void test_wsh_pack_request(void) {
 	for (gsize i = 0; i < buf_len; i++)
 		g_assert(buf[i] == encoded_req[i]);
 
-	g_free(buf);
+	g_slice_free1(buf_len, buf);
 }
 
 static void test_wsh_unpack_request(void) {
@@ -95,7 +95,7 @@ static void test_wsh_pack_response(void) {
 	for (gsize i = 0; i < buf_len; i++)
 		g_assert(buf[i] == encoded_res[i]);
 
-	g_free(buf);
+	g_slice_free1(buf_len, buf);
 }
 
 static void test_wsh_unpack_response(void) {

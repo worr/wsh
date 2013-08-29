@@ -37,6 +37,8 @@ void wsh_exp_range_cleanup(void);
  * @param[out] host_list Results of the range query. Should be g_freed
  * @param[in] string Range query to execute
  * @param[out] err GError describing error condition
+ *
+ * @returns 0 on succcess, anything else on failure
  */
 gint wsh_exp_range_expand(gchar*** host_list, const gchar* string, GError** err);
 

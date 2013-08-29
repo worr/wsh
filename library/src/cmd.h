@@ -47,6 +47,8 @@ typedef struct {
  *
  * @param[out] res Result from running the command
  * @param[in] req Command request
+ *
+ * @returns 0 on success, anything else on error
  */
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 
@@ -54,6 +56,8 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
  * @brief Helper for building a sudo command
  *
  * @param[in,out] req The command request that we're modifying
+ *
+ * @returns the final command to be executed
  */
 gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
 
@@ -63,6 +67,8 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
  * @param[in] out The GIOChannel to check
  * @param[in] cond The GIOCondition that triggered the call
  * @param[out] user_data Where we place the data
+ *
+ * @returns FALSE if event source should be removed
  */
 gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data);
 
@@ -72,6 +78,8 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data
  * @param[in] err The GIOChannel to check
  * @param[in] cond The GIOCondition that triggered the call
  * @param[out] user_data Where we place the data
+ *
+ * @returns FALSE if event source should be removed
  */
 gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data);
 
@@ -81,6 +89,8 @@ gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data
  * @param[in] in The GIOChannel to write to
  * @param[in] cond The GIOCondition that triggered the call
  * @param[out] user_data The data we send
+ *
+ * @returns FALSE if event source should be removed
  */
 gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data);
 

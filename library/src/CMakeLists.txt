@@ -12,8 +12,14 @@ if( LIBCRANGE_LIBRARY )
 	set( WSH_SOURCES ${WSH_SOURCES} range_expansion.c )
 endif( LIBCRANGE_LIBRARY )
 
+if( NOT LIB_INSTALL_DIR )
+	set( libdir "lib${LIB_SUFFIX}" )
+else( NOT LIB_INSTALL_DIR )
+	set( libdir "${LIB_INSTALL_DIR}" )
+endif( NOT LIB_INSTALL_DIR )
+
 add_library( wsh SHARED ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
-install( TARGETS wsh LIBRARY DESTINATION lib )
+install( TARGETS wsh LIBRARY DESTINATION ${libdir} )
 file( GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install( FILES ${files} DESTINATION include/libwsh )
 

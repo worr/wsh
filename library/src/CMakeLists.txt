@@ -14,6 +14,8 @@ endif( LIBCRANGE_LIBRARY )
 
 add_library( wsh SHARED ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
 install( TARGETS wsh LIBRARY DESTINATION lib )
+file( GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+install( FILES ${files} DESTINATION include/libwsh )
 
 # Find protoc-c compiler
 find_program( PROTO_C protoc-c )

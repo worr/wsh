@@ -64,12 +64,22 @@ if( WITH_RANGE )
 endif( WITH_RANGE )
 
 # Deal with linker crap
-set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+if( LIB_INSTALL_DIR )
+	if( IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64" )
+		set( libdir "${CMAKE_INSTALL_PREFIX}/lib64" )
+	else( IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64" )
+		set( libdir "${CMAKE_INSTALL_PREFIX}/lib" )
+	endif( IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64" )
+else( LIB_INSTALL_DIR )
+	set( libdir "${CMAKE_INSTALL_PREFIX}/lib" )
+endif( LIB_INSTALL_DIR )
+
+set( CMAKE_INSTALL_RPATH "${libdir}" )
 set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-	"${CMAKE_INSTALL_PREFIX}/lib" isSystemDir )
+	"${libdir}" isSystemDir )
 if( "${isSystemDir}" STREQUAL "-1" )
-	set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+	set( CMAKE_INSTALL_RPATH "${libdir}" )
 endif( "${isSystemDir}" STREQUAL "-1" )
 
 # This is a hack to get around problems with the custom cmake libs I found

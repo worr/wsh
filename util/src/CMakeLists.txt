@@ -5,7 +5,8 @@ endif( NOT HAVE_MEMSET_S )
 
 add_executable( wsh-add-hostkeys wsh_add_hostkeys.c )
 add_executable( wsh-askpass memset_s.c wsh_askpass.c )
-install( TARGETS wsh-add-hostkeys wsh-askpass RUNTIME DESTINATION bin )
+install( TARGETS wsh-add-hostkeys RUNTIME DESTINATION bin )
+install( TARGETS wsh-askpass RUNTIME DESTINATION libexec )
 
 INCLUDE_Directories(
 	${WSH_INCLUDE_DIRS}

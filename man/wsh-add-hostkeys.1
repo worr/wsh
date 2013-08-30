@@ -10,7 +10,8 @@
 .Op Fl u | -username Ar username
 .Op Fl P | -password
 .Op Fl t | -threads Ar threads
-.Op Fl f | -force
+.Op Fl F | -force
+.Op Fl f | -file Ar filename
 .Op Fl r | -range
 .Ar hostnames
 .Sh DESCRIPTION
@@ -32,8 +33,16 @@ Spawn off
 number of threads. If this flag is not given, then
 .Nm
 will execute sequentially.
-.It Fl f | -force
+.It Fl F | -force
 Add hostkeys even if they have changed.
+.It Fl f | -file Ar filename
+Read hosts from
+.Ar filename .
+If
+.Ar filename
+is executable, execute
+.Ar filename
+and use the output as the list of hosts.
 .It Fl r | -range
 If
 .Nm
@@ -59,9 +68,8 @@ network and your hosts are in a known, good state prior to running
 .Nm
 prompts for your passwords and stores them in memory. A page of memory is
 .Xr mlock 2
-and the password is kept encrypted in memory. With some knowledge of the
-source and some time, it is possible to fetch the password from memory and
-decrypt it.
+and the password is kept in memory. With some knowledge of the
+source and some time, it is possible to fetch the password from memory.
 .Pp
 As soon as
 .Nm

@@ -275,8 +275,23 @@ int main(int argc, char** argv) {
 #endif
 
 	argv++;
-	if (! strncmp("--", argv[0], 2))
+
+	if (argc == 1) {
+		g_printerr("ERROR: Must provide a command to execute\n\n");
+		g_printerr("%s", g_option_context_get_help(context, FALSE, NULL));
+		return EXIT_FAILURE;
+	}
+
+
+	if (! strncmp("--", argv[0], 2)) {
 		argv++;
+		if (argc == 2) {
+			g_printerr("ERROR: Must provide a command to execute\n\n");
+			g_printerr("%s", g_option_context_get_help(context, FALSE, NULL));
+			return EXIT_FAILURE;
+		}
+	}
+
 	gchar* cmd_string = g_strjoinv(" ", argv);
 
 	wshc_cmd_info_t cmd_info;

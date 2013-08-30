@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef RANGE
-# include "range_expansion.h"
-#endif
+#include "expansion.h"
 #include "ssh.h"
 
 static gint threads = 0;
@@ -12,6 +10,7 @@ static gchar* username = NULL;
 static gboolean force = FALSE;
 static gint port = 22;
 static gchar* password = NULL;
+static gchar* filename = NULL;
 #ifdef RANGE
 static gboolean range = FALSE;
 #endif
@@ -19,7 +18,8 @@ static gboolean range = FALSE;
 static GOptionEntry entries[] = {
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to spawn off (default: none)", NULL },
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "Username to pass to ssh", NULL },
-	{ "force", 'f', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
+	{ "force", 'F', 0, G_OPTION_ARG_NONE, &force, "Force add keys, even if they've changed", NULL },
+	{ "file", 'f', 0, G_OPTION_ARG_STRING, &filename, "Filename to read or execute for hosts", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
 	{ "password", 'P', 0, G_OPTION_ARG_INT, &password, "SSH password", NULL },
 #ifdef RANGE
@@ -73,6 +73,8 @@ gint main(gint argc, gchar** argv) {
 	GError* err = NULL;
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
+	gchar** hosts = NULL;
+	gsize num_hosts = 0;
 #if GLIB_CHECK_VERSION( 2, 32, 0 )
 #else
 
@@ -81,7 +83,7 @@ gint main(gint argc, gchar** argv) {
 
 	wsh_ssh_init();
 
-	context = g_option_context_new("HOSTS... - automatically add hostkeys to your hostkey file");
+	context = g_option_context_new("host1,host2... - automatically add hostkeys to your hostkey file");
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {
 		g_printerr("Option parsing failed: %s\n", err->message);
@@ -92,52 +94,43 @@ gint main(gint argc, gchar** argv) {
 	if (username == NULL)
 		username = g_strdup(g_get_user_name());
 
-	if (argc == 1) {
+	if (argc == 1 && !filename) {
 		g_free(username);
 		g_printerr("Error: Missing a list of hosts\n\n");
 		g_printerr("%s", g_option_context_get_help(context, TRUE, NULL));
 		return EXIT_FAILURE;
 	}
 
-#ifdef RANGE
-	// Really fucking ugly code to resolve range
-	if (range) {
-		gchar* temp_res = "null,";
-
-		if (wsh_exp_range_init(&err)) {
+	if (filename) {
+		if (wsh_exp_filename(&hosts, &num_hosts, filename, &err)) {
 			g_printerr("%s\n", err->message);
+			g_error_free(err);
 			return EXIT_FAILURE;
 		}
-
-		for (gint i = 1; i < argc; i++) {
-			gchar** exp_res = NULL;
-			if (wsh_exp_range_expand(&exp_res, argv[i], &err)) {
-				g_printerr("%s\n", err->message);
-				return EXIT_FAILURE;
-			}
-			gchar* tmp_str = g_strjoinv(",", exp_res);
-			gchar* tmp_joined_res = g_strconcat(temp_res, tmp_str, ",", NULL);
-
-			if (i != 1)
-				g_free(temp_res);
-			g_free(tmp_str);
-			g_strfreev(exp_res);
-
-			temp_res = tmp_joined_res;
-		}
-
-		argv = g_strsplit(temp_res, ",", 0);
-		argc = g_strv_length(argv);
-		g_free(temp_res);
-		wsh_exp_range_cleanup();
 	}
 
+#ifdef RANGE
+	if (range) {
+		if (wsh_exp_range(&hosts, &num_hosts, argv[1], &err)) {
+			g_printerr("%s\n", err->message);
+			g_error_free(err);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (! (range || filename)) {
+#else
+	if (! filename) {
 #endif
-	if (threads == 0 || argc < 5) {
+		hosts = g_strsplit(argv[1], ",", 0);
+		num_hosts = g_strv_length(hosts);
+	}
+
+	if (threads == 0 || num_hosts < 5) {
 		gint iret;
-		for (gint i = 1; i < argc; i++) {
-			if (!strncmp("", argv[i], 1)) continue;
-			if ((iret = add_hostkey(argv[i], NULL))) {
+		for (gint i = 0; i < num_hosts; i++) {
+			if (!strncmp("", hosts[i], 1)) continue;
+			if ((iret = add_hostkey(hosts[i], NULL))) {
 				if (iret > ret) ret = iret;
 			}
 		}
@@ -149,9 +142,9 @@ gint main(gint argc, gchar** argv) {
 			return EXIT_FAILURE;
 		}
 
-		for (gint i = 1; i < argc; i++) {
-			if (strncmp("", argv[i], 1))
-				g_thread_pool_push(gtp, argv[i], NULL);
+		for (gint i = 0; i < num_hosts; i++) {
+			if (strncmp("", hosts[i], 1))
+				g_thread_pool_push(gtp, hosts[i], NULL);
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);
@@ -160,11 +153,7 @@ gint main(gint argc, gchar** argv) {
 	wsh_ssh_cleanup();
 	g_free(username);
 	g_option_context_free(context);
-
-#ifdef RANGE
-	if (range)
-		g_strfreev(argv);
-#endif
+	g_strfreev(hosts);
 
 	return ret;
 }

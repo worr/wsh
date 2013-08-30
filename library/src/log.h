@@ -92,7 +92,7 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gc
  * @param[in] cwd The directory the command was run from
  * @param[in] status The return code of the command
  */
-void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar* dest, const gchar* cwd, gint status);
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user, const gchar* dest, const gchar* cwd, gint status);
 
 #endif
 

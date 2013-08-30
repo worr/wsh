@@ -116,7 +116,7 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gc
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
-void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar* dest, const gchar* cwd, gint status) {
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user, const gchar* dest, const gchar* cwd, gint status) {
 	g_assert(type != WSH_LOGGER_SERVER);
 	g_assert(command != NULL);
 	g_assert(user != NULL);

@@ -88,11 +88,11 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gc
  *
  * @param[in] command Command that was run
  * @param[in] user The user that ran the command
- * @param[in] dests The set of hosts that the command was run on
+ * @param[in] dest The host that the command was run on
  * @param[in] cwd The directory the command was run from
  * @param[in] status The return code of the command
  */
-void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status);
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar* dest, const gchar* cwd, gint status);
 
 #endif
 

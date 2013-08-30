@@ -163,10 +163,10 @@ static void test_log_command_status_server(void) {
 static void test_log_command_status_client(void) {
 	gchar* test_cmd = "ls";
 	gchar* test_user = "will";
-	gchar* test_dest[] = { "192.168.1.1", NULL };
+	gchar* test_dest = "192.168.1.1";
 	gchar* test_cwd = "/usr/home/will";
 	gint test_status = 0;
-	gchar* expected_message = "CLIENT: command `ls` run as user `will` in dir `/usr/home/will` exited with code `0` on hosts `192.168.1.1`";
+	gchar* expected_message = "CLIENT: command `ls` run as user `will` in dir `/usr/home/will` exited with code `0` on host `192.168.1.1`";
 
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;

@@ -25,7 +25,7 @@ static const gchar* cmd_server_status_template =
 	"command `%s` run as user `%s` in dir `%s` from host `%s` exited with code `%d`";
 
 static const gchar* cmd_client_status_template =
-	"command `%s` run as user `%s` in dir `%s` exited with code `%d` on hosts `%s`";
+	"command `%s` run as user `%s` in dir `%s` exited with code `%d` on host `%s`";
 
 void wsh_init_logger(enum wsh_log_type t) {
 	type = t;
@@ -116,31 +116,25 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gc
 	g_slice_free1(strlen(msg) + 1, msg);
 }
 
-void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd, gint status) {
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user, gchar* dest, const gchar* cwd, gint status) {
 	g_assert(type != WSH_LOGGER_SERVER);
 	g_assert(command != NULL);
 	g_assert(user != NULL);
-	g_assert(dests != NULL);
+	g_assert(dest != NULL);
 	g_assert(cwd != NULL);
 
 	gsize attempted;
-	gsize str_len = strlen(cmd_client_status_template) + strlen(command) + strlen(user) + strlen(cwd) + 3;
+	gsize str_len = strlen(cmd_client_status_template) + strlen(command) + strlen(user) + strlen(cwd) + strlen(dest);
 	gchar* msg = g_slice_alloc0(str_len + 1);
 
-	for (gint i = 0; dests[i] != NULL; i++)
-		str_len += strlen(dests[i]);
-	
-	gchar* hosts = g_strjoinv(", ", dests);
-
-	if ((attempted = g_snprintf(msg, str_len, cmd_client_status_template, command, user, cwd, status, hosts)) > str_len) {
+	if ((attempted = g_snprintf(msg, str_len, cmd_client_status_template, command, user, cwd, status, dest)) > str_len) {
 		g_slice_free1(str_len + 1, msg);
 
 		msg = g_slice_alloc0(attempted);
-		g_snprintf(msg, attempted, cmd_client_status_template, command, user, cwd, status, hosts);
+		g_snprintf(msg, attempted, cmd_client_status_template, command, user, cwd, status, dest);
 	}
 
 	wsh_log_message(msg);
 	g_slice_free1(strlen(msg) + 1, msg);
-	g_free(hosts);
 }
 

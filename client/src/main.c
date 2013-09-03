@@ -29,6 +29,7 @@ static gboolean ask_password = FALSE;
 static gchar* sudo_username = NULL;
 static gboolean ask_sudo_password = FALSE;
 static gint threads = 0;
+static gint timeout = -1;
 static gchar* hosts_arg = NULL;
 static gchar* file_arg = NULL;
 static gchar* range = NULL;
@@ -43,6 +44,7 @@ static GOptionEntry entries[] = {
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
 	{ "sudo-password", 'P', 0, G_OPTION_ARG_NONE, &ask_sudo_password, "Prompt sudo password", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
+	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 30)", NULL },
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
 	{ "file", 'f', 0, G_OPTION_ARG_STRING, &file_arg, "Filename to read hosts from", NULL },
 #ifdef RANGE
@@ -66,7 +68,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->env = NULL;
 	req->std_input = NULL;
 	req->std_input_len = 0;
-	req->timeout = 0;
+	req->timeout = timeout == -1 ? 300 : timeout;
 	req->cwd = "";
 	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
@@ -187,6 +189,11 @@ static gboolean valid_arguments(gchar** mesg) {
 
 	if (!(hosts_arg || file_arg || range)) {
 		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		return FALSE;
+	}
+
+	if (timeout < -1) {
+		*mesg = g_strdup("-T | --timeout must be a positive value, 0 for none or -1 for default\n");
 		return FALSE;
 	}
 

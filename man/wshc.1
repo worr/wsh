@@ -13,11 +13,10 @@
 .Op Fl U | -sudo-username Ar username
 .Op Fl P | -sudo-password
 .Op Fl t | -threads Ar threads
-.Op Fl h | -hosts Ar hosts
-.Op Fl f | -file Ar filename
-.Op Fl r | -range Ar range_query
+.Op Fl T | -timeout Ar timeout
+.Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
-.Op Ar command
+.Ar command
 .Sh DESCRIPTION
 .Nm
 logs in to multiple hosts and executes commands on them, in parallel. It's
@@ -51,6 +50,18 @@ Spawn off
 number of threads. If this flag is not given, then
 .Nm
 will execute sequentially.
+.It Fl t | -timeout Ar timeout
+Kills commands after
+.Ar timeout
+seconds.
+.Ar timeout
+can be 0 for no timeout (dangerous), -1 for default (300 seconds) or any
+positive number.
+.sp
+.Em WARNING
+.Em Commands run without timeout may run until 
+.Xr wshd 1
+ is killed
 .It Fl h | -hosts Ar hosts
 A comma separated list of hosts to ssh into.
 .It Fl f | -file Ar filename
@@ -108,9 +119,8 @@ SSH's into app01-5 with 5 threads, runs uname -a and prints stdout.
 .Nm
 prompts for your passwords and stores them in memory. A page of memory is
 .Xr mlock 2
-and the password is kept encrypted in memory. With some knowledge of the
-source and some time, it is possible to fetch the password from memory and
-decrypt it.
+and the password is kept in memory. With some knowledge of the
+source and some time, it is possible to fetch the password from memory.
 .Pp
 As soon as
 .Nm

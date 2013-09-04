@@ -317,7 +317,7 @@ int main(int argc, char** argv) {
 	cmd_info.req = &req;
 
 	wsh_log_client_cmd(req.cmd_string, req.username, hosts, req.cwd);
-	if (threads == 0 || num_hosts < 5) {
+	if (threads == 0) {
 		for (gint i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 
@@ -336,16 +336,16 @@ int main(int argc, char** argv) {
 			return EXIT_FAILURE;
 		}
 
+		wshc_host_info_t host_info[num_hosts + 1];
+		wsh_cmd_res_t* res[num_hosts + 1];
+
 		for (gsize i = 0; i < num_hosts; i++) {
-			wsh_cmd_res_t* res = NULL;
+			res[i] = NULL;
 
-			wshc_host_info_t host_info = {
-				.hostname = hosts[i],
-				.res = &res,
-			};
+			host_info[i].hostname = hosts[i];
+			host_info[i].res = &res[i];
 
-			if (strncmp("", hosts[i], 1))
-				g_thread_pool_push(gtp, &host_info, NULL);
+			g_thread_pool_push(gtp, &host_info[i], NULL);
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);

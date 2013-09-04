@@ -115,8 +115,16 @@ static void wsh_kill_proccess(gpointer user_data) {
 	g_assert(user_data != NULL);
 	struct kill_data* kdata = (struct kill_data*)user_data;
 
-	if (kill(kdata->pid, SIGKILL))
+	if (kill(kdata->pid, SIGKILL)) {
 		wsh_log_error(WSH_ERR_COMMAND_FAILED_TO_DIE, strerror(errno));
+		return;
+	}
+
+	gchar* mesg = g_strdup_printf("Timeout reached. Killed %d", kdata->pid);
+	wsh_log_error(WSH_ERR_COMMAND_TIMEOUT, mesg);
+	kdata->res->error_message = mesg;
+
+	kdata->res->exit_status = -1; /* Signal wsh_check_exit_status that there was a failure */
 }
 
 // All this should do is log the status code and add it to our data struct
@@ -129,9 +137,12 @@ static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
 	g_assert(res-> err == NULL);
 	g_assert(req != NULL);
 
-	res->exit_status = WEXITSTATUS(status);
-	wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
-	
+	// res->exit_status is set to -1 if killed
+	if (res->exit_status != -1) {
+		res->exit_status = WEXITSTATUS(status);
+		wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd, res->exit_status);
+	}
+
 	g_spawn_close_pid(pid);
 
 	((struct cmd_data*)user_data)->cmd_exited = TRUE;
@@ -433,8 +444,10 @@ run_cmd_error_no_log_cmd:
 
 	g_free(cmd);
 
-	if (res->err != NULL)
+	if (res->err != NULL) {
 		wsh_log_error(WSH_ERR_COMMAND_FAILED, res->err->message);
+		res->error_message = g_strdup(res->err->message);
+	}
 
 	return ret;
 }

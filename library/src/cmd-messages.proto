@@ -14,4 +14,7 @@ message CommandReply {
 	repeated string stdout = 1;
 	repeated string stderr = 2;
 	required int64 ret_code = 3;
+	optional string error_message = 4;
 }
+
+// vim:ft=proto

@@ -32,17 +32,13 @@ int main(int argc, char** argv, char** env) {
 
 	wshd_get_message(in, &req, err);
 	if (err != NULL) {
-		// TODO: Send back error message
 		ret = err->code;
 		goto wshd_error;
 	}
 
 	wsh_run_cmd(res, req);
-	if (res->err != NULL) {
-		ret = res->err->code;
-		goto wshd_error;
-	}
 
+wshd_error:
 	if (munlock(req, sizeof(*req))) {
 		wsh_log_message(strerror(errno));
 		return EXIT_FAILURE;
@@ -54,12 +50,9 @@ int main(int argc, char** argv, char** env) {
 	}
 
 	wshd_send_message(out, res, err);
-	if (err != NULL) {
+	if (err != NULL)
 		ret = err->code;
-		goto wshd_error;
-	}
 
-wshd_error:
 	g_slice_free(wsh_cmd_res_t, res);
 	return ret;
 }

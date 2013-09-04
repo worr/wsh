@@ -2,3 +2,5 @@ message AuthInfo {
 	optional string username = 1;
 	optional string password = 2;
 }
+
+// vim:ft=proto

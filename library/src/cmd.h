@@ -5,7 +5,6 @@
 #define __WSH_CMD_H
 
 #include <glib.h>
-#include <stdint.h>
 
 /** Maximum number of args a command can have */
 extern const guint MAX_CMD_ARGS;
@@ -32,9 +31,10 @@ typedef struct {
 /** Result from running a command
  */
 typedef struct {
-	GError* err;			/**< Error from running command */
-	gchar** std_output;		/**< The output from the command */
-	gchar** std_error;		/**< Error output from command */
+	GError* err;			/**< GError for use in Glib functions */
+	gchar** std_output;		/**< Standard output from command */
+	gchar** std_error;		/**< Standard error from command */
+	gchar* error_message;	/**< Error for use in client */
 	gsize std_output_len;	/**< Length of stdout */
 	gsize std_error_len;	/**< Length of stderr */
 	gint exit_status;		/**< Return code of command */

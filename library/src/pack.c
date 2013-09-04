@@ -91,6 +91,7 @@ void wsh_pack_response(guint8** buf, guint32* buf_len, const wsh_cmd_res_t* res)
 	cmd_res.n_stdout = res->std_output_len;
 	cmd_res.n_stderr = res->std_error_len;
 	cmd_res.ret_code = res->exit_status;
+	cmd_res.error_message = res->error_message;
 
 	*buf_len = command_reply__get_packed_size(&cmd_res);
 	*buf = g_slice_alloc0(*buf_len);
@@ -106,16 +107,17 @@ void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf, guint32 buf_len
 	(*res)->std_output_len = cmd_res->n_stdout;
 	(*res)->std_output = g_new0(gchar*, (*res)->std_output_len + 1);
 	for (gsize i = 0; i < cmd_res->n_stdout; i++)
-		(*res)->std_output[i] = g_strndup(cmd_res->stdout[i], strlen(cmd_res->stdout[i]) + 1);
+		(*res)->std_output[i] = g_strdup(cmd_res->stdout[i]);
 	(*res)->std_output[(*res)->std_output_len] = NULL;
 
 	(*res)->std_error_len = cmd_res->n_stderr;
 	(*res)->std_error = g_new0(gchar*, (*res)->std_error_len + 1);
 	for (gsize i = 0; i < cmd_res->n_stderr; i++)
-		(*res)->std_error[i] = g_strndup(cmd_res->stderr[i], strlen(cmd_res->stderr[i]) + 1);
+		(*res)->std_error[i] = g_strdup(cmd_res->stderr[i]);
 	(*res)->std_error[(*res)->std_error_len] = NULL;
 
 	(*res)->exit_status = cmd_res->ret_code;
+	(*res)->error_message = g_strdup(cmd_res->error_message);
 
 	command_reply__free_unpacked(cmd_res, NULL);
 }
@@ -123,6 +125,7 @@ void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf, guint32 buf_len
 void wsh_free_unpacked_response(wsh_cmd_res_t** res) {
 	g_strfreev((*res)->std_output);
 	g_strfreev((*res)->std_error);
+	g_free((*res)->error_message);
 	g_free(*res);
 	*res = NULL;
 }

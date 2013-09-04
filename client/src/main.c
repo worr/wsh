@@ -371,10 +371,10 @@ int main(int argc, char** argv) {
 
 	free_wsh_cmd_req_fields(&req);
 
-	gchar* output;
+	gchar* output = NULL;
 	gsize output_len = 0;
 	wshc_collate_output(out_info, &output, &output_len);
-	g_print("%s", output);
+	if (output) g_print("%s", output);
 
 	return ret;
 }

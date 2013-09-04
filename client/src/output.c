@@ -150,6 +150,12 @@ gint wshc_write_output(wshc_output_info_t* out, guint num_hosts, const gchar* ho
 		.num_hosts = num_hosts,
 	};
 
+	/* If there's an error, output it immediately */
+	if (res->error_message) {
+		g_printerr("%s: %s\n", hostname, res->error_message);
+		return EXIT_SUCCESS;
+	}
+
 #ifdef UNIT_TESTING
 	check_write_out_once.status = G_ONCE_STATUS_READY;
 #endif
@@ -239,6 +245,17 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	g_slice_free1(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stdout);
 }
 
+/* First, let's iterate over our hash table of hostname:output and iterate over that
+ * comparing all of the different outputs/errors/return codes and construct a linked
+ * list of collate structs.
+ *
+ * Collate structs contain unique entries of output to display to the user
+ *
+ * Then let's iterate over those and build the human readable output.
+ *
+ * f_collate is a struct containing the output buffer and the size of the output
+ * buffer
+ */
 gint wshc_collate_output(wshc_output_info_t* out, gchar** output, gsize* output_size) {
 	g_assert(output);
 	g_assert(out);

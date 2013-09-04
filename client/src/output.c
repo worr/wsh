@@ -166,9 +166,38 @@ gint wshc_write_output(wshc_output_info_t* out, guint num_hosts, const gchar* ho
 	else				return write_output_mem(out, hostname, res);
 }
 
+static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
+	if (col->exit_code != out->exit_code)
+		return FALSE;
+
+	gsize i = 0;
+	for (gchar** cur = col->error; *cur != NULL; cur++) {
+		if (! out->error[i])
+			return FALSE;
+
+		if (strncmp(out->error[i], *cur, strlen(*cur)))
+			return FALSE;
+
+		i++;
+	}
+
+	i = 0;
+	for (gchar** cur = col->output; *cur != NULL; cur++) {
+		if (! out->output[i])
+			return FALSE;
+
+		if (strncmp(out->output[i], *cur, strlen(*cur)))
+			return FALSE;
+
+		i++;
+	}
+
+	return TRUE;
+}
+
 static void hash_compare(gchar* hostname, wshc_host_output_t* out, GSList** clist) {
 	for (GSList* p = *clist; p != NULL && p->data != NULL; p = p->next) {
-		if (((struct collate*)(p->data))->exit_code == out->exit_code) {
+		if (cmp((struct collate*)(p->data), out)) {
 			((struct collate*)(p->data))->hosts =
 				g_slist_prepend(((struct collate*)(p->data))->hosts, hostname);
 			return;

@@ -16,6 +16,7 @@ void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) 
 		.username = cmd_info->username,
 		.password = cmd_info->password,
 		.port = cmd_info->port,
+		.session = NULL,
 	};
 
 	if (session.password == NULL)

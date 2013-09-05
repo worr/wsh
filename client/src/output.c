@@ -215,10 +215,12 @@ static void hash_compare(gchar* hostname, wshc_host_output_t* out, GSList** clis
 }
 
 static void construct_out(struct collate* c, struct f_collate* f) {
-	gsize new_len = 0;
-
 	// If both are null, let's not bother with any of this
 	if (*c->error == NULL && *c->output == NULL) return;
+
+	gsize new_len = 0;
+	gchar* host_list_str_stdout, * host_list_str_stderr, * host_list_str_base;
+	host_list_str_base = host_list_str_stderr = host_list_str_stdout = NULL;
 
 	// Calculate size of host list
 	gsize host_list_len = 0;
@@ -227,18 +229,27 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	}
 
 	// Build host list string
-	gchar* host_list_str_stderr = g_slice_alloc0(host_list_len + WSHC_STDERR_TAIL_SIZE);
+	host_list_str_base = g_slice_alloc0(host_list_len + WSHC_STDERR_TAIL_SIZE);
 	for (GSList* host_list = c->hosts; host_list != NULL; host_list = host_list->next) {
-		g_strlcat(host_list_str_stderr, host_list->data, host_list_len);
-		g_strlcat(host_list_str_stderr, " ", host_list_len);
+		g_strlcat(host_list_str_base, host_list->data, host_list_len);
+		g_strlcat(host_list_str_base, " ", host_list_len);
 	}
 
-	// Copy the built string from stderr to stdout
-	gchar* host_list_str_stdout = g_slice_copy(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stderr);
+	// Copy the host list string
+	if (*c->error && ! *c->output)
+		host_list_str_stderr = host_list_str_base;
+	else if (*c->output && ! *c->error)
+		host_list_str_stdout = host_list_str_base;
+	else {
+		host_list_str_stdout = host_list_str_base;
+		host_list_str_stderr = g_slice_copy(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_base);
+	}
 
 	// Add the tails of the host command to the host list
-	g_strlcat(host_list_str_stderr, WSHC_STDERR_TAIL, host_list_len + WSHC_STDERR_TAIL_SIZE);
-	g_strlcat(host_list_str_stdout, WSHC_STDOUT_TAIL, host_list_len + WSHC_STDOUT_TAIL_SIZE);
+	if (host_list_str_stderr)
+		g_strlcat(host_list_str_stderr, WSHC_STDERR_TAIL, host_list_len + WSHC_STDERR_TAIL_SIZE);
+	if(host_list_str_stdout)
+		g_strlcat(host_list_str_stdout, WSHC_STDOUT_TAIL, host_list_len + WSHC_STDOUT_TAIL_SIZE);
 
 	// Calculate the size of the stderr and stdout
 	gsize stderr_len = 0;
@@ -279,8 +290,10 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 		}
 	}
 
-	g_slice_free1(host_list_len + WSHC_STDERR_TAIL_SIZE, host_list_str_stderr);
-	g_slice_free1(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stdout);
+	if (host_list_str_stderr)
+		g_slice_free1(host_list_len + WSHC_STDERR_TAIL_SIZE, host_list_str_stderr);
+	if (host_list_str_stdout)
+		g_slice_free1(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_stdout);
 }
 
 /* First, let's iterate over our hash table of hostname:output and iterate over that

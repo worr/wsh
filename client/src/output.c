@@ -236,10 +236,10 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	}
 
 	// Copy the host list string
-	if (*c->error && ! *c->output)
-		host_list_str_stderr = host_list_str_base;
-	else if (*c->output && ! *c->error)
+	if (*c->output && ! *c->error)
 		host_list_str_stdout = host_list_str_base;
+	else if (*c->error && ! *c->output)
+		host_list_str_stderr = host_list_str_base;
 	else {
 		host_list_str_stdout = host_list_str_base;
 		host_list_str_stderr = g_slice_copy(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_base);
@@ -247,9 +247,9 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 
 	// Add the tails of the host command to the host list
 	if (host_list_str_stderr)
-		g_strlcat(host_list_str_stderr, WSHC_STDERR_TAIL, host_list_len + WSHC_STDERR_TAIL_SIZE);
+		strncat(host_list_str_stderr, WSHC_STDERR_TAIL, WSHC_STDERR_TAIL_SIZE);
 	if(host_list_str_stdout)
-		g_strlcat(host_list_str_stdout, WSHC_STDOUT_TAIL, host_list_len + WSHC_STDOUT_TAIL_SIZE);
+		strncat(host_list_str_stdout, WSHC_STDOUT_TAIL, WSHC_STDOUT_TAIL_SIZE);
 
 	// Calculate the size of the stderr and stdout
 	gsize stderr_len = 0;
@@ -270,27 +270,28 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 
 	// Start copying data into out
 	if (*c->error != NULL) {
-		g_strlcat(*f->out, host_list_str_stderr, *f->size);
+		strncat(*f->out, host_list_str_stderr, *f->size);
 
 		for (gchar** p = c->error; *p != NULL; p++) {
-			g_strlcat(*f->out, *p, *f->size);
-			g_strlcat(*f->out, "\n", *f->size);
+			strncat(*f->out, *p, *f->size);
+			strncat(*f->out, "\n", *f->size);
 		}
-	}
 
-	if (*c->error != NULL && *c->output != NULL)
-		g_strlcat(*f->out, "\n", *f->size);
+		// Add separating newline
+		if (*c->output != NULL)
+			strncat(*f->out, "\n", *f->size);
+	}
 
 	if (*c->output != NULL) {
-		g_strlcat(*f->out, host_list_str_stdout, *f->size);
+		strncat(*f->out, host_list_str_stdout, *f->size);
 
 		for (gchar** p = c->output; *p != NULL; p++) {
-			g_strlcat(*f->out, *p, *f->size);
-			g_strlcat(*f->out, "\n", *f->size);
+			strncat(*f->out, *p, *f->size);
+			strncat(*f->out, "\n", *f->size);
 		}
 	}
 
-	g_strlcat(*f->out, "\n", *f->size);
+	strncat(*f->out, "\n", *f->size);
 
 	if (host_list_str_stderr)
 		g_slice_free1(host_list_len + WSHC_STDERR_TAIL_SIZE, host_list_str_stderr);

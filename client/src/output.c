@@ -259,8 +259,8 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	for (gchar** p = c->output; *p != NULL; p++) stdout_len += (strlen(*p) + 1);
 
 	// Allocate memory until requirement is satisfied
-	new_len = stderr_len + stdout_len + host_list_len * 2 + WSHC_STDOUT_TAIL_SIZE + WSHC_STDERR_TAIL_SIZE;
-	while (new_len > *f->size) {
+	new_len = 1 + stderr_len + stdout_len + host_list_len * 2 + WSHC_STDOUT_TAIL_SIZE + WSHC_STDERR_TAIL_SIZE;
+	while (*f->size == 0 || new_len + strlen(*f->out) > *f->size) {
 		gchar* new_output = g_slice_alloc0(*f->size + WSHC_ALLOC_LEN);
 		g_memmove(new_output, *f->out, *f->size);
 		if (*f->size)
@@ -289,6 +289,8 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 			g_strlcat(*f->out, "\n", *f->size);
 		}
 	}
+
+	g_strlcat(*f->out, "\n", *f->size);
 
 	if (host_list_str_stderr)
 		g_slice_free1(host_list_len + WSHC_STDERR_TAIL_SIZE, host_list_str_stderr);

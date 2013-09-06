@@ -32,7 +32,7 @@ void wshd_send_message(GIOChannel* std_output, wsh_cmd_res_t* res, GError* err) 
 	if (err != NULL) goto wshd_send_message_err;
 
 wshd_send_message_err:
-	g_free(buf);
+	g_slice_free1(buf_len, buf);
 }
 #pragma GCC diagnostic error "-Wpointer-sign"
 

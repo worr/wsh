@@ -25,6 +25,8 @@ void wshd_send_message(GIOChannel* std_output, wsh_cmd_res_t* res, GError* err) 
 
 	g_io_channel_write_chars(std_output, buf, buf_len, &writ, &err);
 	if (err != NULL) goto wshd_send_message_err;
+	g_printerr("%u\n", buf_len);
+	g_printerr("%zu\n", writ);
 
 	g_io_channel_flush(std_output, &err);
 	if (err != NULL) goto wshd_send_message_err;

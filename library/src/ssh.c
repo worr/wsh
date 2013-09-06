@@ -316,6 +316,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 	g_assert(session->channel != NULL);
 	g_assert(*res == NULL);
 
+	gsize buf_len = 0;
 	gint ret = 0;
 	wsh_message_size_t buf_u;
 	guchar* buf = NULL;
@@ -335,13 +336,17 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
 
 	// We have our message size, let's make some room and read it in
 	buf = g_slice_alloc0(buf_u.size);
-	if (ssh_channel_read(session->channel, buf, buf_u.size, FALSE) != buf_u.size) {
-		ret = WSH_SSH_READ_ERR;
-		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_READ_ERR,
-			"%s: Couldn't read response: %s", session->hostname,
-			ssh_get_error(session->session));
-		goto wsh_ssh_recv_cmd_res_error;
-	}
+	guchar* buf_ptr = buf;
+	gsize buf_len_left = buf_u.size;
+	gsize buf_len_inc = 0;
+
+	do {
+		buf_len_inc = ssh_channel_read(session->channel, buf_ptr, buf_len_left, FALSE);
+
+		buf_len_left -= buf_len;
+		buf_ptr += buf_len_inc;
+		buf_len += buf_len_inc;
+	} while (buf_len != buf_u.size);
 
 	*res = g_new0(wsh_cmd_res_t, 1);
 	wsh_unpack_response(res, buf, buf_u.size);

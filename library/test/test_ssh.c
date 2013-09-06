@@ -488,36 +488,6 @@ static void send_cmd_write_success(void) {
 	g_slice_free(wsh_cmd_req_t, req);
 }
 
-static void recv_result_read_failure(void) {
-	set_ssh_connect_res(SSH_OK);
-	set_ssh_channel_open_session_ret(SSH_OK);
-	set_ssh_channel_request_exec_ret(SSH_OK);
-	set_ssh_channel_change_pty_size_ret(SSH_OK);
-	set_ssh_channel_write_ret(11);
-	reset_ssh_channel_write_first(FALSE);
-	set_ssh_channel_read_ret(0);
-	set_ssh_channel_read_set(NULL);
-
-	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
-	wsh_cmd_res_t* res = NULL;
-	session->hostname = remote;
-	session->username = username;
-	GError* err = NULL;
-
-	wsh_ssh_host(session, &err);
-	wsh_ssh_exec_wshd(session, &err);
-	gint ret = wsh_ssh_recv_cmd_res(session, &res, &err);
-
-	g_assert(ret != 0);
-	g_assert(res == NULL);
-	g_assert(session->session == NULL);
-	g_assert(session->channel == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_READ_ERR);
-
-	g_error_free(err);
-	g_slice_free(wsh_ssh_session_t, session);
-}
-
 static void recv_result_success(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
@@ -611,8 +581,6 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/SSH/SendCmdWriteSuccess",
 		send_cmd_write_success);
 
-	g_test_add_func("/Library/SSH/RecvResReadFailure",
-		recv_result_read_failure);
 	g_test_add_func("/Library/SSH/RecvResSuccess",
 		recv_result_success);
 

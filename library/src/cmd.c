@@ -21,6 +21,11 @@ struct cmd_data {
 	GMainLoop* loop;
 	wsh_cmd_req_t* req;
 	wsh_cmd_res_t* res;
+	GSource* in_watch;
+	GSource* out_watch;
+	GSource* err_watch;
+	GSource* cmd_watch;
+	GSource* timeout_watch;
 	gboolean cmd_exited;
 	gboolean out_closed;
 	gboolean err_closed;
@@ -107,6 +112,9 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 
 static void wsh_check_if_need_to_close(struct cmd_data* cmd_data) {
 	if (cmd_data->cmd_exited && cmd_data->out_closed && cmd_data->err_closed) {
+		if (! g_source_is_destroyed(cmd_data->timeout_watch))
+			g_source_destroy(cmd_data->timeout_watch);
+
 		g_main_loop_quit(cmd_data->loop);
 	}
 }
@@ -144,6 +152,7 @@ static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
 	}
 
 	g_spawn_close_pid(pid);
+	g_source_destroy(((struct cmd_data*)user_data)->cmd_watch);
 
 	((struct cmd_data*)user_data)->cmd_exited = TRUE;
 	wsh_check_if_need_to_close(user_data);
@@ -158,6 +167,8 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer us
 	g_assert(res-> err == NULL);
 	g_assert(req != NULL);
 
+	struct cmd_data* data = (struct cmd_data*)user_data;
+
 	gboolean ret = TRUE;
 	GIOStatus stat; 
 
@@ -167,10 +178,12 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer us
 	if (cond & G_IO_HUP) {
 		if (std_err) {
 			((struct cmd_data*)user_data)->err_closed = TRUE;
-			wsh_check_if_need_to_close((struct cmd_data*)user_data);
+			wsh_check_if_need_to_close(data);
+			g_source_destroy(data->err_watch);
 		} else {
 			((struct cmd_data*)user_data)->out_closed = TRUE;
-			wsh_check_if_need_to_close((struct cmd_data*)user_data);
+			wsh_check_if_need_to_close(data);
+			g_source_destroy(data->out_watch);
 		}
 
 		ret = FALSE;
@@ -220,6 +233,14 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 
 	gsize wrote;
 	gboolean ret = TRUE;
+
+	if (cond & G_IO_HUP) {
+		g_source_destroy(((struct cmd_data*)user_data)->in_watch);
+
+		ret = FALSE;
+		if (! (cond & G_IO_OUT))
+			return ret;
+	}
 
 	if (req->sudo) {
 		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
@@ -305,7 +326,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gchar** argcv = NULL;
 	gchar* old_path = "";
 	GMainLoop* loop;
-	GIOChannel* in, * out, * err;
+	GIOChannel* /*in, **/ out, * err;
 	gint argcp;
 	gint ret = EXIT_SUCCESS;
 	GPid pid;
@@ -382,24 +403,30 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	GSource* watch_src = g_child_watch_source_new(pid);
 	g_source_set_callback(watch_src, (GSourceFunc)wsh_check_exit_status, &user_data, NULL);
 	g_source_attach(watch_src, context);
+	user_data.cmd_watch = watch_src;
 
 	// Initialize IO Channels
 	out = g_io_channel_unix_new(res->out_fd);
 	err = g_io_channel_unix_new(res->err_fd);
-	in = g_io_channel_unix_new(req->in_fd);
+	//in = g_io_channel_unix_new(req->in_fd);
 
 	// Add IO channels
 	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP);
 	g_source_set_callback(stdout_src, (GSourceFunc)wsh_check_stdout, &user_data, NULL);
 	g_source_attach(stdout_src, context);
+	user_data.out_watch = stdout_src;
 
 	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP);
 	g_source_set_callback(stderr_src, (GSourceFunc)wsh_check_stderr, &user_data, NULL);
 	g_source_attach(stderr_src, context);
+	user_data.err_watch = stderr_src;
 
+/*
 	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP);
 	g_source_set_callback(stdin_src, (GSourceFunc)wsh_write_stdin, &user_data, NULL);
 	g_source_attach(stdin_src, context);
+	user_data.in_watch = stdin_src;
+*/
 
 	// Add timeout if present
 	if (req->timeout != 0) {
@@ -412,15 +439,16 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 		g_source_set_callback(timeout_src, (GSourceFunc)wsh_kill_proccess, &kdata, NULL);
 		g_source_attach(timeout_src, context);
 		g_source_unref(timeout_src);
+		user_data.timeout_watch = timeout_src;
 	}
 
-	g_io_channel_unref(in);
+	//g_io_channel_unref(in);
 	g_io_channel_unref(out);
 	g_io_channel_unref(err);
 	g_source_unref(watch_src);
 	g_source_unref(stderr_src);
 	g_source_unref(stdout_src);
-	g_source_unref(stdin_src);
+	//g_source_unref(stdin_src);
 
 	// Start dat loop
 	g_main_loop_run(loop);

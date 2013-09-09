@@ -55,111 +55,6 @@ static void cleanup_output_success(void) {
 	g_test_trap_assert_passed();
 }
 
-static void check_output_mkstemp_failure(void) {
-	mkstemp_ret = -1;
-	mkstemp_called = FALSE;
-	fchown_called = FALSE;
-	wshc_output_info_t* out;
-	wsh_cmd_res_t res = {
-		.std_output_len = 1000,
-		.std_error_len = 1000,
-	};
-
-	wshc_init_output(&out, TRUE);
-	struct check_write_out_args args = {
-		.out = out,
-		.num_hosts = 51,
-		.res = &res,
-	};
-
-	gint ret = wshc_check_write_output(&args);
-
-	g_assert(ret == EXIT_FAILURE);
-	g_assert(fchown_called == FALSE);
-	g_assert(out->write_out == FALSE);
-}
-
-static void check_output_fchown_failure(void) {
-	mkstemp_ret = 0;
-	fchown_ret = 1;
-	mkstemp_called = FALSE;
-	fchown_called = FALSE;
-	close_called = FALSE;
-	wshc_output_info_t* out;
-
-	wsh_cmd_res_t res = {
-		.std_output_len = 1000,
-		.std_error_len = 1000,
-	};
-
-	wshc_init_output(&out, TRUE);
-	struct check_write_out_args args = {
-		.out = out,
-		.num_hosts = 51,
-		.res = &res,
-	};
-
-	gint ret = wshc_check_write_output(&args);
-
-	g_assert(ret == EXIT_FAILURE);
-	g_assert(out->write_out == FALSE);
-	g_assert(close_called == TRUE);
-}
-
-static void check_output_success(void) {
-	mkstemp_ret = 0;
-	fchown_ret = 0;
-	mkstemp_called = FALSE;
-	fchown_called = FALSE;
-	close_called = FALSE;
-	wshc_output_info_t* out;
-
-	wsh_cmd_res_t res = {
-		.std_output_len = 1000,
-		.std_error_len = 100,
-	};
-
-	wshc_init_output(&out, TRUE);
-	struct check_write_out_args args = {
-		.out = out,
-		.num_hosts = 51,
-		.res = &res,
-	};
-
-	gint ret = wshc_check_write_output(&args);
-
-	g_assert(ret == EXIT_SUCCESS);
-	g_assert(out->write_out == TRUE);
-	g_assert(close_called == FALSE);
-}
-
-static void check_output_success_no_write(void) {
-	mkstemp_ret = 0;
-	fchown_ret = 0;
-	mkstemp_called = FALSE;
-	fchown_called = FALSE;
-	close_called = FALSE;
-	wshc_output_info_t* out;
-
-	wsh_cmd_res_t res = {
-		.std_output_len = 1,
-		.std_error_len = 1,
-	};
-
-	wshc_init_output(&out, TRUE);
-	struct check_write_out_args args = {
-		.out = out,
-		.num_hosts = 5,
-		.res = &res,
-	};
-
-	gint ret = wshc_check_write_output(&args);
-
-	g_assert(ret == EXIT_SUCCESS);
-	g_assert(out->write_out == FALSE);
-	g_assert(close_called == FALSE);
-}
-
 static void write_output_mem(void) {
 	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
 	gchar* a_out[] = { "other", "test", NULL };
@@ -266,11 +161,6 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Client/TestCleanupOutputFail", cleanup_output_failure);
 	g_test_add_func("/Client/TestCleanupOutputSuccess", cleanup_output_success);
-
-	g_test_add_func("/Client/TestOutputMkstempFail", check_output_mkstemp_failure);
-	g_test_add_func("/Client/TestOutputFchownFail", check_output_fchown_failure);
-	g_test_add_func("/Client/TestOutputSuccess", check_output_success);
-	g_test_add_func("/Client/TestOutputSuccessNoWrite", check_output_success_no_write);
 
 	g_test_add_func("/Client/TestWriteOutputMem", write_output_mem);
 	g_test_add_func("/Client/TestWriteOutputMemNull", write_output_mem_null);

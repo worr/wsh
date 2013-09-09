@@ -12,8 +12,6 @@
 /** metadata about output
  */
 typedef struct {
-	gboolean write_out; /**< TRUE - write to a temp file, else keep in memory */
-	gint out_fd;		/**< temp file file descriptor */
 	gint show_stdout;	/**< TRUE - show std output */
 	GMutex* mut;		/**< mutex that gets locked on writing out */
 	GHashTable* output;	/**< output hash map */

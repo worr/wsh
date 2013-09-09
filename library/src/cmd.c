@@ -112,7 +112,7 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 
 static void wsh_check_if_need_to_close(struct cmd_data* cmd_data) {
 	if (cmd_data->cmd_exited && cmd_data->out_closed && cmd_data->err_closed) {
-		if (! g_source_is_destroyed(cmd_data->timeout_watch))
+		if (cmd_data->timeout_watch && ! g_source_is_destroyed(cmd_data->timeout_watch))
 			g_source_destroy(cmd_data->timeout_watch);
 
 		g_main_loop_quit(cmd_data->loop);

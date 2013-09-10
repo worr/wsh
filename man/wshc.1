@@ -11,7 +11,6 @@
 .Op Fl u | -username Ar username
 .Op Fl p | -password
 .Op Fl U | -sudo-username Ar username
-.Op Fl P | -sudo-password
 .Op Fl t | -threads Ar threads
 .Op Fl T | -timeout Ar timeout
 .Op Fl c | -print-collated
@@ -38,19 +37,15 @@ will assume that you are using pubkeys or an agent.
 .It Fl U | -sudo-username Ar username
 Use sudo with the given username. If this option is not provided, it's assumed
 that you're not going to use sudo.
-.It Fl P | -sudo-password
-Prompt for sudo password. You 
-.Sy MUST
-provide this option if
-.Fl U
-is present.
+.Nm
+will prompt you for your password.
 .It Fl t | -threads Ar threads
 Spawn off
 .Ar threads
 number of threads. If this flag is not given, then
 .Nm
 will execute sequentially.
-.It Fl t | -timeout Ar timeout
+.It Fl T | -timeout Ar timeout
 Kills commands after
 .Ar timeout
 seconds.

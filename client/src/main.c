@@ -27,7 +27,6 @@ static gint port = 22;
 static gchar* username = NULL;
 static gboolean ask_password = FALSE;
 static gchar* sudo_username = NULL;
-static gboolean ask_sudo_password = FALSE;
 static gint threads = 0;
 static gint timeout = -1;
 
@@ -48,7 +47,6 @@ static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "SSH username", NULL },
 	{ "password", 'p', 0, G_OPTION_ARG_NONE, &ask_password, "Prompt for SSH password", NULL },
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
-	{ "sudo-password", 'P', 0, G_OPTION_ARG_NONE, &ask_sudo_password, "Prompt sudo password", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 30)", NULL },
 
@@ -71,7 +69,7 @@ static GOptionEntry entries[] = {
 static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	g_assert(req != NULL);
 
-	req->sudo = (sudo_username || ask_sudo_password);
+	req->sudo = (sudo_username != NULL);
 
 	req->username = sudo_username;
 	if (!req->username) req->username = username;
@@ -249,7 +247,7 @@ int main(int argc, char** argv) {
 	if (username == NULL)
 		username = g_strdup(g_get_user_name());
 
-	if (ask_password || ask_sudo_password)
+	if (ask_password || sudo_username)
 		lock_password_pages();
 
 	if (ask_password) {
@@ -258,13 +256,13 @@ int main(int argc, char** argv) {
 		if (! password) return EXIT_FAILURE;
 	}
 
-	if (ask_sudo_password) {
+	if (sudo_username) {
 		sudo_password = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 1);
 		prompt_for_a_fucking_password(sudo_password, WSHC_MAX_PASSWORD_LEN, "sudo password: ");
 		if (! sudo_password) return EXIT_FAILURE;
 	}
 
-	if ((ask_password || ask_sudo_password) && mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ)) {
+	if ((ask_password || sudo_username) && mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ)) {
 		perror("mprotect");
 		return EXIT_FAILURE;
 	}

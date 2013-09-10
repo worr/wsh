@@ -67,7 +67,7 @@ static void write_output_mem(void) {
 	wshc_output_info_t* out;
 	wshc_init_output(&out, TRUE);
 
-	gint ret = wshc_write_output(out, 1, "localhost", &res);
+	gint ret = wshc_write_output(out, "localhost", &res);
 
 	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output, "localhost");
 
@@ -100,7 +100,7 @@ static void write_output_mem_null(void) {
 	wshc_output_info_t* out;
 	wshc_init_output(&out, TRUE);
 
-	gint ret = wshc_write_output(out, 1, "localhost", &res);
+	gint ret = wshc_write_output(out, "localhost", &res);
 
 	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output, "localhost");
 
@@ -133,9 +133,10 @@ static void collate_output(void) {
 
 	wshc_output_info_t* out;
 	wshc_init_output(&out, TRUE);
+	out->type = WSHC_OUTPUT_TYPE_COLLATED;
 
-	(void)wshc_write_output(out, 2, "localhost", &res);
-	(void)wshc_write_output(out, 2, "otherhost", &res);
+	(void)wshc_write_output(out, "localhost", &res);
+	(void)wshc_write_output(out, "otherhost", &res);
 
 	ret = wshc_collate_output(out, &printable_output, &output_size);
 
@@ -146,6 +147,36 @@ static void collate_output(void) {
 		g_assert_cmpstr(*p, ==, testable_output[p - testable_output]);
 
 	g_strfreev(testable_output);
+}
+
+static void hostname_output(void) {
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+
+	gchar* expected_err =
+		"localhost stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	gchar* expected_out = "localhost stdout ****\nlocalhost: other\nlocalhost: test\n\n";
+
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.std_error_len = 4,
+		.std_output_len = 2,
+	};
+
+	wshc_output_info_t* out;
+	wshc_init_output(&out, TRUE);
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+
+	if(g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+		gint ret = wshc_write_output(out, "localhost", &res);
+		exit(ret);
+	}
+
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout(expected_out);
+	g_test_trap_assert_stderr(expected_err);
 }
 
 int main(int argc, char** argv) {
@@ -166,6 +197,8 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestWriteOutputMemNull", write_output_mem_null);
 
 	g_test_add_func("/Client/TestCollateOutput", collate_output);
+
+	g_test_add_func("/Client/TestHostnameOutput", hostname_output);
 
 	return g_test_run();
 }

@@ -14,6 +14,8 @@
 .Op Fl P | -sudo-password
 .Op Fl t | -threads Ar threads
 .Op Fl T | -timeout Ar timeout
+.Op Fl c | -print-collated
+.Op Fl H | -print-hostnames
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
 .Ar command
@@ -24,8 +26,6 @@ suitable for executing commands on large numbers of hosts and collating their
 results in a format that's easy to read.
 .Ss Arguments
 .Bl -tag -width u
-.It Fl o | -stdout
-Display stdout. stdout is suppressed by default.
 .It Fl -port Ar port
 Use a different port for ssh. By default, 22 is used.
 .It Fl u | -username Ar username
@@ -59,9 +59,12 @@ can be 0 for no timeout (dangerous), -1 for default (300 seconds) or any
 positive number.
 .sp
 .Em WARNING
-.Em Commands run without timeout may run until 
+Commands run without timeout may run until 
 .Xr wshd 1
- is killed
+is killed
+.El
+.Ss Host selection arguments
+.Bl -tag -width u
 .It Fl h | -hosts Ar hosts
 A comma separated list of hosts to ssh into.
 .It Fl f | -file Ar filename
@@ -76,6 +79,14 @@ If
 is built with range support,
 .Ar range_query
 will be resolved with range
+.El
+.Ss Output arguments
+.Bl -tag -width u
+.It Fl H | -print-hostnames
+Print out results immediately, prefixing with hostname:
+.It Fl c | -print-collated
+Collates the output after all hosts have finished, prints in blocks
+of hosts whose stdout, stderr and exit code match. This is the default.
 .El
 .Ss Executing commands
 .Pp

@@ -30,9 +30,15 @@ static gchar* sudo_username = NULL;
 static gboolean ask_sudo_password = FALSE;
 static gint threads = 0;
 static gint timeout = -1;
+
+// Host selection variables
 static gchar* hosts_arg = NULL;
 static gchar* file_arg = NULL;
 static gchar* range = NULL;
+
+// Output variables
+static gboolean hostname_output = FALSE;
+static gboolean collate_output = FALSE;
 
 static void* passwd_mem;
 
@@ -45,11 +51,17 @@ static GOptionEntry entries[] = {
 	{ "sudo-password", 'P', 0, G_OPTION_ARG_NONE, &ask_sudo_password, "Prompt sudo password", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 30)", NULL },
+
+	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
 	{ "file", 'f', 0, G_OPTION_ARG_STRING, &file_arg, "Filename to read hosts from", NULL },
 #ifdef RANGE
 	{ "range", 'r', 0, G_OPTION_ARG_STRING, &range, "Range query for hostname expansion", NULL },
 #endif
+
+	// Output options
+	{ "print-hostnames", 'H', 0, G_OPTION_ARG_NONE, &hostname_output, "Display output immediately, prefixed with hostname", NULL },
+	{ "print-collated", 'c', 0, G_OPTION_ARG_NONE, &collate_output, "Display output at the end, collated into matching chunks", NULL },
 	{ NULL }
 };
 
@@ -309,6 +321,9 @@ int main(int argc, char** argv) {
 
 	wshc_output_info_t* out_info = NULL;
 	wshc_init_output(&out_info, std_out);
+	out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
+	if (hostname_output)
+		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
 	cmd_info.out = out_info;
 

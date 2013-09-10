@@ -71,14 +71,44 @@ static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname, con
 	return EXIT_SUCCESS;
 }
 
-gint wshc_write_output(wshc_output_info_t* out, guint num_hosts, const gchar* hostname, const wsh_cmd_res_t* res) {
+static gint hostname_output(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
+	g_mutex_lock(out->mut);
+
+	if (res->std_output_len) {
+		g_print("%s stdout ****\n", hostname);
+		for (guint32 i = 0; i < res->std_output_len; i++)
+			g_print("%s: %s\n", hostname, res->std_output[i]);
+	}
+
+	if (res->std_output_len || res->std_error_len)
+		g_print("\n");
+
+	if (res->std_error_len) {
+		g_printerr("%s stderr ****\n", hostname);
+		for (guint32 i = 0; i < res->std_error_len; i++)
+			g_printerr("%s: %s\n", hostname, res->std_error[i]);
+	}
+
+	g_mutex_unlock(out->mut);
+
+	return EXIT_SUCCESS;
+}
+
+// This is the user's entrypoint into output crap
+gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
 	/* If there's an error, output it immediately */
 	if (res->error_message) {
 		g_printerr("%s: %s\n", hostname, res->error_message);
 		return EXIT_SUCCESS;
 	}
 
-	return write_output_mem(out, hostname, res);
+	switch (out->type) {
+		case WSHC_OUTPUT_TYPE_COLLATED:
+			return write_output_mem(out, hostname, res);
+		case WSHC_OUTPUT_TYPE_HOSTNAME:
+			return hostname_output(out, hostname, res);
+		default: return EXIT_FAILURE;
+	}
 }
 
 static gboolean cmp(struct collate* col, wshc_host_output_t* out) {

@@ -232,10 +232,12 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 	g_assert(res->err == NULL);
 
 	gsize wrote;
-	gboolean ret = TRUE;
+	gboolean ret = FALSE;
 
 	if (cond & G_IO_HUP) {
 		g_source_destroy(((struct cmd_data*)user_data)->in_watch);
+		g_source_unref(((struct cmd_data*)user_data)->in_watch);
+		g_io_channel_unref(in);
 
 		ret = FALSE;
 		if (! (cond & G_IO_OUT))
@@ -265,22 +267,9 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 		}
 	}
 
-	for (guint i = 0; i < req->std_input_len; i++) {
-		g_io_channel_write_chars(in, req->std_input[i], strlen(req->std_input[i]), &wrote, &res->err);
-		if (res->err) {
-			ret = FALSE;
-			goto write_stdin_err;
-		}
-
-		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
-		if (res->err) {
-			ret = FALSE;
-			goto write_stdin_err;
-		}
-	}
-
-	g_io_channel_flush(in, &res->err);
-	if (res->err) ret = FALSE;
+	g_source_destroy(((struct cmd_data*)user_data)->in_watch);
+	g_source_unref(((struct cmd_data*)user_data)->in_watch);
+	g_io_channel_unref(in);
 
 write_stdin_err:
 
@@ -326,7 +315,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gchar** argcv = NULL;
 	gchar* old_path = "";
 	GMainLoop* loop;
-	GIOChannel* /*in, **/ out, * err;
+	GIOChannel* in, * out, * err;
 	gint argcp;
 	gint ret = EXIT_SUCCESS;
 	GPid pid;
@@ -408,7 +397,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	// Initialize IO Channels
 	out = g_io_channel_unix_new(res->out_fd);
 	err = g_io_channel_unix_new(res->err_fd);
-	//in = g_io_channel_unix_new(req->in_fd);
+	in = g_io_channel_unix_new(req->in_fd);
 
 	// Add IO channels
 	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP);
@@ -421,12 +410,10 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_source_attach(stderr_src, context);
 	user_data.err_watch = stderr_src;
 
-/*
 	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP);
 	g_source_set_callback(stdin_src, (GSourceFunc)wsh_write_stdin, &user_data, NULL);
 	g_source_attach(stdin_src, context);
 	user_data.in_watch = stdin_src;
-*/
 
 	// Add timeout if present
 	if (req->timeout != 0) {

@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 const int WSHC_MAX_PASSWORD_LEN = 1024;
 
@@ -21,6 +24,12 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 int main(int argc, char** argv) {
 	char* peedubs_mem = NULL;
 	int ret = EXIT_SUCCESS;
+	struct timeval tv = {
+		.tv_sec = 1,
+		.tv_usec = 0,
+	};
+
+	fd_set fds;
 
 	if ((long)(peedubs_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 2, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
 		perror("mmap");
@@ -37,8 +46,24 @@ int main(int argc, char** argv) {
 		goto bad;
 	}
 
+	FD_ZERO(&fds);
+	FD_SET(STDIN_FILENO, &fds);
+
+	ret = select(1, &fds, NULL, NULL, &tv);
+	switch (ret) {
+		case -1:
+			perror("select");
+			goto bad;
+		case 0:
+			fprintf(stderr, "Invalid sudo password\n");
+			ret = EXIT_FAILURE;
+			goto bad;
+		default:
+			ret = EXIT_SUCCESS;
+	}
+
 	if (fgets(peedubs_mem, WSHC_MAX_PASSWORD_LEN, stdin) == NULL) {
-		perror("fread");
+		perror("fgets");
 		ret = EXIT_FAILURE;
 		goto bad;
 	}

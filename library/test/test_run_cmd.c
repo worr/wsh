@@ -140,22 +140,22 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture, gcons
 
 	req->sudo = TRUE;
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -A -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
 	g_free(res);
 
 	req->username = "worr";
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -A -u worr /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u worr /bin/ls");
 	g_free(res);
 
 	req->username = "";
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -A -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
 	g_free(res);
 
 	req->username = " ";
 	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -A -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
 	g_free(res);
 
 	req->cmd_string = "";

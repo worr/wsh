@@ -14,7 +14,7 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 #include "log.h"
 
 const guint MAX_CMD_ARGS = 255;
-const gchar* SUDO_CMD = "sudo -A -u ";
+const gchar* SUDO_CMD = "sudo -sA -u ";
 
 // Struct that we pass to most of our main loop callbacks
 struct cmd_data {
@@ -429,13 +429,11 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 		user_data.timeout_watch = timeout_src;
 	}
 
-	//g_io_channel_unref(in);
 	g_io_channel_unref(out);
 	g_io_channel_unref(err);
 	g_source_unref(watch_src);
 	g_source_unref(stderr_src);
 	g_source_unref(stdout_src);
-	//g_source_unref(stdin_src);
 
 	// Start dat loop
 	g_main_loop_run(loop);

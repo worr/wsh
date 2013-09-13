@@ -1,26 +1,20 @@
 #include <errno.h>
 #include <glib.h>
-#include <math.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/types.h>
-#include <termios.h>
 
+#include "client.h"
 #include "cmd.h"
 #include "expansion.h"
 #include "log.h"
+#include "output.h"
 #include "remote.h"
 #include "ssh.h"
 #ifndef HAVE_MEMSET_S
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
-
-static volatile sig_atomic_t signos[NSIG];
-
-const gsize WSHC_MAX_PASSWORD_LEN = 1024;
 
 static gboolean std_out = FALSE;
 static gint port = 22;
@@ -92,105 +86,6 @@ static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
 	g_free(req->host);
 }
 
-/* Save our signals */
-static void pw_int_handler(int sig) { signos[sig] = 1; }
-static void prompt_for_a_fucking_password(gchar* target, gsize target_len, const gchar* prompt) {
-	struct termios old_flags, new_flags;
-	struct sigaction sa, saveint, savehup, savequit, saveterm, savetstp, savettin, savettou;
-	gint save_errno = 0;
-
-	if (tcgetattr(fileno(stdin), &old_flags)) {
-		g_printerr("%s\n", strerror(errno));
-		return;
-	}
-
-	new_flags = old_flags;
-	new_flags.c_lflag &= ~ECHO;
-	new_flags.c_lflag |= ECHONL;
-
-	if (tcsetattr(fileno(stdin), TCSANOW, &new_flags)) {
-		g_printerr("%s\n", strerror(errno));
-		return;
-	}
-
-	memset(&sa, 0, sizeof(sa));
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	sa.sa_handler = pw_int_handler;
-	(void) sigaction(SIGINT, &sa, &saveint);
-	(void) sigaction(SIGHUP, &sa, &savehup);
-	(void) sigaction(SIGQUIT, &sa, &savequit);
-	(void) sigaction(SIGTERM, &sa, &saveterm);
-	(void) sigaction(SIGTSTP, &sa, &savetstp);
-	(void) sigaction(SIGTTIN, &sa, &savettin);
-	(void) sigaction(SIGTTOU, &sa, &savettou);
-
-	gchar* buf = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 3);
-	if (setvbuf(stdin, buf, _IOLBF, BUFSIZ)) {
-		save_errno = errno;
-		target = NULL;
-		goto restore_sigs;
-	}
-
-	g_print("%s", prompt);
-
-	if (!fgets(target, target_len, stdin)) {
-		save_errno = errno;
-		target = NULL;
-		goto restore_sigs;
-	}
-
-restore_sigs:
-	memset_s(buf, BUFSIZ, 0, strlen(buf));
-	buf = NULL;
-
-	(void) sigaction(SIGINT, &saveint, NULL);
-	(void) sigaction(SIGHUP, &savehup, NULL);
-	(void) sigaction(SIGQUIT, &savequit, NULL);
-	(void) sigaction(SIGTERM, &saveterm, NULL);
-	(void) sigaction(SIGTSTP, &savetstp, NULL);
-	(void) sigaction(SIGTTIN, &savettin, NULL);
-	(void) sigaction(SIGTTOU, &savettou, NULL);
-
-	if (!target) {
-		g_printerr("%s\n", strerror(save_errno));
-		return;
-	}
-
-	// Resend all of our signals
-	for (int i = 0; i < NSIG; i++) {
-		if (signos[i]) kill(getpid(), i);
-	}
-
-	g_strchomp(target);
-
-	if (tcsetattr(fileno(stdin), TCSANOW, &old_flags)) {
-		g_printerr("%s\n", strerror(errno));
-		target = NULL;
-		return;
-	}
-}
-
-static void lock_password_pages(void) {
-	if ((gintptr)(passwd_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1) {
-		perror("mmap");
-		return;
-	}
-
-	if (mlock(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3)) {
-		perror("mlock");
-		return;
-	}
-}
-
-static void unlock_password_pages(void) {
-	if (munlock(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3))
-		perror("munlock");
-
-	if (munmap(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3))
-		perror("munmap");
-}
-
 static gboolean valid_arguments(gchar** mesg) {
 	if ((hosts_arg && (file_arg || range)) || (file_arg && range)) {
 		*mesg = g_strdup("Use one of -h, -r or -f\n");
@@ -247,22 +142,34 @@ int main(int argc, char** argv) {
 	if (username == NULL)
 		username = g_strdup(g_get_user_name());
 
-	if (ask_password || sudo_username)
-		lock_password_pages();
+	if (ask_password || sudo_username) {
+		if ((ret = wsh_client_lock_password_pages(passwd_mem))) {
+			g_printerr("%s\n", strerror(ret));
+			return ret;
+		}
+	}
 
 	if (ask_password) {
-		password = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 0);
-		prompt_for_a_fucking_password(password, WSHC_MAX_PASSWORD_LEN, "SSH password: ");
+		password = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 0);
+		if ((ret = wsh_client_getpass(password, WSH_MAX_PASSWORD_LEN, "SSH password: ", passwd_mem))) {
+			g_printerr("%s\n", strerror(ret));
+			return ret;
+		}
+
 		if (! password) return EXIT_FAILURE;
 	}
 
 	if (sudo_username) {
-		sudo_password = ((gchar*)passwd_mem) + (WSHC_MAX_PASSWORD_LEN * 1);
-		prompt_for_a_fucking_password(sudo_password, WSHC_MAX_PASSWORD_LEN, "sudo password: ");
+		sudo_password = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 1);
+		if ((ret = wsh_client_getpass(sudo_password, WSH_MAX_PASSWORD_LEN, "sudo password: ", passwd_mem))) {
+			g_printerr("%s\n", strerror(ret));
+			return ret;
+		}
+
 		if (! sudo_password) return EXIT_FAILURE;
 	}
 
-	if ((ask_password || sudo_username) && mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ)) {
+	if ((ask_password || sudo_username) && mprotect(passwd_mem, WSH_MAX_PASSWORD_LEN * 3, PROT_READ)) {
 		perror("mprotect");
 		return EXIT_FAILURE;
 	}
@@ -298,7 +205,6 @@ int main(int argc, char** argv) {
 		g_printerr("%s", g_option_context_get_help(context, FALSE, NULL));
 		return EXIT_FAILURE;
 	}
-
 
 	if (! strncmp("--", argv[0], 2)) {
 		argv++;
@@ -365,15 +271,15 @@ int main(int argc, char** argv) {
 	}
 
 	if (password || sudo_password) {
-		if (mprotect(passwd_mem, WSHC_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE)) {
+		if (mprotect(passwd_mem, WSH_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE)) {
 			perror("mprotect");
 			return EXIT_FAILURE;
 		}
 	}
 
-	if (password) memset_s(password, WSHC_MAX_PASSWORD_LEN, 0, strlen(password));
-	if (sudo_password) memset_s(sudo_password, WSHC_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
-	if (password || sudo_password) unlock_password_pages();
+	if (password) memset_s(password, WSH_MAX_PASSWORD_LEN, 0, strlen(password));
+	if (sudo_password) memset_s(sudo_password, WSH_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
+	if (password || sudo_password) wsh_client_unlock_password_pages(passwd_mem);
 
 	wsh_ssh_cleanup();
 	g_free(username);

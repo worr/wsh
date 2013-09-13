@@ -540,6 +540,32 @@ static void wsh_ssh_init_success(void) {
 	g_assert(! wsh_ssh_init());
 }
 
+static void scp_alloc_fails(void) {
+	set_ssh_scp_new_ret(NULL);
+
+	wsh_ssh_session_t* session = g_slice_new(wsh_ssh_session_t);
+	g_assert(wsh_ssh_scp_init(session, "TEST"));
+	g_slice_free(wsh_ssh_session_t, session);
+}
+
+static void scp_init_fails(void) {
+	set_ssh_scp_new_ret((gpointer)1);
+	set_ssh_scp_init_ret(SSH_ERROR);
+
+	wsh_ssh_session_t* session = g_slice_new(wsh_ssh_session_t);
+	g_assert(wsh_ssh_scp_init(session, "TEST"));
+	g_slice_free(wsh_ssh_session_t, session);
+}
+
+static void scp_init_success(void) {
+	set_ssh_scp_new_ret((gpointer)1);
+	set_ssh_scp_init_ret(SSH_OK);
+
+	wsh_ssh_session_t* session = g_slice_new(wsh_ssh_session_t);
+	g_assert(! wsh_ssh_scp_init(session, "TEST"));
+	g_slice_free(wsh_ssh_session_t, session);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -590,6 +616,13 @@ int main(int argc, char** argv) {
 		ssh_set_callbacks_fails);
 	g_test_add_func("/Library/SSH/WshSshInitSuccess",
 		wsh_ssh_init_success);
+
+	g_test_add_func("/Library/SSH/SFTPAllocFails",
+		scp_alloc_fails);
+	g_test_add_func("/Library/SSH/SFTPInitFails",
+		scp_init_fails);
+	g_test_add_func("/Library/SSH/SFTPInitSuccess",
+		scp_init_success);
 
 	return g_test_run();
 }

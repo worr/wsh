@@ -390,3 +390,97 @@ void wsh_ssh_disconnect(wsh_ssh_session_t* session) {
 	session->session = NULL;
 }
 
+gint wsh_ssh_scp_init(wsh_ssh_session_t* session, const gchar* location) {
+	g_assert(session != NULL);
+	g_assert(session->session != NULL);
+
+	// We only support writing right now
+	ssh_scp scp = NULL;
+	if ((scp = ssh_scp_new(session->session, SSH_SCP_WRITE|SSH_SCP_RECURSIVE, location)) == NULL)
+		return EXIT_FAILURE;
+
+	session->scp = scp;
+	return ssh_scp_init(session->scp);
+}
+
+void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session) {
+	g_assert(session != NULL);
+	g_assert(session->scp != NULL);
+
+	ssh_scp_close(session->scp);
+	ssh_scp_free(session->scp);
+}
+
+// There are too many steps to scping a file
+static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
+	gchar* contents = NULL;
+	gsize len = 0;
+	if (! g_file_get_contents(file, &contents, &len, err))
+		return EXIT_FAILURE;
+
+	gint ret = EXIT_SUCCESS;
+	if ((ret = ssh_scp_push_file(session->scp, file, len, 0644))) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_FILE_ERR,
+			ssh_get_error(session->session));
+		g_free(contents);
+		return ret;
+	}
+
+	if ((ret = ssh_scp_write(session->scp, contents, len))) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_FILE_ERR,
+			ssh_get_error(session->session));
+		g_free(contents);
+		return ret;
+	}
+
+	g_free(contents);
+	return ret;
+}
+
+gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
+	g_assert(session != NULL);
+	g_assert(session->scp != NULL);
+	g_assert(err == NULL);
+
+	gint ret = EXIT_SUCCESS;
+	gboolean is_dir;
+	is_dir = g_file_test(file, G_FILE_TEST_IS_DIR);
+
+	gchar** dir = NULL; // for basename-like use later
+	gchar** dirs = g_strsplit(file, "/", 0);
+	for (dir = dirs; *dir != NULL; dir++) {
+		if ((ret = ssh_scp_push_directory(session->scp, *dir, 0755))) {
+			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR,
+				ssh_get_error(session->session));
+			goto wsh_ssh_scp_file_err;
+		}
+	}
+
+	if (!is_dir) {
+		// This is pointing at the NULL at the end of the strv
+		// Going backwards points to the basename
+		scp_write_file(session, dir[-1], err);
+	} else {
+		GDir* dir_stream = NULL;
+		if ((dir_stream = g_dir_open(file, 0, err)) == NULL) {
+			ret = WSH_SSH_DIR_ERR;
+			goto wsh_ssh_scp_file_err;
+		}
+
+		for (const gchar* cur_file = g_dir_read_name(dir_stream); cur_file != NULL; cur_file = g_dir_read_name(dir_stream)) {
+			if (scp_write_file(session, cur_file, err)) {
+				g_dir_close(dir_stream);
+				goto wsh_ssh_scp_file_err;
+			}
+		}
+
+		g_dir_close(dir_stream);
+	}
+
+wsh_ssh_scp_file_err:
+	g_strfreev(dirs);
+	dirs = NULL;
+
+	return ret;
+}
+

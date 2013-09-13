@@ -24,6 +24,11 @@ gboolean ssh_channel_read_ret_first = TRUE;
 gint ssh_channel_request_pty_ret;
 gint ssh_channel_request_shell_ret;
 gint ssh_channel_change_pty_size_ret;
+gpointer ssh_scp_new_ret;
+gint ssh_scp_init_ret;
+gint ssh_scp_push_file_ret;
+gint ssh_scp_push_directory_ret;
+gint ssh_scp_write_ret;
 
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
@@ -265,5 +270,51 @@ gint ssh_pcap_file_open() {
 
 gint ssh_set_pcap_file() {
 	return 0;
+}
+
+void set_ssh_scp_new_ret(ssh_scp ret) {
+	ssh_scp_new_ret = (gpointer)ret;
+}
+
+ssh_scp ssh_scp_new() {
+	return ssh_scp_new_ret;
+}
+
+void set_ssh_scp_init_ret(gint ret) {
+	ssh_scp_init_ret = ret;
+}
+
+gint ssh_scp_init() {
+	return ssh_scp_init_ret;
+}
+
+void ssh_scp_free() {
+}
+
+void set_ssh_scp_push_file_ret(gint ret) {
+	ssh_scp_push_file_ret = ret;
+}
+
+gint ssh_scp_push_file() {
+	return ssh_scp_push_file_ret;
+}
+
+void set_ssh_scp_push_directory_ret(gint ret) {
+	ssh_scp_push_directory_ret = ret;
+}
+
+gint ssh_scp_push_directory() {
+	return ssh_scp_push_directory_ret;
+}
+
+void set_ssh_scp_write_ret(gint ret) {
+	ssh_scp_write_ret = ret;
+}
+
+gint ssh_scp_write() {
+	return ssh_scp_write_ret;
+}
+
+void ssh_scp_close() {
 }
 

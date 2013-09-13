@@ -38,7 +38,10 @@ typedef enum {
 	WSH_SSH_PACK_ERR,					/**< Error packing a wsh_cmd_req_t or wsh_cmd_res_t */
 	WSH_SSH_WRITE_ERR,					/**< Error writing to channel */
 	WSH_SSH_READ_ERR,					/**< Error reading from channel */
-	WSH_SSH_PTY_ERR						/**< Error request a PTY */
+	WSH_SSH_PTY_ERR,					/**< Error request a PTY */
+	WSH_SSH_STAT_ERR,					/**< Error stating file or directory */
+	WSH_SSH_DIR_ERR,					/**< Can't push dir */
+	WSH_SSH_FILE_ERR,					/**< Can't push file */
 } wsh_ssh_err_enum;
 
 /** Represents an ssh session */
@@ -48,8 +51,9 @@ typedef struct {
 	const gchar* hostname;			/**< Hostname of remote machine */
 	const gchar* username;			/**< Username used for auth */
 	const gchar* password;			/**< Password (if any) used in auth */
+	ssh_scp scp;					/**< libssh scp session struct */
 	gint port;						/**< Port to connect to */
-	wsh_ssh_auth_type_t auth_type;	/**<	Type of auth being used */
+	wsh_ssh_auth_type_t auth_type;	/**< Type of auth being used */
 } wsh_ssh_session_t;
 
 /**
@@ -144,10 +148,36 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GErro
  * @brief Disconnects from a remote host
  *
  * @param[in] session wsh_ssh_session_t to disconnect from
+ */
+void wsh_ssh_disconnect(wsh_ssh_session_t* session);
+
+/**
+ * @brief Initialize scp environment
+ *
+ * @param[in] session wsh_ssh_session_t to set up for scp
+ * @param[in] location The remote location we're writing to
+ *
+ * @note Only supports writing at the moment
  *
  * @returns 0 on success, anything else on failure
  */
-void wsh_ssh_disconnect(wsh_ssh_session_t* session);
+gint wsh_ssh_scp_init(wsh_ssh_session_t* session, const gchar* location);
+
+/**
+ * @brief Cleanup the scp environment
+ *
+ * @param[in] session wsh_ssh_session_t whose scp subsystem needs to be cleaned up
+ */
+void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
+
+/**
+ * @brief Send a file
+ *
+ * @param[in] session wsh_ssh_session_t that we're transferring file over
+ * @param[in] file The file or directory to transfer
+ * @param[out] err GError describing the error condition
+ */
+gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** err);
 
 #endif
 

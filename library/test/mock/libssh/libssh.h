@@ -26,8 +26,12 @@
 #define SSH_AUTH_METHOD_PUBLICKEY 0x02
 #define SSH_AUTH_METHOD_INTERACTIVE 0x04
 
+#define SSH_SCP_WRITE 0
+#define SSH_SCP_RECURSIVE 1
+
 typedef void* ssh_session;
 typedef void* ssh_channel;
+typedef void* ssh_scp;
 typedef void* ssh_pcap_file;
 
 gint ssh_get_pubkey_hash();
@@ -82,6 +86,18 @@ gint ssh_userauth_none();
 ssh_pcap_file ssh_pcap_file_new();
 gint ssh_pcap_file_open();
 gint ssh_set_pcap_file();
+void set_ssh_scp_new_ret(ssh_scp ret);
+ssh_scp ssh_scp_new();
+void set_ssh_scp_init_ret(gint ret);
+gint ssh_scp_init();
+void ssh_scp_free();
+void set_ssh_scp_push_file_ret(gint ret);
+gint ssh_scp_push_file();
+void set_ssh_scp_push_directory_ret(gint ret);
+gint ssh_scp_push_directory();
+void set_ssh_scp_write_ret(gint ret);
+gint ssh_scp_write();
+void ssh_scp_close();
 
 void set_ssh_threads_set_callbacks_ret(gint ret);
 

@@ -176,6 +176,8 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
  * @param[in] session wsh_ssh_session_t that we're transferring file over
  * @param[in] file The file or directory to transfer
  * @param[out] err GError describing the error condition
+ *
+ * @returns 0 on success, anything else on failure
  */
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** err);
 

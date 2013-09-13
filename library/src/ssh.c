@@ -421,14 +421,14 @@ static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, GError
 	gint ret = EXIT_SUCCESS;
 	if ((ret = ssh_scp_push_file(session->scp, file, len, 0644))) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_FILE_ERR,
-			ssh_get_error(session->session));
+			ssh_get_error("%s", session->session));
 		g_free(contents);
 		return ret;
 	}
 
 	if ((ret = ssh_scp_write(session->scp, contents, len))) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_FILE_ERR,
-			ssh_get_error(session->session));
+			ssh_get_error("%s", session->session));
 		g_free(contents);
 		return ret;
 	}
@@ -451,7 +451,7 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** er
 	for (dir = dirs; *dir != NULL; dir++) {
 		if ((ret = ssh_scp_push_directory(session->scp, *dir, 0755))) {
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR,
-				ssh_get_error(session->session));
+				ssh_get_error("%s", session->session));
 			goto wsh_ssh_scp_file_err;
 		}
 	}

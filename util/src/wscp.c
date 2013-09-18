@@ -51,16 +51,25 @@ static gboolean valid_arguments(gchar** mesg) {
 	return TRUE;
 }
 
-static gint scp_file(const gchar** files, gint num_files, const gchar* host, const gchar* user, const gchar* pass, gint port) {
+typedef struct {
+	gchar** files;
+	gchar* host;
+	gchar* user;
+	gchar* pass;
+	gint num_files;
+	gint port;
+} wshc_scp_file_args;
+
+static gint scp_file(const wshc_scp_file_args* args) {
 	GError *err = NULL;
 	wsh_ssh_session_t session = {
 		.session = NULL,
 		.channel = NULL,
-		.hostname = host,
-		.username = user,
-		.password = pass,
+		.hostname = args->host,
+		.username = args->user,
+		.password = args->pass,
 		.scp = NULL,
-		.port = port,
+		.port = args->port,
 	};
 
 	if (session.password == NULL)
@@ -86,13 +95,13 @@ static gint scp_file(const gchar** files, gint num_files, const gchar* host, con
 		return EXIT_FAILURE;
 	}
 
-	if (wsh_ssh_scp_init(&session, "/export/home/worr")) {
+	if (wsh_ssh_scp_init(&session, "~")) {
 		g_printerr("Error initializing scp");
 		return EXIT_FAILURE;
 	}
 
-	for (gint i = 0; i < num_files; i++) {
-		if (wsh_ssh_scp_file(&session, files[i], &err)) {
+	for (gint i = 0; i < args->num_files; i++) {
+		if (wsh_ssh_scp_file(&session, args->files[i], &err)) {
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
 			err = NULL;
@@ -201,8 +210,40 @@ gint main(gint argc, gchar** argv) {
 		}
 	}
 
-	for (gsize i = 0; i < num_hosts; i++) {
-		scp_file((const gchar**)argv, argc, hosts[i], username, password, port);
+	if (threads <= 0) {
+		wshc_scp_file_args args;
+		args.port = port;
+		args.user = username;
+		args.pass = password;
+		args.files = argv;
+		args.num_files = argc;
+
+		for (gsize i = 0; i < num_hosts; i++) {
+			args.host = hosts[i];
+			scp_file(&args);
+		}
+	} else {
+		GThreadPool* gtp;
+		if ((gtp = g_thread_pool_new((GFunc)scp_file, NULL, threads, TRUE, &err)) == NULL) {
+			g_printerr("%s\n", err->message);
+			g_error_free(err);
+			return EXIT_FAILURE;
+		}
+
+		wshc_scp_file_args args[num_hosts];
+
+		for (gsize i = 0; i < num_hosts; i++) {
+			args[i].host = hosts[i];
+			args[i].port = port;
+			args[i].user = username;
+			args[i].pass = password;
+			args[i].files = argv;
+			args[i].num_files = argc;
+
+			g_thread_pool_push(gtp, &args[i], NULL);
+		}
+
+		g_thread_pool_free(gtp, FALSE, TRUE);
 	}
 
 	if (password) {

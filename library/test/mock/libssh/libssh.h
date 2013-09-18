@@ -98,6 +98,7 @@ gint ssh_scp_push_directory();
 void set_ssh_scp_write_ret(gint ret);
 gint ssh_scp_write();
 void ssh_scp_close();
+gint ssh_scp_leave_directory();
 
 void set_ssh_threads_set_callbacks_ret(gint ret);
 

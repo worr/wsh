@@ -437,6 +437,54 @@ static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, GError
 	return ret;
 }
 
+// Recursively pushes files and dirs to the remote host
+static gint scp_write_dir(wsh_ssh_session_t* session, const gchar* dir, GError** err) {
+	gint ret = EXIT_SUCCESS;
+	GDir* dir_stream = NULL;
+	if ((dir_stream = g_dir_open(dir, 0, err)) == NULL) {
+		ret = WSH_SSH_DIR_ERR;
+		return ret;
+	}
+
+	for (const gchar* cur_file = g_dir_read_name(dir_stream); cur_file != NULL; cur_file = g_dir_read_name(dir_stream)) {
+		gchar* full_path = g_build_filename(dir, cur_file, NULL);
+
+		if (g_file_test(full_path, G_FILE_TEST_IS_DIR)) {
+			// We push the relative name of the directory so we don't try and
+			// replicate the whole path of the passed in file
+			if ((ret = ssh_scp_push_directory(session->scp, cur_file, 0755)))
+				goto wsh_scp_error;
+
+			if ((ret = scp_write_dir(session, full_path, err)))
+				goto wsh_scp_error;
+
+			// Undocumented feature of libssh:
+			// It enters directories that it's created, which
+			// means we need to leave the directories we've just created
+			// after returning from scp_write_dir
+			if ((ret = ssh_scp_leave_directory(session->scp)))
+				goto wsh_scp_error;
+
+			continue;
+wsh_scp_error:
+			g_free(full_path);
+			g_dir_close(dir_stream);
+			return ret;
+		} else {
+			if ((ret = scp_write_file(session, full_path, err))) {
+				g_free(full_path);
+				g_dir_close(dir_stream);
+				return ret;
+			}
+		}
+
+		g_free(full_path);
+	}
+
+	g_dir_close(dir_stream);
+	return ret;
+}
+
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->scp != NULL);
@@ -449,36 +497,11 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** er
 	if (!is_dir) {
 		scp_write_file(session, file, err);
 	} else {
-		/*gchar** dir = NULL;
-		gchar** dirs = g_strsplit(file, "/", 0);
-		for (dir = dirs; *dir != NULL; dir++) {
-			if ((ret = ssh_scp_push_directory(session->scp, *dir, 0755))) {
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "%s",
-					ssh_get_error(session->session));
-				goto wsh_ssh_scp_file_err;
-			}
-		}*/
+		if ((ret = ssh_scp_push_directory(session->scp, g_path_get_basename(file), 0755)))
+			return ret;
 
-		GDir* dir_stream = NULL;
-		if ((dir_stream = g_dir_open(file, 0, err)) == NULL) {
-			ret = WSH_SSH_DIR_ERR;
-			goto wsh_ssh_scp_file_err;
-		}
-
-		for (const gchar* cur_file = g_dir_read_name(dir_stream); cur_file != NULL; cur_file = g_dir_read_name(dir_stream)) {
-			if (scp_write_file(session, cur_file, err)) {
-				g_dir_close(dir_stream);
-				goto wsh_ssh_scp_file_err;
-			}
-		}
-
-		g_dir_close(dir_stream);
+		scp_write_dir(session, file, err);
 	}
-
-wsh_ssh_scp_file_err:
-	/*
-	g_strfreev(dirs);
-	dirs = NULL;*/
 
 	return ret;
 }

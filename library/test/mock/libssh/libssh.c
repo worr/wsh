@@ -318,3 +318,7 @@ gint ssh_scp_write() {
 void ssh_scp_close() {
 }
 
+gint ssh_scp_leave_directory() {
+	return 0;
+}
+

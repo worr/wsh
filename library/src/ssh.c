@@ -415,7 +415,7 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session) {
 static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
 	gchar* contents = NULL;
 	gsize len = 0;
-	if (! g_file_get_contents(file, &contents, &len, err))
+	if (!g_file_get_contents(file, &contents, &len, err))
 		return EXIT_FAILURE;
 
 	gint ret = EXIT_SUCCESS;
@@ -440,27 +440,25 @@ static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, GError
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->scp != NULL);
-	g_assert(err == NULL);
+	g_assert(*err == NULL);
 
 	gint ret = EXIT_SUCCESS;
 	gboolean is_dir;
 	is_dir = g_file_test(file, G_FILE_TEST_IS_DIR);
 
-	gchar** dir = NULL; // for basename-like use later
-	gchar** dirs = g_strsplit(file, "/", 0);
-	for (dir = dirs; *dir != NULL; dir++) {
-		if ((ret = ssh_scp_push_directory(session->scp, *dir, 0755))) {
-			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "%s",
-				ssh_get_error(session->session));
-			goto wsh_ssh_scp_file_err;
-		}
-	}
-
 	if (!is_dir) {
-		// This is pointing at the NULL at the end of the strv
-		// Going backwards points to the basename
-		scp_write_file(session, dir[-1], err);
+		scp_write_file(session, file, err);
 	} else {
+		/*gchar** dir = NULL;
+		gchar** dirs = g_strsplit(file, "/", 0);
+		for (dir = dirs; *dir != NULL; dir++) {
+			if ((ret = ssh_scp_push_directory(session->scp, *dir, 0755))) {
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "%s",
+					ssh_get_error(session->session));
+				goto wsh_ssh_scp_file_err;
+			}
+		}*/
+
 		GDir* dir_stream = NULL;
 		if ((dir_stream = g_dir_open(file, 0, err)) == NULL) {
 			ret = WSH_SSH_DIR_ERR;
@@ -478,8 +476,9 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** er
 	}
 
 wsh_ssh_scp_file_err:
+	/*
 	g_strfreev(dirs);
-	dirs = NULL;
+	dirs = NULL;*/
 
 	return ret;
 }

@@ -1,23 +1,18 @@
 .Dd $Mdocdate$
-.Dt WSHC 1
+.Dt wscp 1
 .Os
 .Sh NAME
-.Nm wshc
+.Nm wscp
 .Nd execute commands on multiple remote machines
 .Sh SYNOPSIS
 .Nm wshc
-.Op Fl o | -stdout
 .Op Fl -port Ar port
 .Op Fl u | -username Ar username
 .Op Fl p | -password
-.Op Fl U | -sudo-username Ar username
 .Op Fl t | -threads Ar threads
-.Op Fl T | -timeout Ar timeout
-.Op Fl c | -print-collated
-.Op Fl H | -print-hostnames
+.Op Fl l | -location Ar destination
 .Fl h | -hosts | f | -file | r | -range Ar hosts
-.Op Fl -
-.Ar command
+.Ar files
 .Sh DESCRIPTION
 .Nm
 logs in to multiple hosts and executes commands on them, in parallel. It's
@@ -34,29 +29,18 @@ user is used.
 Prompt for the SSH password. If this argument is not provided, then
 .Nm
 will assume that you are using pubkeys or an agent.
-.It Fl U | -sudo-username Ar username
-Use sudo with the given username. If this option is not provided, it's assumed
-that you're not going to use sudo.
-.Nm
-will prompt you for your password.
 .It Fl t | -threads Ar threads
 Spawn off
 .Ar threads
 number of threads. If this flag is not given, then
 .Nm
 will execute sequentially.
-.It Fl T | -timeout Ar timeout
-Kills commands after
-.Ar timeout
-seconds.
-.Ar timeout
-can be 0 for no timeout (dangerous), -1 for default (300 seconds) or any
-positive number.
-.sp
-.Em WARNING
-Commands run without timeout may run until 
-.Xr wshd 1
-is killed
+.It Fl l | -location Ar destination
+Destination on the remote host where
+.Nm
+drops its file.
+.Nm
+expects the remote directory to exist and will fail if it doesn't.
 .El
 .Ss Host selection arguments
 .Bl -tag -width u
@@ -75,49 +59,11 @@ is built with range support,
 .Ar range_query
 will be resolved with range
 .El
-.Ss Output arguments
-.Bl -tag -width u
-.It Fl H | -print-hostnames
-Print out results immediately, prefixing with hostname:
-.It Fl c | -print-collated
-Collates the output after all hosts have finished, prints in blocks
-of hosts whose stdout, stderr and exit code match. This is the default.
-.El
-.Ss Executing commands
-.Pp
-The remainder of the line will be executed on the remote hosts. If the command
-takes arguments
-.Fl -
-should be provided before the command. You ought not prefix the command with
-.Li sudo
-if you're planning on using
-.Li sudo
-.
-.Pp
-Commands will be sent to
-.Li wshd
-on the remote host using a binary protocol over
-.Li SSH
-.
-The results will be sent back to
-.Nm
-and output to the user. They're collated based on the output and
-the exit code of the command. Normally stdout is suppressed so that it's
-easier to see errors with commands.
 .Sh EXIT STATUS
 .Ex -std
-.Sh EXAMPLES
-.Dl wshc -h localhost -- ls -l
-.Pp
-SSH's into localhost and runs ls -l. Won't print anything but stderr (probably
-nothing).
-.Pp
-.Dl wshc -h app01,app02,app03,app04,app05 -o -t 5 -- uname -a
-.Pp
-SSH's into app01-5 with 5 threads, runs uname -a and prints stdout.
 .Sh SEE ALSO
+.Xr wshc 1
 .Xr wshd 1
-.Xr wscp 1
 .Xr wsh-add-hostkeys 1
 .Sh AUTHORS
 .An William Orr Aq Mt will@worrbase.com

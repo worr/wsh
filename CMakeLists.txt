@@ -143,7 +143,7 @@ if( BUILD_CLIENT )
 	endif( BUILD_TESTS )
 
 	install(
-		FILES man/wshc.1
+		FILES man/wshc.1 man/wscp.1
 		DESTINATION ${CMAKE_INSTALL_FULL_MANDIR}/man/man1
 		COMPONENT doc
 	)

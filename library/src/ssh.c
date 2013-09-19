@@ -452,9 +452,13 @@ static gint scp_write_dir(wsh_ssh_session_t* session, const gchar* dir, GError**
 		if (g_file_test(full_path, G_FILE_TEST_IS_DIR)) {
 			// We push the relative name of the directory so we don't try and
 			// replicate the whole path of the passed in file
-			if ((ret = ssh_scp_push_directory(session->scp, cur_file, 0755)))
+			if ((ret = ssh_scp_push_directory(session->scp, cur_file, 0755))) {
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "Can't push directory: %s",
+					ssh_get_error(session->session));
 				goto wsh_scp_error;
+			}
 
+			// err set by previous call
 			if ((ret = scp_write_dir(session, full_path, err)))
 				goto wsh_scp_error;
 
@@ -462,8 +466,11 @@ static gint scp_write_dir(wsh_ssh_session_t* session, const gchar* dir, GError**
 			// It enters directories that it's created, which
 			// means we need to leave the directories we've just created
 			// after returning from scp_write_dir
-			if ((ret = ssh_scp_leave_directory(session->scp)))
+			if ((ret = ssh_scp_leave_directory(session->scp))) {
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "Can't leave directory: %s",
+					ssh_get_error(session->session));
 				goto wsh_scp_error;
+			}
 
 			continue;
 wsh_scp_error:
@@ -497,8 +504,11 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** er
 	if (!is_dir) {
 		scp_write_file(session, file, err);
 	} else {
-		if ((ret = ssh_scp_push_directory(session->scp, g_path_get_basename(file), 0755)))
+		if ((ret = ssh_scp_push_directory(session->scp, g_path_get_basename(file), 0755))) {
+			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "Can't push directory: %s",
+				ssh_get_error(session->session));
 			return ret;
+		}
 
 		scp_write_dir(session, file, err);
 	}

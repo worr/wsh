@@ -14,6 +14,7 @@ static gint port = 22;
 static gchar* username = NULL;
 static gboolean ask_password = FALSE;
 static gint threads = 0;
+static gchar* location = NULL;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -27,6 +28,7 @@ static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "SSH username", NULL },
 	{ "password", 'p', 0, G_OPTION_ARG_NONE, &ask_password, "Prompt for SSH password", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to spawn", NULL },
+	{ "location", 'l', 0, G_OPTION_ARG_STRING, &location, "Location on remote hosts to drop files", NULL },
 
 	// Host selection
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -56,6 +58,7 @@ typedef struct {
 	gchar* host;
 	gchar* user;
 	gchar* pass;
+	gchar* location;
 	gint num_files;
 	gint port;
 } wshc_scp_file_args;
@@ -95,7 +98,7 @@ static gint scp_file(const wshc_scp_file_args* args) {
 		return EXIT_FAILURE;
 	}
 
-	if (wsh_ssh_scp_init(&session, "~")) {
+	if (wsh_ssh_scp_init(&session, args->location)) {
 		g_printerr("Error initializing scp");
 		return EXIT_FAILURE;
 	}
@@ -176,6 +179,9 @@ gint main(gint argc, gchar** argv) {
 		if (! password) return EXIT_FAILURE;
 	}
 
+	if (!location)
+		location = g_strdup("~");
+
 	if (file_arg) {
 		if (wsh_exp_filename(&hosts, &num_hosts, file_arg, &err)) {
 			g_printerr("%s\n", err->message);
@@ -217,6 +223,7 @@ gint main(gint argc, gchar** argv) {
 		args.pass = password;
 		args.files = argv;
 		args.num_files = argc;
+		args.location = location;
 
 		for (gsize i = 0; i < num_hosts; i++) {
 			args.host = hosts[i];
@@ -239,6 +246,7 @@ gint main(gint argc, gchar** argv) {
 			args[i].pass = password;
 			args[i].files = argv;
 			args[i].num_files = argc;
+			args[i].location = location;
 
 			g_thread_pool_push(gtp, &args[i], NULL);
 		}

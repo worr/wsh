@@ -125,8 +125,7 @@ gint main(gint argc, gchar** argv) {
 	gsize num_hosts = -1;
 	gchar* password = NULL;
 
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-#else
+#if ! GLIB_CHECK_VERSION( 2, 32, 0 )
 	g_thread_init(NULL);
 #endif
 

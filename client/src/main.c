@@ -135,9 +135,8 @@ int main(int argc, char** argv) {
 	gchar* password = NULL;
 	gchar* sudo_password = NULL;
 	gchar** hosts = NULL;
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-#else
 
+#if ! GLIB_CHECK_VERSION( 2, 32, 0 )
 	g_thread_init(NULL);
 #endif
 
@@ -156,10 +155,13 @@ int main(int argc, char** argv) {
 	if (! valid_arguments(&mesg)) {
 		g_printerr("%s\n", mesg);
 		g_free(mesg);
+		mesg = NULL;
 
 		g_printerr("%s", g_option_context_get_help(context, FALSE, NULL));
 		return EXIT_FAILURE;
 	}
+
+	g_option_context_free(context);
 
 	if (username == NULL)
 		username = g_strdup(g_get_user_name());
@@ -203,11 +205,16 @@ int main(int argc, char** argv) {
 			g_error_free(err);
 			return EXIT_FAILURE;
 		}
+
+		g_free(file_arg);
+		file_arg = NULL;
 	}
 
 	if (hosts_arg) {
 		hosts = g_strsplit(hosts_arg, ",", 0);
 		num_hosts = g_strv_length(hosts);
+		g_free(hosts_arg);
+		hosts_arg = NULL;
 	}
 
 #ifdef RANGE
@@ -217,6 +224,9 @@ int main(int argc, char** argv) {
 			g_error_free(err);
 			return EXIT_FAILURE;
 		}
+
+		g_free(range);
+		range = NULL;
 	}
 #endif
 
@@ -297,6 +307,7 @@ int main(int argc, char** argv) {
 		}
 
 		g_thread_pool_free(gtp, FALSE, TRUE);
+		gtp = NULL;
 	}
 
 	if (password || sudo_password) {
@@ -312,10 +323,18 @@ int main(int argc, char** argv) {
 
 	wsh_ssh_cleanup();
 	g_free(username);
-	g_option_context_free(context);
-	g_free(hosts_arg);
+	username = NULL;
+
 	g_strfreev(hosts);
+	hosts = NULL;
+
 	g_free(cmd_string);
+	cmd_string = NULL;
+
+	if (sudo_username) {
+		g_free(sudo_username);
+		sudo_username = NULL;
+	}
 
 	free_wsh_cmd_req_fields(&req);
 

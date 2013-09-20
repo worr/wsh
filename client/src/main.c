@@ -254,6 +254,7 @@ int main(int argc, char** argv) {
 	cmd_info.password = password;
 	cmd_info.port = port;
 	cmd_info.hosts = num_hosts;
+	cmd_info.script = script;
 
 	wshc_output_info_t* out_info = NULL;
 	wshc_init_output(&out_info, std_out);
@@ -334,6 +335,11 @@ int main(int argc, char** argv) {
 	if (sudo_username) {
 		g_free(sudo_username);
 		sudo_username = NULL;
+	}
+
+	if (script) {
+		g_free(script);
+		script = NULL;
 	}
 
 	free_wsh_cmd_req_fields(&req);

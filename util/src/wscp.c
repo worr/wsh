@@ -104,7 +104,7 @@ static gint scp_file(const wshc_scp_file_args* args) {
 	}
 
 	for (gint i = 0; i < args->num_files; i++) {
-		if (wsh_ssh_scp_file(&session, args->files[i], &err)) {
+		if (wsh_ssh_scp_file(&session, args->files[i], FALSE, &err)) {
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
 			err = NULL;

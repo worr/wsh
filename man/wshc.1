@@ -13,6 +13,7 @@
 .Op Fl U | -sudo-username Ar username
 .Op Fl t | -threads Ar threads
 .Op Fl T | -timeout Ar timeout
+.Op Fl s | -script Ar script
 .Op Fl c | -print-collated
 .Op Fl H | -print-hostnames
 .Fl h | -hosts | f | -file | r | -range Ar hosts
@@ -57,6 +58,9 @@ positive number.
 Commands run without timeout may run until 
 .Xr wshd 1
 is killed
+.It Fl s | -script Ar script
+Sends and executes a script, named
+.Ar script .
 .El
 .Ss Host selection arguments
 .Bl -tag -width u

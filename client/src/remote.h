@@ -32,6 +32,7 @@
 typedef struct {
 	const gchar* username;		/**< Username to connect with */
 	const gchar* password;		/**< Password to auth with */
+	const gchar* script;		/**< Script to execute */
 	const wsh_cmd_req_t* req;	/**< wsh_cmd_req_t to send over the wire */
 	wshc_output_info_t* out;	/**< metadata about output */
 	gsize hosts;				/**< number of hosts to connect to */

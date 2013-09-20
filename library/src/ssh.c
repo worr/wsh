@@ -457,14 +457,15 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session) {
 }
 
 // There are too many steps to scping a file
-static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
+static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file, gboolean executable, GError** err) {
 	gchar* contents = NULL;
 	gsize len = 0;
+	gint mode = (executable ? 0755 : 0644);
 	if (!g_file_get_contents(file, &contents, &len, err))
 		return EXIT_FAILURE;
 
 	gint ret = EXIT_SUCCESS;
-	if ((ret = ssh_scp_push_file(session->scp, file, len, 0644))) {
+	if ((ret = ssh_scp_push_file(session->scp, file, len, mode))) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_FILE_ERR, "%s",
 			ssh_get_error(session->session));
 		g_free(contents);
@@ -523,7 +524,7 @@ wsh_scp_error:
 			g_dir_close(dir_stream);
 			return ret;
 		} else {
-			if ((ret = scp_write_file(session, full_path, err))) {
+			if ((ret = scp_write_file(session, full_path, FALSE, err))) {
 				g_free(full_path);
 				g_dir_close(dir_stream);
 				return ret;
@@ -537,7 +538,7 @@ wsh_scp_error:
 	return ret;
 }
 
-gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** err) {
+gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, gboolean executable, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->scp != NULL);
 	g_assert(*err == NULL);
@@ -547,7 +548,7 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, GError** er
 	is_dir = g_file_test(file, G_FILE_TEST_IS_DIR);
 
 	if (!is_dir) {
-		scp_write_file(session, file, err);
+		scp_write_file(session, file, executable, err);
 	} else {
 		if ((ret = ssh_scp_push_directory(session->scp, g_path_get_basename(file), 0755))) {
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_DIR_ERR, "Can't push directory: %s",

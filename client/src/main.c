@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
 
 #ifdef RANGE
 	if (range) {
-		if (wsh_exp_range(&hosts, &num_hosts, hosts_arg, &err)) {
+		if (wsh_exp_range(&hosts, &num_hosts, range, &err)) {
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
 			return EXIT_FAILURE;

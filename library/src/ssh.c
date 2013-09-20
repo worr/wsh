@@ -184,6 +184,14 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_DENIED,
 					"%s: Access denied", session->hostname);
 				goto wsh_ssh_authenticate_failure;
+
+			case SSH_AUTH_SUCCESS:
+				break;
+
+			default:
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_AUTH_OTHER,
+					"%s: Some other error occured: %s", session->hostname, ssh_get_error(session->session));
+				goto wsh_ssh_authenticate_failure;
 		}
 	}
 
@@ -202,6 +210,15 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_DENIED,
 					"%s: Access denied", session->hostname);
 				goto wsh_ssh_authenticate_failure;
+
+			case SSH_AUTH_SUCCESS:
+				break;
+
+			default:
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_AUTH_OTHER,
+					"%s: Some other error occured: %s", session->hostname, ssh_get_error(session->session));
+				goto wsh_ssh_authenticate_failure;
+
 		}
 
 		if (ssh_userauth_kbdint_setanswer(session->session, 0, session->password)) {
@@ -224,6 +241,14 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			case SSH_AUTH_DENIED:
 				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED,
 					"%s: Access denied", session->hostname);
+				goto wsh_ssh_authenticate_failure;
+
+			case SSH_AUTH_SUCCESS:
+				break;
+
+			default:
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_AUTH_OTHER,
+					"%s: Some other error occured: %s", session->hostname, ssh_get_error(session->session));
 				goto wsh_ssh_authenticate_failure;
 		}
 	}

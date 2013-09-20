@@ -24,6 +24,7 @@
 #ifndef __LIBWSH_H
 #define __LIBWSH_H
 
+#include <libwsh/client.h>
 #include <libwsh/cmd.h>
 #include <libwsh/expansion.h>
 #include <libwsh/log.h>

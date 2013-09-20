@@ -62,6 +62,7 @@ typedef enum {
 	WSH_SSH_STAT_ERR,					/**< Error stating file or directory */
 	WSH_SSH_DIR_ERR,					/**< Can't push dir */
 	WSH_SSH_FILE_ERR,					/**< Can't push file */
+	WSH_SSH_AUTH_OTHER,					/**< Generic auth error */
 } wsh_ssh_err_enum;
 
 /** Represents an ssh session */

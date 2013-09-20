@@ -43,6 +43,7 @@ static gboolean ask_password = FALSE;
 static gchar* sudo_username = NULL;
 static gint threads = 0;
 static gint timeout = -1;
+static gchar* script = NULL;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -63,6 +64,7 @@ static GOptionEntry entries[] = {
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 30)", NULL },
+	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "Script to execute on remote host", NULL },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -245,9 +247,16 @@ int main(int argc, char** argv) {
 
 	wshc_output_info_t* out_info = NULL;
 	wshc_init_output(&out_info, std_out);
-	out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
+
+	if (num_hosts < 20) // 20 will be our magic number for hosts
+		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
+	else
+		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+
 	if (hostname_output)
 		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+	else if (collate_output)
+		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
 
 	cmd_info.out = out_info;
 

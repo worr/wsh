@@ -57,5 +57,14 @@ gchar** wshc_filter_head(gchar** output, gsize num_lines);
  */
 gchar** wshc_filter_grep(gchar** output, gchar* re_string);
 
+/**
+ * @brief Gets the number of lines of output
+ *
+ * @param[in] output Output to count
+ *
+ * @returns A NULL-terminated array of strings containing line count info that ought to be g_strfreev'd
+ */
+gchar** wshc_filter_lines(gchar** output);
+
 #endif
 

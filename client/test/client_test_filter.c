@@ -120,6 +120,28 @@ static void grep_nooutput(void) {
 	g_strfreev(filtered);
 }
 
+static void lines_10(void) {
+	gchar* output[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", NULL };
+
+	gchar** filtered = wshc_filter_lines(output);
+
+	g_assert(g_strv_length(filtered) == 1);
+	g_assert_cmpstr(filtered[0], ==, "10");
+
+	g_strfreev(filtered);
+}
+
+static void lines_none(void) {
+	gchar* output[] = { NULL };
+
+	gchar** filtered = wshc_filter_lines(output);
+
+	g_assert(g_strv_length(filtered) == 1);
+	g_assert_cmpstr(filtered[0], ==, "0");
+
+	g_strfreev(filtered);
+}
+
 gint main(int argc, gchar** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -134,6 +156,9 @@ gint main(int argc, gchar** argv) {
 	g_test_add_func("/Client/Filter/GrepMatch", grep_match);
 	g_test_add_func("/Client/Filter/GrepNoMatch", grep_nomatch);
 	g_test_add_func("/Client/Filter/GrepNoMatch", grep_nooutput);
+
+	g_test_add_func("/Client/Filter/Lines10", lines_10);
+	g_test_add_func("/Client/Filter/LinesNone", lines_none);
 
 	return g_test_run();
 }

@@ -76,3 +76,10 @@ gchar** wshc_filter_grep(gchar** output, gchar* re_string) {
 	return ret;
 }
 
+gchar** wshc_filter_lines(gchar** output) {
+	gsize output_len = g_strv_length(output);
+	gchar** ret = g_malloc0(sizeof(gchar**));
+	ret[0] = g_strdup_printf("%zu", output_len);
+	return ret;
+}
+

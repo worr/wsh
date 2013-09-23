@@ -28,7 +28,7 @@ gchar** wshc_filter_tail(gchar** output, gsize output_len, gsize num_lines) {
 		return g_strdupv(output);
 	}
 
-	return g_strdupv(output + num_lines);
+	return g_strdupv(output + output_len - num_lines);
 }
 
 gchar** wshc_filter_head(gchar** output, gsize output_len, gsize num_lines) {

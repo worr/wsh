@@ -1,4 +1,4 @@
-add_executable( wshc main.c remote.c output.c )
+add_executable( wshc main.c remote.c output.c filter.c )
 install( TARGETS wshc RUNTIME DESTINATION bin )
 
 include_directories(

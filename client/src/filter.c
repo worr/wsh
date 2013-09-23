@@ -22,7 +22,9 @@
 
 #include <glib.h>
 
-gchar** wshc_filter_tail(gchar** output, gsize output_len, gsize num_lines) {
+gchar** wshc_filter_tail(gchar** output, gsize num_lines) {
+	gsize output_len = g_strv_length(output);
+
 	// Return right away if shit is real
 	if (output_len <= num_lines) {
 		return g_strdupv(output);
@@ -31,11 +33,15 @@ gchar** wshc_filter_tail(gchar** output, gsize output_len, gsize num_lines) {
 	return g_strdupv(output + output_len - num_lines);
 }
 
-gchar** wshc_filter_head(gchar** output, gsize output_len, gsize num_lines) {
+gchar** wshc_filter_head(gchar** output, gsize num_lines) {
+	gsize output_len = g_strv_length(output);
+
 	if (output_len <= num_lines) {
 		return g_strdupv(output);
 	}
 
+	// Temprarily set the target index of output
+	// to NULL, then dup the string vector
 	gchar* tmp = output[num_lines];
 	output[num_lines] = NULL;
 	gchar** ret = g_strdupv(output);
@@ -44,12 +50,29 @@ gchar** wshc_filter_head(gchar** output, gsize output_len, gsize num_lines) {
 	return ret;
 }
 
-gchar** wshc_filter_grep(gchar** output, gsize output_len, GRegex* re) {
-	for (gchar** cur = output; cur != NULL; cur++) {
-		if (g_regex_match(re, *cur, 0, NULL)) {
+gchar** wshc_filter_grep(gchar** output, gchar* re_string) {
+	gsize output_len = g_strv_length(output);
+
+	// Get the fuck out if we don't have output
+	if (output_len == 0)
+		return g_strdupv(output);
+
+	gchar** ret = g_malloc0(sizeof(gchar**));
+	gsize matches = 0;
+	GRegex* re = g_regex_new(re_string, 0, 0, NULL);
+
+	for (gsize i = 0; output[i] != NULL; i++) {
+		if (g_regex_match(re, output[i], 0, NULL)) {
+			matches++;
+
+			ret = g_realloc(ret, sizeof(gchar**) * (matches + 1));
+			ret[matches - 1] = g_strdup(output[i]);
+			ret[matches] = NULL; // Remember to NULL terminate
 		}
 	}
 
-	return NULL;
+	g_regex_unref(re);
+
+	return ret;
 }
 

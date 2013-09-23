@@ -31,25 +31,31 @@
  * @brief Gets the last n lines from output
  *
  * @param[in] output Output to filter
- * @param[in] output_len Length of the filtered output
  * @param[in] num_lines Number of lines to extract
  *
  * @returns A NULL-terminated array of strings that ought to be g_strfreev'd
  */
-gchar** wshc_filter_tail(gchar** output, gsize output_len, gsize num_lines);
+gchar** wshc_filter_tail(gchar** output, gsize num_lines);
 
 /**
  * @brief Gets the top n lines from output
  *
  * @param[in] output Output to filter
- * @param[in] output_len Length of the filtered output
  * @param[in] num_lines Number of lines to extract
  *
  * @returns A NULL-terminated array of strings that ought to be g_strfreev'd
  */
-gchar** wshc_filter_head(gchar** output, gsize output_len, gsize num_lines);
+gchar** wshc_filter_head(gchar** output, gsize num_lines);
 
-/*gchar** wshc_filter_grep(gchar** output, gsize output_len, GRegex* re);*/
+/**
+ * @brief Matches output against a pcre
+ *
+ * @param[in] output Output to filter
+ * @param[in] re_string Regular expression to match
+ *
+ * @returns A NULL-terminated array of strings that ought to be g_strfreev'd
+ */
+gchar** wshc_filter_grep(gchar** output, gchar* re_string);
 
 #endif
 

@@ -24,9 +24,8 @@
 
 static void head_10(void) {
 	gchar* output[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", NULL };
-	gsize len = g_strv_length(output);
 
-	gchar** filtered = wshc_filter_head(output, len, 10);
+	gchar** filtered = wshc_filter_head(output, 10);
 
 	g_assert(g_strv_length(filtered) == 10);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -37,11 +36,10 @@ static void head_10(void) {
 
 static void head_short(void) {
 	gchar* output[] = { "0", "1", "2", NULL };
-	gsize len = g_strv_length(output);
 
-	gchar** filtered = wshc_filter_head(output, len, 10);
+	gchar** filtered = wshc_filter_head(output, 10);
 
-	g_assert(g_strv_length(filtered) == len);
+	g_assert(g_strv_length(filtered) == 3);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
 		g_assert_cmpstr(output[i], ==, filtered[i]);
 
@@ -50,9 +48,8 @@ static void head_short(void) {
 
 static void head_none(void) {
 	gchar* output[] = { NULL };
-	gsize len = 0;
 
-	gchar** filtered = wshc_filter_head(output, len, 10);
+	gchar** filtered = wshc_filter_head(output, 10);
 
 	g_assert(g_strv_length(filtered) == 0);
 	g_strfreev(filtered);
@@ -60,9 +57,8 @@ static void head_none(void) {
 
 static void tail_10(void) {
 	gchar* output[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", NULL };
-	gsize len = g_strv_length(output);
 
-	gchar** filtered = wshc_filter_tail(output, len, 10);
+	gchar** filtered = wshc_filter_tail(output, 10);
 
 	g_assert(g_strv_length(filtered) == 10);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -71,11 +67,10 @@ static void tail_10(void) {
 
 static void tail_short(void) {
 	gchar* output[] = { "0", "1", "2", NULL };
-	gsize len = g_strv_length(output);
 
-	gchar** filtered = wshc_filter_tail(output, len, 10);
+	gchar** filtered = wshc_filter_tail(output, 10);
 
-	g_assert(g_strv_length(filtered) == len);
+	g_assert(g_strv_length(filtered) == 3);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
 		g_assert_cmpstr(output[i], ==, filtered[i]);
 
@@ -85,11 +80,43 @@ static void tail_short(void) {
 
 static void tail_none(void) {
 	gchar* output[] = { NULL };
-	gsize len = 0;
 
-	gchar** filtered = wshc_filter_tail(output, len, 10);
+	gchar** filtered = wshc_filter_tail(output, 10);
 
 	g_assert(g_strv_length(filtered) == 0);
+	g_strfreev(filtered);
+}
+
+static void grep_match(void) {
+	gchar* output[] = { "twenty", "two", "trees", "ocelot", "peacock", NULL };
+	gchar* expected[] = { "twenty", "two", "trees", NULL };
+
+	gchar** filtered = wshc_filter_grep(output, "^t");
+
+	g_assert(g_strv_length(filtered) == 3);
+	for (gsize i = 0; i < g_strv_length(filtered); i++)
+		g_assert_cmpstr(filtered[i], ==, expected[i]);
+
+	g_strfreev(filtered);
+}
+
+static void grep_nomatch(void) {
+	gchar* output[] = { "twenty", "two", "trees", "ocelot", "peacock", NULL };
+
+	gchar** filtered = wshc_filter_grep(output, "^z");
+
+	g_assert(g_strv_length(filtered) == 0);
+
+	g_strfreev(filtered);
+}
+
+static void grep_nooutput(void) {
+	gchar* output[] = { NULL };
+
+	gchar** filtered = wshc_filter_grep(output, "^z");
+
+	g_assert(g_strv_length(filtered) == 0);
+
 	g_strfreev(filtered);
 }
 
@@ -103,6 +130,10 @@ gint main(int argc, gchar** argv) {
 	g_test_add_func("/Client/Filter/Tail10", tail_10);
 	g_test_add_func("/Client/Filter/TailShort", tail_short);
 	g_test_add_func("/Client/Filter/TailNone", tail_none);
+
+	g_test_add_func("/Client/Filter/GrepMatch", grep_match);
+	g_test_add_func("/Client/Filter/GrepNoMatch", grep_nomatch);
+	g_test_add_func("/Client/Filter/GrepNoMatch", grep_nooutput);
 
 	return g_test_run();
 }

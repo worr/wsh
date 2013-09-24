@@ -1,7 +1,8 @@
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
-set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto test_cmd_messages_proto test_pack test_ssh test_expansion )
+set( TEST_EXECUTABLES test_log test_run_cmd test_auth_proto
+test_cmd_messages_proto test_pack test_ssh test_expansion test_filter )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/tests )
 
@@ -22,6 +23,7 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/src/cmd.c
 	${CMAKE_SOURCE_DIR}/library/src/pack.c
 	${CMAKE_SOURCE_DIR}/library/src/ssh.c
+	${CMAKE_SOURCE_DIR}/library/src/filter.c
 	${CMAKE_SOURCE_DIR}/library/src/expansion.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c

@@ -25,7 +25,7 @@
 static void head_10(void) {
 	gchar* output[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", NULL };
 
-	gchar** filtered = wshc_filter_head(output, 10);
+	gchar** filtered = wsh_filter_head(output, 10);
 
 	g_assert(g_strv_length(filtered) == 10);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -37,7 +37,7 @@ static void head_10(void) {
 static void head_short(void) {
 	gchar* output[] = { "0", "1", "2", NULL };
 
-	gchar** filtered = wshc_filter_head(output, 10);
+	gchar** filtered = wsh_filter_head(output, 10);
 
 	g_assert(g_strv_length(filtered) == 3);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -49,7 +49,7 @@ static void head_short(void) {
 static void head_none(void) {
 	gchar* output[] = { NULL };
 
-	gchar** filtered = wshc_filter_head(output, 10);
+	gchar** filtered = wsh_filter_head(output, 10);
 
 	g_assert(g_strv_length(filtered) == 0);
 	g_strfreev(filtered);
@@ -58,7 +58,7 @@ static void head_none(void) {
 static void tail_10(void) {
 	gchar* output[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", NULL };
 
-	gchar** filtered = wshc_filter_tail(output, 10);
+	gchar** filtered = wsh_filter_tail(output, 10);
 
 	g_assert(g_strv_length(filtered) == 10);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -68,7 +68,7 @@ static void tail_10(void) {
 static void tail_short(void) {
 	gchar* output[] = { "0", "1", "2", NULL };
 
-	gchar** filtered = wshc_filter_tail(output, 10);
+	gchar** filtered = wsh_filter_tail(output, 10);
 
 	g_assert(g_strv_length(filtered) == 3);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -81,7 +81,7 @@ static void tail_short(void) {
 static void tail_none(void) {
 	gchar* output[] = { NULL };
 
-	gchar** filtered = wshc_filter_tail(output, 10);
+	gchar** filtered = wsh_filter_tail(output, 10);
 
 	g_assert(g_strv_length(filtered) == 0);
 	g_strfreev(filtered);
@@ -91,7 +91,7 @@ static void grep_match(void) {
 	gchar* output[] = { "twenty", "two", "trees", "ocelot", "peacock", NULL };
 	gchar* expected[] = { "twenty", "two", "trees", NULL };
 
-	gchar** filtered = wshc_filter_grep(output, "^t");
+	gchar** filtered = wsh_filter_grep(output, "^t");
 
 	g_assert(g_strv_length(filtered) == 3);
 	for (gsize i = 0; i < g_strv_length(filtered); i++)
@@ -103,7 +103,7 @@ static void grep_match(void) {
 static void grep_nomatch(void) {
 	gchar* output[] = { "twenty", "two", "trees", "ocelot", "peacock", NULL };
 
-	gchar** filtered = wshc_filter_grep(output, "^z");
+	gchar** filtered = wsh_filter_grep(output, "^z");
 
 	g_assert(g_strv_length(filtered) == 0);
 
@@ -113,7 +113,7 @@ static void grep_nomatch(void) {
 static void grep_nooutput(void) {
 	gchar* output[] = { NULL };
 
-	gchar** filtered = wshc_filter_grep(output, "^z");
+	gchar** filtered = wsh_filter_grep(output, "^z");
 
 	g_assert(g_strv_length(filtered) == 0);
 
@@ -123,7 +123,7 @@ static void grep_nooutput(void) {
 static void lines_10(void) {
 	gchar* output[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", NULL };
 
-	gchar** filtered = wshc_filter_lines(output);
+	gchar** filtered = wsh_filter_lines(output);
 
 	g_assert(g_strv_length(filtered) == 1);
 	g_assert_cmpstr(filtered[0], ==, "10");
@@ -134,7 +134,7 @@ static void lines_10(void) {
 static void lines_none(void) {
 	gchar* output[] = { NULL };
 
-	gchar** filtered = wshc_filter_lines(output);
+	gchar** filtered = wsh_filter_lines(output);
 
 	g_assert(g_strv_length(filtered) == 1);
 	g_assert_cmpstr(filtered[0], ==, "0");

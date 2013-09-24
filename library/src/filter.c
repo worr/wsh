@@ -22,7 +22,7 @@
 
 #include <glib.h>
 
-gchar** wshc_filter_tail(gchar** output, gsize num_lines) {
+gchar** wsh_filter_tail(gchar** output, gsize num_lines) {
 	gsize output_len = g_strv_length(output);
 
 	// Return right away if shit is real
@@ -33,7 +33,7 @@ gchar** wshc_filter_tail(gchar** output, gsize num_lines) {
 	return g_strdupv(output + output_len - num_lines);
 }
 
-gchar** wshc_filter_head(gchar** output, gsize num_lines) {
+gchar** wsh_filter_head(gchar** output, gsize num_lines) {
 	gsize output_len = g_strv_length(output);
 
 	if (output_len <= num_lines) {
@@ -50,7 +50,7 @@ gchar** wshc_filter_head(gchar** output, gsize num_lines) {
 	return ret;
 }
 
-gchar** wshc_filter_grep(gchar** output, gchar* re_string) {
+gchar** wsh_filter_grep(gchar** output, gchar* re_string) {
 	gsize output_len = g_strv_length(output);
 
 	// Get the fuck out if we don't have output
@@ -76,7 +76,7 @@ gchar** wshc_filter_grep(gchar** output, gchar* re_string) {
 	return ret;
 }
 
-gchar** wshc_filter_lines(gchar** output) {
+gchar** wsh_filter_lines(gchar** output) {
 	gsize output_len = g_strv_length(output);
 	gchar** ret = g_malloc0(sizeof(gchar**));
 	ret[0] = g_strdup_printf("%zu", output_len);

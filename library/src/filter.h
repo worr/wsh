@@ -18,9 +18,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/** @internal
- *  @file
- *  @brief Client code for output filtering
+/** @file
+ *  @brief Code for output filtering
  */
 #ifndef __WSHC_FILTER_H
 #define __WSHC_FILTER_H
@@ -35,7 +34,7 @@
  *
  * @returns A NULL-terminated array of strings that ought to be g_strfreev'd
  */
-gchar** wshc_filter_tail(gchar** output, gsize num_lines);
+gchar** wsh_filter_tail(gchar** output, gsize num_lines);
 
 /**
  * @brief Gets the top n lines from output
@@ -45,7 +44,7 @@ gchar** wshc_filter_tail(gchar** output, gsize num_lines);
  *
  * @returns A NULL-terminated array of strings that ought to be g_strfreev'd
  */
-gchar** wshc_filter_head(gchar** output, gsize num_lines);
+gchar** wsh_filter_head(gchar** output, gsize num_lines);
 
 /**
  * @brief Matches output against a pcre
@@ -55,7 +54,7 @@ gchar** wshc_filter_head(gchar** output, gsize num_lines);
  *
  * @returns A NULL-terminated array of strings that ought to be g_strfreev'd
  */
-gchar** wshc_filter_grep(gchar** output, gchar* re_string);
+gchar** wsh_filter_grep(gchar** output, gchar* re_string);
 
 /**
  * @brief Gets the number of lines of output
@@ -64,7 +63,7 @@ gchar** wshc_filter_grep(gchar** output, gchar* re_string);
  *
  * @returns A NULL-terminated array of strings containing line count info that ought to be g_strfreev'd
  */
-gchar** wshc_filter_lines(gchar** output);
+gchar** wsh_filter_lines(gchar** output);
 
 #endif
 

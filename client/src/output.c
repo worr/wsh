@@ -63,7 +63,14 @@ void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout) {
 	*out = g_slice_new0(wshc_output_info_t);
 
 	(*out)->show_stdout = show_stdout;
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+	(*out)->mut = g_slice_new(GMutex);
+	g_mutex_init((*out)->mut);
+#else
 	(*out)->mut = g_mutex_new();
+#endif
+
 	(*out)->output = g_hash_table_new_full(g_str_hash, g_str_equal,
 		(GDestroyNotify)g_free, (GDestroyNotify)free_output);
 }
@@ -72,7 +79,14 @@ void wshc_cleanup_output(wshc_output_info_t** out) {
 	g_assert(*out);
 
 	g_hash_table_destroy((*out)->output);
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+	g_mutex_clear((*out)->mut);
+	g_slice_free(GMutex, (*out)->mut);
+#else
 	g_mutex_free((*out)->mut);
+#endif
+
 	g_slice_free(wshc_output_info_t, *out);
 	*out = NULL;
 }

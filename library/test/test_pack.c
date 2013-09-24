@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "pack.h"
+#include "types.h"
 
 static gchar* req_username = "will";
 static gchar* req_password = "test";
@@ -33,6 +34,7 @@ static const gsize req_env_len = 3;
 static gchar* req_cwd = "/tmp";
 static const guint64 req_timeout = 5;
 static gchar* req_host = "localhost";
+static wsh_filter_type_enum req_filter_type = WSH_FILTER_NONE;
 
 static const gsize encoded_req_len = 98;
 static const guint8 encoded_req[]
@@ -69,6 +71,7 @@ static void test_wsh_pack_request(void) {
 	req.username = req_username;
 	req.password = req_password;
 	req.host = req_host;
+	req.filter_type = req_filter_type;
 
 	wsh_pack_request(&buf, &buf_len, &req);
 

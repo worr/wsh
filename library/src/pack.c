@@ -49,6 +49,20 @@ void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) 
 	for (gsize i = 0; cmd_req.env != NULL && cmd_req.env[i] != NULL; i++)
 		cmd_req.n_env++;
 
+	if (req->filter_type) {
+		cmd_req.has_filter = TRUE;
+		cmd_req.filter = req->filter_type;
+
+		if (req->filter_type == WSH_FILTER_TAIL || req->filter_type == WSH_FILTER_HEAD) {
+			cmd_req.has_filter_intarg = TRUE;
+			cmd_req.filter_intarg = req->filter_intarg;
+		}
+
+		if (req->filter_type == WSH_FILTER_GREP) {
+			cmd_req.filter_stringarg = req->filter_stringarg;
+		}
+	}
+
 	*buf_len = command_request__get_packed_size(&cmd_req);
 	*buf = g_slice_alloc0(*buf_len);
 
@@ -88,6 +102,10 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, guint32 buf_len)
 
 	(*req)->host = g_strndup(cmd_req->host, strlen(cmd_req->host));
 
+	(*req)->filter_type = cmd_req->filter;
+	(*req)->filter_intarg = cmd_req->filter_intarg;
+	(*req)->filter_stringarg = g_strdup(cmd_req->filter_stringarg);
+
 	command_request__free_unpacked(cmd_req, NULL);
 }
 
@@ -95,6 +113,7 @@ void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
 	g_free((*req)->username);
 	g_free((*req)->password);
 	g_free((*req)->cmd_string);
+	g_free((*req)->filter_stringarg);
 	g_strfreev((*req)->std_input);
 	g_strfreev((*req)->env);
 	g_free((*req)->cwd);

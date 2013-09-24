@@ -26,9 +26,11 @@
 #include <unistd.h>
 
 #include "cmd.h"
+#include "filter.h"
 #include "log.h"
 #include "output.h"
 #include "parse.h"
+#include "types.h"
 
 int main(int argc, char** argv, char** env) {
 	GIOChannel* in = g_io_channel_unix_new(STDIN_FILENO);
@@ -57,6 +59,7 @@ int main(int argc, char** argv, char** env) {
 	}
 
 	wsh_run_cmd(res, req);
+	wsh_filter(res, req);
 
 wshd_error:
 	if (munlock(req, sizeof(*req))) {

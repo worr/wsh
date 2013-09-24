@@ -26,6 +26,8 @@
 
 #include <glib.h>
 
+#include "types.h"
+
 /**
  * @brief Gets the last n lines from output
  *
@@ -64,6 +66,14 @@ gchar** wsh_filter_grep(gchar** output, gchar* re_string);
  * @returns A NULL-terminated array of strings containing line count info that ought to be g_strfreev'd
  */
 gchar** wsh_filter_lines(gchar** output);
+
+/**
+ * @brief Runs filter based on type
+ *
+ * @param[in] res Results to filter
+ * @param[in] req Request that provides filter info
+ */
+void wsh_filter(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 
 #endif
 

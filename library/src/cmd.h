@@ -26,41 +26,13 @@
 
 #include <glib.h>
 
+#include "types.h"
+
 /** Maximum number of args a command can have */
 extern const guint MAX_CMD_ARGS;
 
 /** Our sudo command prefix */
 extern const gchar* SUDO_CMD;	
-
-/** A command request that we send to a remote host
- */
-typedef struct {
-	gchar** env;		/**< The environment to execute in */
-	gchar** std_input;	/**< A NULL terminated array of std input */
-	gchar* cmd_string;	/**< The command to run */
-	gchar* username;	/**< The username to execute as */
-	gchar* password;	/**< The password to use with sudo */
-	gchar* cwd;			/**< Directory to execute in */
-	gchar* host;		/**< The host we're sending the request from */
-	gsize std_input_len; /**< The length of std_input */
-	gint in_fd;			/**< Internal use only */
-	guint64 timeout;	/**< Maximum time to let a command run. 0 for none */
-	gboolean sudo;		/**< Whether or not to use sudo */
-} wsh_cmd_req_t;
-
-/** Result from running a command
- */
-typedef struct {
-	GError* err;			/**< GError for use in Glib functions */
-	gchar** std_output;		/**< Standard output from command */
-	gchar** std_error;		/**< Standard error from command */
-	gchar* error_message;	/**< Error for use in client */
-	gsize std_output_len;	/**< Length of stdout */
-	gsize std_error_len;	/**< Length of stderr */
-	gint exit_status;		/**< Return code of command */
-	gint out_fd;			/**< Internal use only */
-	gint err_fd;			/**< Internal use only */
-} wsh_cmd_res_t;
 
 /**
  * @brief Runs a command from a given request

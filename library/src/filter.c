@@ -22,6 +22,8 @@
 
 #include <glib.h>
 
+#include "types.h"
+
 gchar** wsh_filter_tail(gchar** output, gsize num_lines) {
 	gsize output_len = g_strv_length(output);
 
@@ -81,5 +83,31 @@ gchar** wsh_filter_lines(gchar** output) {
 	gchar** ret = g_malloc0(sizeof(gchar**));
 	ret[0] = g_strdup_printf("%zu", output_len);
 	return ret;
+}
+
+void wsh_filter(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
+	gchar** filtered = NULL;
+
+	switch (req->filter_type) {
+		case WSH_FILTER_TAIL:
+			filtered = wsh_filter_tail(res->std_output, req->filter_intarg);
+			break;
+		case WSH_FILTER_HEAD:
+			filtered = wsh_filter_head(res->std_output, req->filter_intarg);
+			break;
+		case WSH_FILTER_GREP:
+			filtered = wsh_filter_grep(res->std_output, req->filter_stringarg);
+			break;
+		case WSH_FILTER_LINES:
+			filtered = wsh_filter_lines(res->std_output);
+			break;
+		default:
+			break;
+	}
+
+	if (!filtered) return;
+	g_strfreev(res->std_output);
+	res->std_output = filtered;
+	res->std_output_len = g_strv_length(filtered);
 }
 

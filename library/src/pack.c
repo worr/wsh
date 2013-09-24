@@ -25,6 +25,7 @@
 
 #include "auth.pb-c.h"
 #include "cmd-messages.pb-c.h"
+#include "types.h"
 
 // buf MUST be g_free()d
 void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) {
@@ -51,7 +52,7 @@ void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) 
 
 	if (req->filter_type) {
 		cmd_req.has_filter = TRUE;
-		cmd_req.filter = req->filter_type;
+		cmd_req.filter = (CommandRequest__Filtertype)req->filter_type;
 
 		if (req->filter_type == WSH_FILTER_TAIL || req->filter_type == WSH_FILTER_HEAD) {
 			cmd_req.has_filter_intarg = TRUE;
@@ -102,7 +103,7 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, guint32 buf_len)
 
 	(*req)->host = g_strndup(cmd_req->host, strlen(cmd_req->host));
 
-	(*req)->filter_type = cmd_req->filter;
+	(*req)->filter_type = (wsh_filter_type_enum)cmd_req->filter;
 	(*req)->filter_intarg = cmd_req->filter_intarg;
 	(*req)->filter_stringarg = g_strdup(cmd_req->filter_stringarg);
 

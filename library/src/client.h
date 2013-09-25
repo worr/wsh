@@ -36,7 +36,7 @@ extern const gsize WSH_MAX_PASSWORD_LEN;
  *
  * @returns 0 on success, errno on error
  */
-gint wsh_client_lock_password_pages(void* passwd_mem);
+gint wsh_client_lock_password_pages(void** passwd_mem);
 
 /**
  * @brief unlocks and munmaps a page of memory for user

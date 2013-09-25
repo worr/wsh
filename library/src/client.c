@@ -39,11 +39,14 @@ const gsize WSH_MAX_PASSWORD_LEN = 1024;
 
 static volatile sig_atomic_t signos[NSIG];
 
-gint wsh_client_lock_password_pages(void* passwd_mem) {
-	if ((gintptr)(passwd_mem = mmap(NULL, WSH_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1)
+gint wsh_client_lock_password_pages(void** passwd_mem) {
+	if ((gintptr)(*passwd_mem = mmap(NULL, WSH_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1)
 		return errno;
 
-	if (mlock(passwd_mem, WSH_MAX_PASSWORD_LEN * 3))
+	if (*passwd_mem == NULL)
+		return errno;
+
+	if (mlock(*passwd_mem, WSH_MAX_PASSWORD_LEN * 3))
 		return errno;
 
 	return EXIT_SUCCESS;

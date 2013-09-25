@@ -203,7 +203,7 @@ int main(int argc, char** argv) {
 		username = g_strdup(g_get_user_name());
 
 	if (ask_password || sudo_username) {
-		if ((ret = wsh_client_lock_password_pages(passwd_mem))) {
+		if ((ret = wsh_client_lock_password_pages(&passwd_mem))) {
 			g_printerr("%s\n", strerror(ret));
 			return ret;
 		}

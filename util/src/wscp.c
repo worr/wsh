@@ -122,7 +122,7 @@ gint main(gint argc, gchar** argv) {
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
 	gchar** hosts = NULL;
-	gsize num_hosts = -1;
+	gsize num_hosts = 0;
 	gchar* password = NULL;
 
 #if ! GLIB_CHECK_VERSION( 2, 32, 0 )

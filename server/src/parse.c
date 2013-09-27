@@ -44,7 +44,6 @@ guint32 wshd_get_message_size(GIOChannel* std_input, GError* err) {
 	return out.size;
 }
 
-#pragma GCC diagnostic ignored "-Wpointer-sign"
 void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 	guint32 msg_size;
 	guint8* buf;
@@ -60,14 +59,9 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 
 	g_io_channel_read_chars(std_input, buf, msg_size, &read, &err);
 	if (read != msg_size) {
-		gchar* err_msg;
-		if (asprintf(&err_msg, "Expected %d byts, got %zu\n", msg_size, read) == -1) {
-			wsh_log_message("Couldn't allocate memory to generate log message");
-			wsh_log_message(strerror(errno));
-		} else {
-			wsh_log_message(err_msg);
-			free(err_msg);
-		}
+		gchar* err_msg = g_strdup_printf("Expected %d byts, got %zu\n", msg_size, read);
+		wsh_log_message(err_msg);
+		g_free(err_msg);
 	}
 
 	if (err != NULL) goto wshd_get_message_err;
@@ -77,5 +71,4 @@ void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
 wshd_get_message_err:
 	g_free(buf);
 }
-#pragma GCC diagnostic error "-Wpointer-sign"
 

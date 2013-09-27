@@ -42,12 +42,12 @@ int main(int argc, char** argv, char** env) {
 
     wsh_init_logger(WSH_LOGGER_SERVER);
 
-	if ((gintptr)(req = mmap(NULL, sizeof(*req), PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
+	if ((gintptr)(req = (wsh_cmd_req_t*)mmap(NULL, sizeof(*req), PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
 		wsh_log_message(strerror(errno));
 		return EXIT_FAILURE;
 	}
 
-	if (mlock(req, sizeof(*req))) {
+	if (mlock((void*)req, sizeof(*req))) {
 		wsh_log_message(strerror(errno));
 		return EXIT_FAILURE;
 	}
@@ -62,12 +62,12 @@ int main(int argc, char** argv, char** env) {
 	wsh_filter(res, req);
 
 wshd_error:
-	if (munlock(req, sizeof(*req))) {
+	if (munlock((void*)req, sizeof(*req))) {
 		wsh_log_message(strerror(errno));
 		return EXIT_FAILURE;
 	}
 
-	if (munmap(req, sizeof(*req))) {
+	if (munmap((void*)req, sizeof(*req))) {
 		wsh_log_message(strerror(errno));
 		return EXIT_FAILURE;
 	}

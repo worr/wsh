@@ -38,8 +38,12 @@ else( HAVE_C11 )
 	add_definitions( -std=c99 )
 endif( HAVE_C11 )
 
-add_definitions( -Wall -Werror -pedantic )
-add_definitions( -D_GNU_SOURCE )
+add_definitions( -Wall -Werror -pedantic -Wno-pointer-sign )
+
+if( ${CMAKE_SYSTEM_NAME} MATCHES "SunOS" )
+	add_definitions( -D__EXTENSIONS__ )
+endif( ${CMAKE_SYSTEM_NAME} MATCHES "SunOS" )
+
 
 if( WITH_RANGE )
 	add_definitions( -DRANGE )

@@ -41,7 +41,6 @@ enum wshc_output_type_enum {
 typedef struct {
 	GMutex* mut;				/**< mutex that gets locked on writing out */
 	GHashTable* output;			/**< output hash map */
-	gint show_stdout;			/**< TRUE - show std output */
 	enum wshc_output_type_enum type;	/**< method to display output */
 } wshc_output_info_t;
 
@@ -57,11 +56,10 @@ typedef struct {
  * @brief Setups up wshc output structs
  *
  * @param[out] out wshc_output_info_t that we're initializing
- * @param[in] show_stdout Whether or not we're displaying stdout
  *
  * @note Expects not to be threaded
  */
-void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout);
+void wshc_init_output(wshc_output_info_t** out);
 
 /**
  * @brief Cleans up an old wshc_output_info_t struct

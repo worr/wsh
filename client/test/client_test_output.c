@@ -36,7 +36,7 @@ gint close_t() { close_called = TRUE; return EXIT_SUCCESS; }
 
 static void init_output_failure(void) {
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
-		wshc_init_output(NULL, TRUE);
+		wshc_init_output(NULL);
 		exit(0);
 	}
 
@@ -46,7 +46,7 @@ static void init_output_failure(void) {
 static void init_output_success(void) {
 	if (g_test_trap_fork(0, 0)) {
 		wshc_output_info_t* out;
-		wshc_init_output(&out, TRUE);
+		wshc_init_output(&out);
 		exit(0);
 	}
 
@@ -66,7 +66,7 @@ static void cleanup_output_failure(void) {
 static void cleanup_output_success(void) {
 	if (g_test_trap_fork(0, 0)) {
 		wshc_output_info_t* out;
-		wshc_init_output(&out, TRUE);
+		wshc_init_output(&out);
 		wshc_cleanup_output(&out);
 		g_assert(out == NULL);
 		exit(0);
@@ -85,7 +85,7 @@ static void write_output_mem(void) {
 	};
 
 	wshc_output_info_t* out;
-	wshc_init_output(&out, TRUE);
+	wshc_init_output(&out);
 
 	gint ret = wshc_write_output(out, "localhost", &res);
 
@@ -118,7 +118,7 @@ static void write_output_mem_null(void) {
 	};
 
 	wshc_output_info_t* out;
-	wshc_init_output(&out, TRUE);
+	wshc_init_output(&out);
 
 	gint ret = wshc_write_output(out, "localhost", &res);
 
@@ -152,7 +152,7 @@ static void collate_output(void) {
 	};
 
 	wshc_output_info_t* out;
-	wshc_init_output(&out, TRUE);
+	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_COLLATED;
 
 	(void)wshc_write_output(out, "localhost", &res);
@@ -186,7 +186,7 @@ static void hostname_output(void) {
 	};
 
 	wshc_output_info_t* out;
-	wshc_init_output(&out, TRUE);
+	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
 	if(g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {

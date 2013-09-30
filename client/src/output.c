@@ -57,12 +57,10 @@ static void free_output(wshc_host_output_t* out) {
 	g_slice_free(wshc_host_output_t, out);
 }
 
-void wshc_init_output(wshc_output_info_t** out, gboolean show_stdout) {
+void wshc_init_output(wshc_output_info_t** out) {
 	g_assert(out);
 
 	*out = g_slice_new0(wshc_output_info_t);
-
-	(*out)->show_stdout = show_stdout;
 
 #if GLIB_CHECK_VERSION(2, 32, 0)
 	(*out)->mut = g_slice_new(GMutex);

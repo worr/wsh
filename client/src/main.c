@@ -37,7 +37,6 @@
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
 
-static gboolean std_out = FALSE;
 static gint port = 22;
 static gchar* username = NULL;
 static gboolean ask_password = FALSE;
@@ -64,7 +63,6 @@ static gint tail = 0;
 static void* passwd_mem;
 
 static GOptionEntry entries[] = {
-	{ "stdout", 'o', 0, G_OPTION_ARG_NONE, &std_out, "Show stdout of hosts (suppressed by default on success)", NULL },
 	{ "port", 0, 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "SSH username", NULL },
 	{ "password", 'p', 0, G_OPTION_ARG_NONE, &ask_password, "Prompt for SSH password", NULL },
@@ -294,7 +292,7 @@ int main(int argc, char** argv) {
 	cmd_info.script = script;
 
 	wshc_output_info_t* out_info = NULL;
-	wshc_init_output(&out_info, std_out);
+	wshc_init_output(&out_info);
 
 	if (num_hosts < 20) // 20 will be our magic number for hosts
 		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;

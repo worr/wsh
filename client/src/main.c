@@ -197,8 +197,6 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
-	g_option_context_free(context);
-
 	if (username == NULL)
 		username = g_strdup(g_get_user_name());
 
@@ -282,6 +280,9 @@ int main(int argc, char** argv) {
 			return EXIT_FAILURE;
 		}
 	}
+
+	// We're now done with any situation that would require our GOptionContext
+	g_option_context_free(context);
 
 	gchar* cmd_string = g_strjoinv(" ", argv);
 

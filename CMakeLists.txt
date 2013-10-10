@@ -1,19 +1,34 @@
 cmake_minimum_required( VERSION 2.6 )
 project( wsh C )
 
+set( APPLICATION_VERSION_MAJOR "1" )
+set( APPLICATION_VERSION_MINOR "0" )
+set( APPLICATION_VERSION_PATCH "0" )
+
+set( APPLICATION_VERSION
+	"${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}.${APPLICATION_VERSION_PATCH}"
+)
+
+set( LIBRARY_VERSION "${APPLICATION_VERSION}" )
+set( LIBRARY_SOVERSION "${APPLICATION_VERSION_MAJOR}" )
+
 option( BUILD_SERVER "Build wsh server" ON )
 option( BUILD_CLIENT "Build wsh client" ON )
 option( BUILD_UTILS  "Build wsh utilities" ON )
 option( BUILD_TESTS  "Build wsh unit tests" OFF )
 option( WITH_RANGE   "Use libcrange as an host expansion lib" OFF )
 
-set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules )
+set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 
-include( CheckC11 )
 include( CheckCCompilerFlag )
 include( CheckFunctionExists )
+include( CheckIncludeFile )
+include( CheckLibraryExists )
+include( CheckSymbolExists )
+include( Compiler )
 include( CPack )
 include( MacroEnsureOutOfSourceBuild )
+include( OS )
 
 macro_ensure_out_of_source_build( "You must build outside of the source tree" )
 
@@ -27,36 +42,12 @@ set( CMAKE_INSTALL_FULL_MANDIR ${CMAKE_INSTALL_PREFIX}/share )
 set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/src )
 set( WSH_LIBRARIES wsh )
 
+check_include_file( termios.h HAVE_TERMIOS_H )
+check_include_file( unistd.h HAVE_UNISTD_H )
+
 if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	add_definitions( -DDEBUG )
 endif( CMAKE_BUILD_TYPE STREQUAL "Debug" )
-
-check_c_compiler_flag( -std=c99 HAVE_C_STD_FLAG )
-if( HAVE_C_STD_FLAG )
-	check_c11( )
-	if( HAVE_C11 )
-		add_definitions( -std=c11 )
-	else( HAVE_C11 )
-		add_definitions( -std=c99 )
-	endif( HAVE_C11 )
-endif( HAVE_C_STD_FLAG )
-
-check_c_compiler_flag( -Wall HAVE_WALL )
-if( HAVE_WALL )
-	add_definitions( -Wall -pedantic )
-endif( HAVE_WALL )
-
-check_c_compiler_flag( -Wno-pointer-sign HAVE_WNO_POINTER_SIGN )
-if( HAVE_WNO_POINTER_SIGN )
-	add_definitions( -Wno-pointer-sign )
-endif( HAVE_WNO_POINTER_SIGN )
-
-add_definitions( -D_POSIX_C_SOURCE=200809L -D_SVID_SOURCE )
-
-if( ${CMAKE_SYSTEM_NAME} MATCHES "SunOS" )
-	add_definitions( -D__EXTENSIONS__ )
-endif( ${CMAKE_SYSTEM_NAME} MATCHES "SunOS" )
-
 
 if( WITH_RANGE )
 	add_definitions( -DRANGE )

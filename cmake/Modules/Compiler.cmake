@@ -1,0 +1,20 @@
+include( CheckC11 )
+include( CheckCCompilerFlag )
+
+if( CMAKE_COMPILER_IS_GNUCC )
+	check_c11( )
+	if( HAVE_C11 )
+		add_definitions( -std=c11 )
+	else( HAVE_C11 )
+		add_definitions( -std=c99 )
+	endif( HAVE_C11 )
+
+	if( HAVE_WALL )
+		add_definitions( -Wall -pedantic )
+	endif( HAVE_WALL )
+
+	check_c_compiler_flag( -Wno-pointer-sign HAVE_WNO_POINTER_SIGN )
+	if( HAVE_WNO_POINTER_SIGN )
+		add_definitions( -Wno-pointer-sign )
+	endif( HAVE_WNO_POINTER_SIGN )
+endif( CMAKE_COMPILER_IS_GNUCC )

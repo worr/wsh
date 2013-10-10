@@ -190,12 +190,30 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer us
 	struct cmd_data* data = (struct cmd_data*)user_data;
 
 	gboolean ret = TRUE;
-	GIOStatus stat; 
+	GIOStatus stat = 0;
 
 	gchar* buf = NULL;
 	gsize buf_len = 0;
 
-	if (cond & G_IO_HUP) {
+	if (cond & G_IO_IN) {
+		stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
+		while (stat != G_IO_STATUS_EOF && stat != G_IO_STATUS_ERROR) {
+			if (res->err) {
+				ret = FALSE;
+				goto check_stream_err;
+			}
+
+			if (buf && std_err)
+				wsh_add_line_stderr(res, buf);
+			else if (buf)
+				wsh_add_line_stdout(res, buf);
+
+			stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
+		}
+	}
+
+	if (cond & G_IO_HUP || cond & G_IO_NVAL || // Check if pipe has closed
+		stat == G_IO_STATUS_ERROR || stat == G_IO_STATUS_EOF) {
 		if (std_err) {
 			((struct cmd_data*)user_data)->err_closed = TRUE;
 			wsh_check_if_need_to_close(data);
@@ -207,28 +225,10 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer us
 		}
 
 		ret = FALSE;
-
-		if (! (cond & G_IO_IN))
-			return ret;
-	}
-
-	stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
-	while (stat != G_IO_STATUS_EOF) {
-		if (res->err) {
-			ret = FALSE;
-			goto check_stream_err;
-		}
-
-		if (buf && std_err)
-			wsh_add_line_stderr(res, buf);
-		else if (buf)
-			wsh_add_line_stdout(res, buf);
-
-		stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
 	}
 
 check_stream_err:
-	g_free(buf);
+		g_free(buf);
 
 	return ret;
 }
@@ -252,39 +252,22 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 	g_assert(res->err == NULL);
 
 	gsize wrote;
-	gboolean ret = FALSE;
-
-	if (cond & G_IO_HUP) {
-		g_source_destroy(((struct cmd_data*)user_data)->in_watch);
-		g_source_unref(((struct cmd_data*)user_data)->in_watch);
-		g_io_channel_unref(in);
-
-		ret = FALSE;
-		if (! (cond & G_IO_OUT))
-			return ret;
-	}
 
 	if (req->sudo) {
 		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote, &res->err);
-		if (res->err || wrote < strlen(req->password)) {
-			ret = FALSE;
+		if (res->err || wrote < strlen(req->password))
 			goto write_stdin_err;
-		}
 
 		memset_s(req->password, strlen(req->password), 0, strlen(req->password));
 		req->sudo = FALSE;
 
 		g_io_channel_write_chars(in, "\n", 1, &wrote, &res->err);
-		if (res->err || wrote == 0) {
-			ret = FALSE;
+		if (res->err || wrote == 0)
 			goto write_stdin_err;
-		}
 
 		g_io_channel_flush(in, &res->err);
-		if (res->err || wrote < strlen(req->password)) {
-			ret = FALSE;
+		if (res->err || wrote < strlen(req->password))
 			goto write_stdin_err;
-		}
 	}
 
 	g_source_destroy(((struct cmd_data*)user_data)->in_watch);
@@ -293,7 +276,7 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 
 write_stdin_err:
 
-	return ret;
+	return FALSE;
 }
 
 // retval should be g_free'd
@@ -420,17 +403,17 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	in = g_io_channel_unix_new(req->in_fd);
 
 	// Add IO channels
-	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP);
+	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP | G_IO_NVAL);
 	g_source_set_callback(stdout_src, (GSourceFunc)wsh_check_stdout, &user_data, NULL);
 	g_source_attach(stdout_src, context);
 	user_data.out_watch = stdout_src;
 
-	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP);
+	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP | G_IO_NVAL);
 	g_source_set_callback(stderr_src, (GSourceFunc)wsh_check_stderr, &user_data, NULL);
 	g_source_attach(stderr_src, context);
 	user_data.err_watch = stderr_src;
 
-	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP);
+	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP | G_IO_NVAL);
 	g_source_set_callback(stdin_src, (GSourceFunc)wsh_write_stdin, &user_data, NULL);
 	g_source_attach(stdin_src, context);
 	user_data.in_watch = stdin_src;

@@ -49,6 +49,7 @@ gint ssh_scp_init_ret;
 gint ssh_scp_push_file_ret;
 gint ssh_scp_push_directory_ret;
 gint ssh_scp_write_ret;
+gint ssh_channel_poll_timeout_ret;
 
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
@@ -340,5 +341,13 @@ void ssh_scp_close() {
 
 gint ssh_scp_leave_directory() {
 	return 0;
+}
+
+void set_ssh_channel_poll_timeout_ret(gint ret) {
+	ssh_channel_poll_timeout_ret = ret;
+}
+
+gint ssh_channel_poll_timeout() {
+	return ssh_channel_poll_timeout_ret;
 }
 

@@ -293,6 +293,13 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
+	if (ssh_channel_poll_timeout(session->channel, 100, TRUE)) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
+			"%s: Can't execute wshd", session->hostname);
+		ret = WSH_SSH_EXEC_WSHD_ERR;
+		goto wsh_ssh_exec_wshd_error;
+	}
+
 	return ret;
 
 wsh_ssh_exec_wshd_error:

@@ -6,7 +6,6 @@
 .Nd execute commands on multiple remote machines
 .Sh SYNOPSIS
 .Nm wshc
-.Op Fl o | -stdout
 .Op Fl -port Ar port
 .Op Fl u | -username Ar username
 .Op Fl p | -password
@@ -113,12 +112,11 @@ easier to see errors with commands.
 .Sh EXAMPLES
 .Dl wshc -h localhost -- ls -l
 .Pp
-SSH's into localhost and runs ls -l. Won't print anything but stderr (probably
-nothing).
+SSH's into localhost and runs ls -l. 
 .Pp
-.Dl wshc -h app01,app02,app03,app04,app05 -o -t 5 -- uname -a
+.Dl wshc -h app01,app02,app03,app04,app05 -t 5 -- uname -a
 .Pp
-SSH's into app01-5 with 5 threads, runs uname -a and prints stdout.
+SSH's into app01-5 with 5 threads and runs uname -a.
 .Sh SEE ALSO
 .Xr wshd 1
 .Xr wscp 1

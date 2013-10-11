@@ -15,6 +15,10 @@
 .Op Fl s | -script Ar script
 .Op Fl c | -print-collated
 .Op Fl H | -print-hostnames
+.Op Fl -grep Ar pcre
+.Op Fl -head Ar num
+.Op Fl -tail Ar num
+.Op Fl -lines
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
 .Ar command
@@ -85,6 +89,23 @@ Print out results immediately, prefixing with hostname:
 .It Fl c | -print-collated
 Collates the output after all hosts have finished, prints in blocks
 of hosts whose stdout, stderr and exit code match. This is the default.
+.El
+.Ss Filtering arguments
+.Bl -tag -width u
+.It Fl -grep Ar pcre
+Takes a
+.Ar pcre
+and matches all the output on the remote end against it.
+.It Fl -lines
+Returns the line count of the output on the remote host.
+.It Fl -head Ar num
+Returns the first
+.Ar num
+lines of output from the remote host.
+.It Fl -tail Ar num
+Returns the last
+.Ar num
+lines of output from the remote host.
 .El
 .Ss Executing commands
 .Pp

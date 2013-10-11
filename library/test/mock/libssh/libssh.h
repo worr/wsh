@@ -121,6 +121,7 @@ void ssh_scp_close();
 gint ssh_scp_leave_directory();
 void set_ssh_channel_poll_timeout_ret(gint ret);
 gint ssh_channel_poll_timeout();
+gint ssh_get_fd();
 
 void set_ssh_threads_set_callbacks_ret(gint ret);
 

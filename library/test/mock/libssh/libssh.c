@@ -351,3 +351,7 @@ gint ssh_channel_poll_timeout() {
 	return ssh_channel_poll_timeout_ret;
 }
 
+gint ssh_get_fd() {
+	return 0;
+}
+

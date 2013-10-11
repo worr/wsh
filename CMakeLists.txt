@@ -49,6 +49,10 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	add_definitions( -DDEBUG )
 endif( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
+if( BUILD_TESTS )
+	add_definitions( -DUNIT_TESTING )
+endif( BUILD_TESTS )
+
 if( WITH_RANGE )
 	add_definitions( -DRANGE )
 endif( WITH_RANGE )
@@ -105,6 +109,14 @@ endif( HAVE_C11 )
 
 set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} )
 set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} )
+
+# This function is only in newer versions of libssh
+check_function_exists( ssh_channel_poll_timeout HAVE_SSH_CHANNEL_POLL_TIMEOUT )
+if( HAVE_SSH_CHANNEL_POLL_TIMEOUT )
+	add_definitions( -DHAVE_SSH_CHANNEL_POLL_TIMEOUT )
+endif( HAVE_SSH_CHANNEL_POLL_TIMEOUT )
+
+# New versions of libssh need this to be called before any other auth
 check_function_exists( ssh_userauth_none HAVE_SSH_USERAUTH_NONE )
 if( HAVE_SSH_USERAUTH_NONE )
 	add_definitions( -DHAVE_SSH_USERAUTH_NONE )

@@ -40,7 +40,17 @@ if ( WITH_RANGE )
 endif( WITH_RANGE )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
-	add_executable( ${TEST_EXECUTABLE} ${TEST_EXECUTABLE}.c ${SOURCES} )
+	if( TEST_EXECUTABLE STREQUAL "test_ssh" )
+		add_executable(
+			${TEST_EXECUTABLE}
+			${TEST_EXECUTABLE}.c
+			${CMAKE_SOURCE_DIR}/library/test/mock/poll.c
+			${SOURCES}
+		)
+	else( TEST_EXECUTABLE STREQUAL "test_ssh" )
+		add_executable( ${TEST_EXECUTABLE} ${TEST_EXECUTABLE}.c ${SOURCES} )
+	endif ( TEST_EXECUTABLE STREQUAL "test_ssh" )
+
 	add_test( ${TEST_EXECUTABLE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXECUTABLE} )
 	target_link_libraries(
 		${TEST_EXECUTABLE}

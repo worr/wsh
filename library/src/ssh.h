@@ -203,5 +203,17 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
  */
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, gboolean executable, GError** err);
 
+#ifdef UNIT_TESTING
+/**
+ * @internal
+ * @brief polls an ssh channel for output
+ *
+ * @param[in] session wsh_ssh_session_t that we're communicating with
+ * @param[in] timeout The maximum time in ms that we'll wait for output
+ * @param[in] is_stderr Are we looking for stderrr?
+ */
+gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout, gboolean is_stderr);
+#endif
+
 #endif
 

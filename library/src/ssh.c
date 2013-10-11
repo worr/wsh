@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <poll.h>
+
 #include "cmd.h"
 #include "pack.h"
 #include "types.h"
@@ -261,6 +263,23 @@ wsh_ssh_authenticate_failure:
 	return ret;
 }
 
+gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout, gboolean is_stderr) {
+	struct pollfd fds[1];
+	fds[0].fd = ssh_get_fd(session->session);
+	fds[0].events = POLLIN;
+	fds[0].revents = 0;
+
+	return poll(fds, 1, 100);
+}
+
+static gint poll_timeout(wsh_ssh_session_t* session, gint timeout, gboolean is_stderr) {
+#ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
+	return ssh_channel_poll_timeout(session->channel, timeout, is_stderr);
+#else
+	return wsh_ssh_channel_poll_timeout(session, timeout, is_stderr);
+#endif
+}
+
 gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->session != NULL);
@@ -293,7 +312,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
-	if (ssh_channel_poll_timeout(session->channel, 100, TRUE)) {
+	if (poll_timeout(session, 100, TRUE)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
 			"%s: Can't execute wshd", session->hostname);
 		ret = WSH_SSH_EXEC_WSHD_ERR;

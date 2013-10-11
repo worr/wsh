@@ -403,6 +403,7 @@ static void exec_wshd_channel_exec_failure(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
+#ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
 static void exec_wshd_poll_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
@@ -427,6 +428,7 @@ static void exec_wshd_poll_failure(void) {
 
 	session = NULL;
 }
+#endif
 
 static void exec_wshd_success(void) {
 	set_ssh_connect_res(SSH_OK);
@@ -671,8 +673,10 @@ int main(int argc, char** argv) {
 		exec_wshd_channel_failure);
 	g_test_add_func("/Library/SSH/ExecWshdExecError",
 		exec_wshd_channel_exec_failure);
+#ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
 	g_test_add_func("/Library/SSH/ExecWshdPollError",
 		exec_wshd_poll_failure);
+#endif
 	g_test_add_func("/Library/SSH/ExecWshSuccess",
 		exec_wshd_success);
 

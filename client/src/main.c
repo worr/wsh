@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 
 	if (ask_password || sudo_username) {
 		if ((ret = wsh_client_lock_password_pages(&passwd_mem))) {
-			g_printerr("%s\n", strerror(ret));
+			g_printerr("lock_pages: %s\n", strerror(ret));
 			return ret;
 		}
 	}
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 	if (ask_password) {
 		password = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 0);
 		if ((ret = wsh_client_getpass(password, WSH_MAX_PASSWORD_LEN, "SSH password: ", passwd_mem))) {
-			g_printerr("%s\n", strerror(ret));
+			g_printerr("getpass: %s\n", strerror(ret));
 			return ret;
 		}
 
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 	if (sudo_username) {
 		sudo_password = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 1);
 		if ((ret = wsh_client_getpass(sudo_password, WSH_MAX_PASSWORD_LEN, "sudo password: ", passwd_mem))) {
-			g_printerr("%s\n", strerror(ret));
+			g_printerr("getpass: %s\n", strerror(ret));
 			return ret;
 		}
 

@@ -254,7 +254,7 @@ static void authenticate_pubkey_denied(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_DENIED);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);
@@ -329,7 +329,7 @@ static void authenticate_kbdint_denied(void) {
 
 	g_assert(ret != 0);
 	g_assert(session->session == NULL);
-	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_DENIED);
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED);
 
 	g_error_free(err);
 	g_slice_free(wsh_ssh_session_t, session);

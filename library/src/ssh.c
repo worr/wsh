@@ -174,6 +174,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 #endif
 	gint method = ssh_userauth_list(session->session, NULL);
 	gint ret = -1;
+	gboolean pubkey_denied, password_denied, kbdint_denied;
+	pubkey_denied = password_denied = kbdint_denied = FALSE;
 
 	if ((session->auth_type == WSH_SSH_AUTH_PUBKEY) && (method & SSH_AUTH_METHOD_PUBLICKEY)) {
 		switch (ret = ssh_userauth_autopubkey(session->session, NULL)) {
@@ -183,52 +185,46 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 					session->hostname, ssh_get_error(session->session));
 				goto wsh_ssh_authenticate_failure;
 			case SSH_AUTH_DENIED:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_DENIED,
-					"%s: Access denied", session->hostname);
-				goto wsh_ssh_authenticate_failure;
-
-			case SSH_AUTH_SUCCESS:
-				break;
-
+				pubkey_denied = TRUE;
 			default:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_AUTH_OTHER,
-					"%s: Some other error occured: %s", session->hostname, ssh_get_error(session->session));
-				goto wsh_ssh_authenticate_failure;
+				break;
 		}
+	} else {
+		pubkey_denied = TRUE;
 	}
 
 	// We only support OpenSSH's use of kbd interactive auth for passwords
 	// Otherwise it's too interactive for our purposes
+	// Note - apparently on OpenBSD, OpenSSH doesn't use kbdint auth
 	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) && (method & SSH_AUTH_METHOD_INTERACTIVE)) {
 		g_assert(session->password != NULL);
 		ret = ssh_userauth_kbdint(session->session, NULL, NULL);
-		switch (ret) {
-			case SSH_AUTH_ERROR:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_ERR,
-					"%s: Error initiating kbd interactive mode: %s",
+		do {
+			switch (ret) {
+				case SSH_AUTH_ERROR:
+					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_ERR,
+						"%s: Error initiating kbd interactive mode: %s",
+						session->hostname, ssh_get_error(session->session));
+					goto wsh_ssh_authenticate_failure;
+				case SSH_AUTH_DENIED:
+					kbdint_denied = TRUE;
+				default:
+					break;
+			}
+
+			if (kbdint_denied) break;
+
+			if (ssh_userauth_kbdint_setanswer(session->session, 0, session->password)) {
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_SET_ANSWER_ERR,
+					"%s: Error setting kbd interactive answer: %s",
 					session->hostname, ssh_get_error(session->session));
 				goto wsh_ssh_authenticate_failure;
-			case SSH_AUTH_DENIED:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_DENIED,
-					"%s: Access denied", session->hostname);
-				goto wsh_ssh_authenticate_failure;
+			}
 
-			case SSH_AUTH_SUCCESS:
-				break;
-
-			default:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_AUTH_OTHER,
-					"%s: Some other error occured: %s", session->hostname, ssh_get_error(session->session));
-				goto wsh_ssh_authenticate_failure;
-
-		}
-
-		if (ssh_userauth_kbdint_setanswer(session->session, 0, session->password)) {
-			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_SET_ANSWER_ERR,
-				"%s: Error setting kbd interactive answer: %s", 
-				session->hostname, ssh_get_error(session->session));
-			goto wsh_ssh_authenticate_failure;
-		}
+			ret = ssh_userauth_kbdint(session->session, NULL, NULL);
+		} while (ret == SSH_AUTH_INFO);
+	} else {
+		kbdint_denied = TRUE;
 	}
 
 	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) && (method & SSH_AUTH_METHOD_PASSWORD)) {
@@ -241,18 +237,19 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 					session->hostname, ssh_get_error(session->session));
 				goto wsh_ssh_authenticate_failure;
 			case SSH_AUTH_DENIED:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED,
-					"%s: Access denied", session->hostname);
-				goto wsh_ssh_authenticate_failure;
-
-			case SSH_AUTH_SUCCESS:
-				break;
-
+				password_denied = TRUE;
 			default:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_AUTH_OTHER,
-					"%s: Some other error occured: %s", session->hostname, ssh_get_error(session->session));
-				goto wsh_ssh_authenticate_failure;
+				break;
 		}
+	} else {
+		password_denied = TRUE;
+	}
+
+	if (pubkey_denied && kbdint_denied && password_denied) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED,
+			"%s: %s\n", session->hostname, ssh_get_error(session->session));
+		ret = WSH_SSH_PASSWORD_AUTH_DENIED;
+		goto wsh_ssh_authenticate_failure;
 	}
 
 	return ret;

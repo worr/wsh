@@ -107,7 +107,7 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname, cons
 	g_mutex_lock(out->mut);
 
 	if (res->std_output_len) {
-		g_print("%s stdout ****\n", hostname);
+		g_print("%s: stdout ****\n", hostname);
 		for (guint32 i = 0; i < res->std_output_len; i++)
 			g_print("%s: %s\n", hostname, res->std_output[i]);
 	}
@@ -116,7 +116,7 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname, cons
 		g_print("\n");
 
 	if (res->std_error_len) {
-		g_printerr("%s stderr ****\n", hostname);
+		g_printerr("%s: stderr ****\n", hostname);
 		for (guint32 i = 0; i < res->std_error_len; i++)
 			g_printerr("%s: %s\n", hostname, res->std_error[i]);
 	}

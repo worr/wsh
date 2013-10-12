@@ -174,8 +174,8 @@ static void hostname_output(void) {
 	gchar* a_out[] = { "other", "test", NULL };
 
 	gchar* expected_err =
-		"localhost stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
-	gchar* expected_out = "localhost stdout ****\nlocalhost: other\nlocalhost: test\n\n";
+		"localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	gchar* expected_out = "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\n";
 
 
 	wsh_cmd_res_t res = {

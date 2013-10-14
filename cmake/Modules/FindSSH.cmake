@@ -7,7 +7,6 @@ find_path( LIBSSH_INCLUDE_DIR libssh/libssh.h )
 find_library( LIBSSH_LIBRARY
 		NAMES ssh
 		PATHS /usr/local/lib /usr/local/lib64 /usr/pkg/lib /opt/lib /usr/lib64 /usr/lib /lib /lib64
-		NO_DEFAULT_PATH
 )
 
 include( FindPackageHandleStandardArgs )

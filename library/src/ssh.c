@@ -437,7 +437,7 @@ wsh_ssh_recv_cmd_res_error:
 		g_free(*res);
 		*res = NULL;
 	}
-	
+
 	wsh_ssh_disconnect(session);
 
 	return ret;

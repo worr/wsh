@@ -30,7 +30,7 @@ void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) 
 	g_assert(cmd_info != NULL);
 	g_assert(host_info != NULL);
 
-	GError* err;
+	GError* err = NULL;
 	wsh_ssh_session_t session = {
 		.hostname = host_info->hostname,
 		.username = cmd_info->username,

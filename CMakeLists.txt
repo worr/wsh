@@ -47,7 +47,14 @@ set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/
 set( WSH_LIBRARIES wsh )
 
 check_include_file( termios.h HAVE_TERMIOS_H )
+if( HAVE_TERMIOS_H )
+	add_definitions( -DHAVE_TERMIOS_H )
+endif( HAVE_TERMIOS_H )
+
 check_include_file( unistd.h HAVE_UNISTD_H )
+if( HAVE_UNISTD_H )
+	add_definitions( -DHAVE_UNISTD_H )
+endif( HAVE_UNISTD_H )
 
 if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	add_definitions( -DDEBUG )

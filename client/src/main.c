@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "client.h"
 #include "cmd.h"
@@ -303,6 +306,10 @@ int main(int argc, char** argv) {
 		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 	else if (collate_output)
 		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
+
+	// If not a tty, collated output is worthless
+	if (!isatty(STDIN_FILENO) || !isatty(STDERR_FILENO))
+		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
 	cmd_info.out = out_info;
 

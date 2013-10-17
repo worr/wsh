@@ -25,7 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include "cmd.h"
 
@@ -105,21 +107,29 @@ static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname, con
 
 static gint hostname_output(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
 	g_mutex_lock(out->mut);
+	gboolean stdout_tty = isatty(STDOUT_FILENO);
+	gboolean stderr_tty = isatty(STDERR_FILENO);
 
 	if (res->std_output_len) {
-		g_print("%s: stdout ****\n", hostname);
+		if (stdout_tty)
+			g_print("%s: stdout ****\n", hostname);
 		for (guint32 i = 0; i < res->std_output_len; i++)
 			g_print("%s: %s\n", hostname, res->std_output[i]);
 	}
 
 	if (res->std_output_len || res->std_error_len)
-		g_print("\n");
+		if (stdout_tty)
+			g_print("\n");
 
 	if (res->std_error_len) {
-		g_printerr("%s: stderr ****\n", hostname);
+		if (stderr_tty)
+			g_printerr("%s: stderr ****\n", hostname);
 		for (guint32 i = 0; i < res->std_error_len; i++)
 			g_printerr("%s: %s\n", hostname, res->std_error[i]);
 	}
+
+	if (stdout_tty)
+		g_print("%s: exit code: %d\n\n", hostname, res->exit_status);
 
 	g_mutex_unlock(out->mut);
 

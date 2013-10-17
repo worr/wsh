@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "cmd.h"
+#include "isatty.h"
 #include "output.h"
 
 static gint fchown_ret;
@@ -136,6 +137,7 @@ static void collate_output(void) {
 	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
 	gchar* a_out[] = { "other", "test", NULL };
 	gint ret;
+	set_isatty_ret(1);
 
 	gsize output_size = 0;
 	gchar* printable_output = NULL;
@@ -172,15 +174,16 @@ static void collate_output(void) {
 static void hostname_output(void) {
 	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
 	gchar* a_out[] = { "other", "test", NULL };
+	set_isatty_ret(1);
 
 	gchar* expected_err =
 		"localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
-	gchar* expected_out = "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\n";
-
+	gchar* expected_out = "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\nlocalhost: exit code: 0\n\n";
 
 	wsh_cmd_res_t res = {
 		.std_error = a_err,
 		.std_output = a_out,
+		.exit_status = 0,
 		.std_error_len = 4,
 		.std_output_len = 2,
 	};
@@ -197,6 +200,38 @@ static void hostname_output(void) {
 	g_test_trap_assert_passed();
 	g_test_trap_assert_stdout(expected_out);
 	g_test_trap_assert_stderr(expected_err);
+}
+
+static void hostname_output_piped(void) {
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+	set_isatty_ret(0);
+
+	gchar* expected_err =
+		"localhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	gchar* expected_out = "localhost: other\nlocalhost: test\n";
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 0,
+		.std_error_len = 4,
+		.std_output_len = 2,
+	};
+
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+
+	if(g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+		gint ret = wshc_write_output(out, "localhost", &res);
+		exit(ret);
+	}
+
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout(expected_out);
+	g_test_trap_assert_stderr(expected_err);
+
 }
 
 int main(int argc, char** argv) {
@@ -219,6 +254,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestCollateOutput", collate_output);
 
 	g_test_add_func("/Client/TestHostnameOutput", hostname_output);
+	g_test_add_func("/Client/TestHostnameOutputPiped", hostname_output_piped);
 
 	return g_test_run();
 }

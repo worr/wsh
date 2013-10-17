@@ -7,6 +7,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/client/src
 	${CMAKE_SOURCE_DIR}/library/src
 	${CMAKE_SOURCE_DIR}/library/test/mock
+	${CMAKE_SOURCE_DIR}/client/test/mock
 	${GLIB2_INCLUDE_DIRS}
 	${PROTOBUF_INCLUDE_DIR}
 )
@@ -17,6 +18,7 @@ set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )
 set( SOURCES 
 	${WSH_PROTOC_SOURCES}
 	${CMAKE_SOURCE_DIR}/client/src/output.c
+	${CMAKE_SOURCE_DIR}/client/test/mock/isatty.c
 )
 
 foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )

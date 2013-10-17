@@ -138,7 +138,35 @@ SSH's into localhost and runs ls -l.
 .Dl wshc -h app01,app02,app03,app04,app05 -t 5 -- uname -a
 .Pp
 SSH's into app01-5 with 5 threads and runs uname -a.
+.Pp
+.Dl wshc -h app01,app02,app03,app04 -U root whoami
+.Pp
+The 
+.Fl U
+flag will allow you to select the user that
+.Xr wshd 1
+executes the command as.
+.Nm
+uses
+.Xr sudo 8
+to escalate privileges by default. So the above command will
+return root on all boxes.
+.Nm
+takes asks you for a password before executing.
+.Pp
+.Dl wshc -h app01,app02,app03 -s script.sh -- ./script.sh ls
+.Pp
+will
+.Xr scp 1
+.Ar script.sh
+to the remote host before executing the command. You can use the
+.Ar script.sh
+as the command. This option can also be used to transfer arbitrary data files
+as well.
+.Pp
 .Sh SEE ALSO
+.Xr scp 1
+.Xr sudo 8
 .Xr wshd 1
 .Xr wscp 1
 .Xr wsh-add-hostkeys 1

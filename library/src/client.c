@@ -98,7 +98,7 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt, vo
 		goto restore_sigs;
 	}
 
-	g_print("%s", prompt);
+	g_printerr("%s", prompt);
 
 	if (!fgets(target, target_len, stdin)) {
 		save_errno = errno;

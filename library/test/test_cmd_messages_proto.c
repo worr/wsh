@@ -262,7 +262,7 @@ static void test_unpacking_corrupted_response(void) {
 	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply", 0, 0);
 	if (g_test_subprocess()) {
 #else
-	if (test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT) {
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
 #endif
 		reply = command_reply__unpack(NULL, corrupted_reply_len, corrupted_reply);
 		exit(0);

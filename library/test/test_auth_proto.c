@@ -69,8 +69,12 @@ static void test_unpacking_auth_proto(void) {
 
 static void test_unpacking_corrupted(void) {
 	AuthInfo* ai = NULL;
-
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptedAuthInfo", 0, 0);
+	if (g_test_subprocess()) {
+#else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
+#endif
 		ai = auth_info__unpack(NULL, ai_corrupted_encoded_len, ai_corrupted_encoded);
 		exit(0);
 	}

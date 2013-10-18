@@ -241,7 +241,12 @@ static void test_unpacking_cmd_response(void) {
 static void test_unpacking_corrupted_request(void) {
 	CommandRequest* req = NULL;
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandRequest", 0, 0);
+	if (g_test_subprocess()) {
+#else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
+#endif
 		req = command_request__unpack(NULL, corrupted_req_len, corrupted_req);
 		exit(0);
 	}
@@ -253,7 +258,12 @@ static void test_unpacking_corrupted_request(void) {
 static void test_unpacking_corrupted_response(void) {
 	CommandReply* reply = NULL;
 
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply", 0, 0);
+	if (g_test_subprocess()) {
+#else
+	if (test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT) {
+#endif
 		reply = command_reply__unpack(NULL, corrupted_reply_len, corrupted_reply);
 		exit(0);
 	}

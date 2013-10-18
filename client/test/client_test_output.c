@@ -36,16 +36,25 @@ gint mkstemp_t() { mkstemp_called = TRUE; return mkstemp_ret; }
 gint close_t() { close_called = TRUE; return EXIT_SUCCESS; }
 
 static void init_output_failure(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestInitOutputFail", 0, 0);
+	if (g_test_subprocess()) {
+#else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+#endif
 		wshc_init_output(NULL);
 		exit(0);
 	}
-
 	g_test_trap_assert_failed();
 }
 
 static void init_output_success(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestInitOutputSuccess", 0, 0);
+	if (g_test_subprocess()) {
+#else
 	if (g_test_trap_fork(0, 0)) {
+#endif
 		wshc_output_info_t* out;
 		wshc_init_output(&out);
 		exit(0);
@@ -55,7 +64,12 @@ static void init_output_success(void) {
 }
 
 static void cleanup_output_failure(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestCleanupOutputFail", 0, 0);
+	if (g_test_subprocess()) {
+#else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDERR|G_TEST_TRAP_SILENCE_STDOUT)) {
+#endif
 		wshc_output_info_t* out = NULL;
 		wshc_cleanup_output(&out);
 		exit(0);
@@ -65,7 +79,12 @@ static void cleanup_output_failure(void) {
 }
 
 static void cleanup_output_success(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestCleanupOutputSuccess", 0, 0);
+	if (g_test_subprocess()) {
+#else
 	if (g_test_trap_fork(0, 0)) {
+#endif
 		wshc_output_info_t* out;
 		wshc_init_output(&out);
 		wshc_cleanup_output(&out);
@@ -192,7 +211,12 @@ static void hostname_output(void) {
 	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
-	if(g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestHostnameOutput", 0, 0);
+	if (g_test_subprocess()) {
+#else
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+#endif
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
@@ -223,7 +247,12 @@ static void hostname_output_piped(void) {
 	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
-	if(g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestHostnameOutputPiped", 0, 0);
+	if (g_test_subprocess()) {
+#else
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+#endif
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}

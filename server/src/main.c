@@ -42,15 +42,26 @@ int main(int argc, char** argv, char** env) {
 
     wsh_init_logger(WSH_LOGGER_SERVER);
 
-	if ((gintptr)(req = (wsh_cmd_req_t*)mmap(NULL, sizeof(*req), PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
-		wsh_log_message(strerror(errno));
-		return EXIT_FAILURE;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
 
-	if (mlock((void*)req, sizeof(*req))) {
-		wsh_log_message(strerror(errno));
-		return EXIT_FAILURE;
-	}
+		if ((gintptr)(req = (wsh_cmd_req_t*)mmap(NULL, sizeof(*req), PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1 &&
+				errno != EINTR) {
+			wsh_log_message(strerror(errno));
+			return EXIT_FAILURE;
+		}
+	} while (errno == EINTR);
+
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if (mlock((void*)req, sizeof(*req)) && errno != EINTR) {
+			wsh_log_message(strerror(errno));
+			return EXIT_FAILURE;
+		}
+	} while (errno == EINTR);
 
 	wshd_get_message(in, &req, err);
 	if (err != NULL) {
@@ -62,15 +73,25 @@ int main(int argc, char** argv, char** env) {
 	wsh_filter(res, req);
 
 wshd_error:
-	if (munlock((void*)req, sizeof(*req))) {
-		wsh_log_message(strerror(errno));
-		return EXIT_FAILURE;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
 
-	if (munmap((void*)req, sizeof(*req))) {
-		wsh_log_message(strerror(errno));
-		return EXIT_FAILURE;
-	}
+		if (munlock((void*)req, sizeof(*req)) && errno != EINTR) {
+			wsh_log_message(strerror(errno));
+			return EXIT_FAILURE;
+		}
+	} while (errno == EINTR);
+
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if (munmap((void*)req, sizeof(*req)) && errno != EINTR) {
+			wsh_log_message(strerror(errno));
+			return EXIT_FAILURE;
+		}
+	} while (errno == EINTR);
 
 	wshd_send_message(out, res, err);
 	if (err != NULL)

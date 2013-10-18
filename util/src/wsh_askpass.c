@@ -31,20 +31,36 @@ int main(int argc, char** argv) {
 
 	fd_set fds;
 
-	if ((long)(peedubs_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 2, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1) {
-		perror("mmap");
-		return EXIT_FAILURE;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
 
-	if ((ret = mlock(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2))) {
-		perror("mlock");
-		goto worse;
-	}
+		if ((long)(peedubs_mem = mmap(NULL, WSHC_MAX_PASSWORD_LEN * 2, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1 &&
+				errno != EINTR) {
+			perror("mmap");
+			return EXIT_FAILURE;
+		}
+	} while (errno == EINTR);
 
-	if ((ret = setvbuf(stdin, WSHC_MAX_PASSWORD_LEN + peedubs_mem, _IOLBF, BUFSIZ))) {
-		perror("setvbuf");
-		goto bad;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if ((ret = mlock(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2)) && errno != EINTR) {
+			perror("mlock");
+			goto worse;
+		}
+	} while (errno == EINTR);
+
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if ((ret = setvbuf(stdin, WSHC_MAX_PASSWORD_LEN + peedubs_mem, _IOLBF, BUFSIZ)) && errno != EINTR) {
+			perror("setvbuf");
+			goto bad;
+		}
+	} while (errno == EINTR);
 
 	FD_ZERO(&fds);
 	FD_SET(STDIN_FILENO, &fds);
@@ -62,32 +78,54 @@ int main(int argc, char** argv) {
 			ret = EXIT_SUCCESS;
 	}
 
-	if (fgets(peedubs_mem, WSHC_MAX_PASSWORD_LEN, stdin) == NULL) {
-		perror("fgets");
-		ret = EXIT_FAILURE;
-		goto bad;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if (fgets(peedubs_mem, WSHC_MAX_PASSWORD_LEN, stdin) == NULL && errno != EINTR) {
+			perror("fgets");
+			ret = EXIT_FAILURE;
+			goto bad;
+		}
+	} while (errno == EINTR);
 
 	*strchr(peedubs_mem, '\n') = '\0';
 
-	if (puts(peedubs_mem) == EOF) {
-		perror("puts");
-		ret = EXIT_FAILURE;
-		goto bad;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if (puts(peedubs_mem) == EOF && errno != EINTR) {
+			perror("puts");
+			ret = EXIT_FAILURE;
+			goto bad;
+		}
+	} while (errno == EINTR);
 
 bad:
 	memset_s(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2, 0, WSHC_MAX_PASSWORD_LEN * 2);
-	if ((ret = munlock(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2))) {
-		perror("munlock");
-		return ret;
-	}
+
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if ((ret = munlock(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2)) &&
+			errno != EINTR) {
+			perror("munlock");
+			return ret;
+		}
+	} while (errno == EINTR);
 
 worse:
-	if ((ret = munmap(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2))) {
-		perror("munmap");
-		return ret;
-	}
+	do {
+		if (errno == EINTR)
+			errno = 0;
+
+		if ((ret = munmap(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2)) && errno != EINTR) {
+			perror("munmap");
+			return ret;
+		 }
+	} while (errno == EINTR);
 
 	return ret;
 }

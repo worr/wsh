@@ -256,7 +256,7 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	}
 
 	// Start copying data into out
-	if (*c->error != NULL) {
+	if (*c->error && host_list_str_stderr) {
 		strncat(*f->out, host_list_str_stderr, *f->size);
 
 		for (gchar** p = c->error; *p != NULL; p++) {
@@ -269,7 +269,7 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 			strncat(*f->out, "\n", *f->size);
 	}
 
-	if (*c->output != NULL) {
+	if (*c->output && host_list_str_stdout) {
 		strncat(*f->out, host_list_str_stdout, *f->size);
 
 		for (gchar** p = c->output; *p != NULL; p++) {

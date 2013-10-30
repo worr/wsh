@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
 	GError* err = NULL;
 	GOptionContext* context;
 	gint ret = EXIT_SUCCESS;
-	gsize num_hosts;
+	gsize num_hosts = 0;
 	gchar* password = NULL;
 	gchar* sudo_password = NULL;
 	gchar** hosts = NULL;
@@ -282,16 +282,22 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	if (num_hosts == 0) {
+		g_printerr("ERROR: Must provide a valid list of hosts\n\n");
+		g_printerr("%s", g_option_context_get_help(context, FALSE, NULL));
+		return EXIT_FAILURE;
+	}
+
 	// We're now done with any situation that would require our GOptionContext
 	g_option_context_free(context);
 
 	gchar* cmd_string = g_strjoinv(" ", argv);
 
 	wshc_cmd_info_t cmd_info;
+	memset(&cmd_info, 0, sizeof(cmd_info));
 	cmd_info.username = username;
 	cmd_info.password = password;
 	cmd_info.port = port;
-	cmd_info.hosts = num_hosts;
 	cmd_info.script = script;
 
 	wshc_output_info_t* out_info = NULL;
@@ -314,6 +320,7 @@ int main(int argc, char** argv) {
 	cmd_info.out = out_info;
 
 	wsh_cmd_req_t req;
+	memset(&req, 0, sizeof(req));
 	build_wsh_cmd_req(&req, sudo_password, cmd_string);
 	cmd_info.req = &req;
 

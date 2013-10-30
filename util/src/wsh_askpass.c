@@ -109,10 +109,9 @@ bad:
 		if (errno == EINTR)
 			errno = 0;
 
-		if ((ret = munlock(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2)) &&
-			errno != EINTR) {
+		if (munlock(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2) && errno != EINTR) {
 			perror("munlock");
-			return ret;
+			return EXIT_FAILURE;
 		}
 	} while (errno == EINTR);
 
@@ -121,9 +120,9 @@ worse:
 		if (errno == EINTR)
 			errno = 0;
 
-		if ((ret = munmap(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2)) && errno != EINTR) {
+		if (munmap(peedubs_mem, WSHC_MAX_PASSWORD_LEN * 2) && errno != EINTR) {
 			perror("munmap");
-			return ret;
+			return EXIT_FAILURE;
 		 }
 	} while (errno == EINTR);
 

@@ -16,3 +16,6 @@ install_manifest.txt
 CPackConfig.cmake
 CPackSourceConfig.cmake
 doc
+*.html
+*.css
+*.png

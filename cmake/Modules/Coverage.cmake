@@ -1,12 +1,13 @@
-if( NOT CLANG AND NOT GCC )
-	if( NOT LCOV )
-		message( FATAL_ERROR "coverage not available outside of gcc and clang" )
-	endif( NOT LCOV )
-endif( NOT CLANG AND NOT GCC )
-
 option( COVERAGE "Build with gprov information" OFF )
 
 if( COVERAGE )
+	if( NOT CLANG AND NOT GCC )
+		if( NOT LCOV )
+			message( FATAL_ERROR "coverage not available outside of gcc and clang" )
+		endif( NOT LCOV )
+	endif( NOT CLANG AND NOT GCC )
+
+
 	find_program( GCOV
 		gcov
 		/usr/bin
@@ -80,6 +81,7 @@ if( COVERAGE )
 	)
 
 	file( GLOB_RECURSE lcov_files ${CMAKE_CURRENT_SOURCE_DIR}/*.html ${CMAKE_CURRENT_SOURCE_DIR}/*.css ${CMAKE_CURRENT_SOURCE_DIR}/*.png )
+	message( ${lcov_files} )
 	add_custom_target( coverage_clean
 		COMMAND rm ${lcov_files}
 	)

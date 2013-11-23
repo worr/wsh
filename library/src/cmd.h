@@ -28,6 +28,24 @@
 
 #include "types.h"
 
+/** internal struct for gmainloop signaling
+ * @internal
+ */
+struct cmd_data {
+	GMainLoop* loop;		/**< gmainloop ref */
+	wsh_cmd_req_t* req;		/**< req_t ref */
+	wsh_cmd_res_t* res;		/**< res_t ref */
+	GSource* in_watch;		/**< ref to gsource for stdin */
+	GSource* out_watch;		/**< ref to gsource for stdout */
+	GSource* err_watch;		/**< ref to gsource for stderr */
+	GSource* cmd_watch;		/**< ref to gsource for cmd */
+	GSource* timeout_watch;	/**< ref to gsource for timeout */
+	gboolean in_closed;		/**< is stdin closed? */
+	gboolean cmd_exited;	/**< has cmd exited? */
+	gboolean out_closed;	/**< is stdout closed? */
+	gboolean err_closed;	/**< is stderr closed? */
+};
+
 /** Maximum number of args a command can have */
 extern const guint MAX_CMD_ARGS;
 
@@ -58,33 +76,33 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
  *
  * @param[in] out The GIOChannel to check
  * @param[in] cond The GIOCondition that triggered the call
- * @param[out] user_data Where we place the data
+ * @param[out] data Transient main loop data
  *
  * @returns FALSE if event source should be removed
  */
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data);
+gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, struct cmd_data* data);
 
 /**
  * @brief Checks stderr for new output to save in our wsh_cmd_res_t
  *
  * @param[in] err The GIOChannel to check
  * @param[in] cond The GIOCondition that triggered the call
- * @param[out] user_data Where we place the data
+ * @param[out] data Transient main loop data
  *
  * @returns FALSE if event source should be removed
  */
-gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, gpointer user_data);
+gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, struct cmd_data* data);
 
 /**
  * @brief Writes stdin to the command
  *
  * @param[in] in The GIOChannel to write to
  * @param[in] cond The GIOCondition that triggered the call
- * @param[out] user_data The data we send
+ * @param[out] data Transient main loop data
  *
  * @returns FALSE if event source should be removed
  */
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data);
+gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, struct cmd_data* data);
 
 /** @cond */
 #ifdef BUILD_TESTS

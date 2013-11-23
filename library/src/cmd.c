@@ -36,21 +36,6 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 const guint MAX_CMD_ARGS = 255;
 const gchar* SUDO_CMD = "sudo -sA -u ";
 
-// Struct that we pass to most of our main loop callbacks
-struct cmd_data {
-	GMainLoop* loop;
-	wsh_cmd_req_t* req;
-	wsh_cmd_res_t* res;
-	GSource* in_watch;
-	GSource* out_watch;
-	GSource* err_watch;
-	GSource* cmd_watch;
-	GSource* timeout_watch;
-	gboolean cmd_exited;
-	gboolean out_closed;
-	gboolean err_closed;
-};
-
 // Struct that we pass to our timeout callback
 struct kill_data {
 	wsh_cmd_res_t* res;
@@ -130,22 +115,13 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 	wsh_add_line(res, line, &res->std_error, &res->std_error_len);
 }
 
-static void wsh_check_if_need_to_close(struct cmd_data* cmd_data) {
-	if (cmd_data->cmd_exited && cmd_data->out_closed && cmd_data->err_closed) {
-		if (cmd_data->timeout_watch && ! g_source_is_destroyed(cmd_data->timeout_watch))
-			g_source_destroy(cmd_data->timeout_watch);
-
-		g_main_loop_quit(cmd_data->loop);
-	}
-}
-
-static void wsh_kill_proccess(gpointer user_data) {
+static gboolean wsh_kill_proccess(gpointer user_data) {
 	g_assert(user_data != NULL);
 	struct kill_data* kdata = (struct kill_data*)user_data;
 
 	if (kill(kdata->pid, SIGKILL)) {
 		wsh_log_error(WSH_ERR_COMMAND_FAILED_TO_DIE, strerror(errno));
-		return;
+		return FALSE;
 	}
 
 	gchar* mesg = g_strdup_printf("Timeout reached. Killed %d", kdata->pid);
@@ -153,14 +129,15 @@ static void wsh_kill_proccess(gpointer user_data) {
 	kdata->res->error_message = mesg;
 
 	kdata->res->exit_status = -1; /* Signal wsh_check_exit_status that there was a failure */
+	return FALSE;
 }
 
 // All this should do is log the status code and add it to our data struct
-static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
-	g_assert(user_data != NULL);
+static gboolean wsh_check_exit_status(GPid pid, gint status, struct cmd_data* data) {
+	g_assert(data != NULL);
 
-	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
-	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
+	wsh_cmd_res_t* res = data->res;
+	wsh_cmd_req_t* req = data->req;
 	g_assert(res != NULL);
 	g_assert(res-> err == NULL);
 	g_assert(req != NULL);
@@ -172,24 +149,24 @@ static void wsh_check_exit_status(GPid pid, gint status, gpointer user_data) {
 	}
 
 	g_spawn_close_pid(pid);
-	g_source_destroy(((struct cmd_data*)user_data)->cmd_watch);
 
-	((struct cmd_data*)user_data)->cmd_exited = TRUE;
-	wsh_check_if_need_to_close(user_data);
+	data->cmd_exited = TRUE;
+	if (data->cmd_exited && data->out_closed && data->err_closed && data->in_closed)
+		if (g_main_loop_is_running(data->loop))
+			g_main_loop_quit(data->loop);
+
+	return !data->cmd_exited;
 }
 
-static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer user_data, gboolean std_err) {
-	g_assert(user_data != NULL);
+static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, struct cmd_data* data, gboolean std_err) {
+	g_assert(data != NULL);
 
-	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
-	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
+	wsh_cmd_res_t* res = data->res;
+	wsh_cmd_req_t* req = data->req;
 	g_assert(res != NULL);
 	g_assert(res-> err == NULL);
 	g_assert(req != NULL);
 
-	struct cmd_data* data = (struct cmd_data*)user_data;
-
-	gboolean ret = TRUE;
 	GIOStatus stat = 0;
 
 	gchar* buf = NULL;
@@ -199,7 +176,11 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer us
 		stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
 		while (stat != G_IO_STATUS_EOF && stat != G_IO_STATUS_ERROR) {
 			if (res->err) {
-				ret = FALSE;
+				if (std_err)
+					data->err_closed = TRUE;
+				else
+					data->out_closed = TRUE;
+
 				goto check_stream_err;
 			}
 
@@ -214,38 +195,36 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond, gpointer us
 
 	if (cond & G_IO_HUP || cond & G_IO_NVAL || // Check if pipe has closed
 		stat == G_IO_STATUS_ERROR || stat == G_IO_STATUS_EOF) {
-		if (std_err) {
-			((struct cmd_data*)user_data)->err_closed = TRUE;
-			wsh_check_if_need_to_close(data);
-			g_source_destroy(data->err_watch);
-		} else {
-			((struct cmd_data*)user_data)->out_closed = TRUE;
-			wsh_check_if_need_to_close(data);
-			g_source_destroy(data->out_watch);
-		}
-
-		ret = FALSE;
+		if (std_err)
+			data->err_closed = TRUE;
+		else
+			data->out_closed = TRUE;
 	}
 
 check_stream_err:
-		g_free(buf);
+	g_free(buf);
 
-	return ret;
+	if (data->cmd_exited && data->out_closed && data->err_closed && data->in_closed)
+		g_main_loop_quit(data->loop);
+
+	if (std_err)
+		return !data->err_closed;
+	return !data->out_closed;
 }
 
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, struct cmd_data* user_data) {
 	return wsh_check_stream(out, cond, user_data, FALSE);
 }
 
-gboolean wsh_check_stderr(GIOChannel* out, GIOCondition cond, gpointer user_data) {
+gboolean wsh_check_stderr(GIOChannel* out, GIOCondition cond, struct cmd_data* user_data) {
 	return wsh_check_stream(out, cond, user_data, TRUE);
 }
 
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) {
-	g_assert(user_data != NULL);
+gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, struct cmd_data* data) {
+	g_assert(data != NULL);
 
-	wsh_cmd_req_t* req = ((struct cmd_data*)user_data)->req;
-	wsh_cmd_res_t* res = ((struct cmd_data*)user_data)->res;
+	wsh_cmd_req_t* req = data->req;
+	wsh_cmd_res_t* res = data->res;
 
 	g_assert(req != NULL);
 	g_assert(res != NULL);
@@ -270,11 +249,13 @@ gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, gpointer user_data) 
 			goto write_stdin_err;
 	}
 
-	g_source_destroy(((struct cmd_data*)user_data)->in_watch);
-	g_source_unref(((struct cmd_data*)user_data)->in_watch);
+	data->in_closed = TRUE;
 	g_io_channel_unref(in);
 
 write_stdin_err:
+
+	if (data->cmd_exited && data->out_closed && data->err_closed && data->in_closed)
+		g_main_loop_quit(data->loop);
 
 	return FALSE;
 }
@@ -310,6 +291,7 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
 }
 
+struct cmd_data* __c;
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_assert(res != NULL);
 	g_assert(res->err == NULL);
@@ -361,6 +343,20 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gchar* log_cmd = g_strjoinv(" ", argcv);
 	wsh_log_server_cmd(log_cmd, req->username, req->host, req->cwd);
 
+	// Main loop initialization
+	GMainContext* context = g_main_context_new();
+	loop = g_main_loop_new(context, FALSE);
+	struct cmd_data user_data = {
+		.loop = loop,
+		.req = req,
+		.res = res,
+		.cmd_exited = FALSE,
+		.out_closed = FALSE,
+		.in_closed = FALSE,
+		.err_closed = FALSE,
+	};
+	__c = &user_data;
+
 	g_spawn_async_with_pipes(
 		req->cwd,  // working dir
 		argcv, // argv
@@ -379,23 +375,12 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 		goto run_cmd_error;
 	}
 
-	// Main loop initialization
-	GMainContext* context = g_main_context_new();
-	loop = g_main_loop_new(context, FALSE);
-	struct cmd_data user_data = {
-		.loop = loop,
-		.req = req,
-		.res = res,
-		.cmd_exited = FALSE,
-		.out_closed = FALSE,
-		.err_closed = FALSE,
-	};
-
 	// Watch child process
 	GSource* watch_src = g_child_watch_source_new(pid);
 	g_source_set_callback(watch_src, (GSourceFunc)wsh_check_exit_status, &user_data, NULL);
 	g_source_attach(watch_src, context);
 	user_data.cmd_watch = watch_src;
+	g_source_unref(watch_src);
 
 	// Initialize IO Channels
 	out = g_io_channel_unix_new(res->out_fd);
@@ -407,16 +392,19 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_source_set_callback(stdout_src, (GSourceFunc)wsh_check_stdout, &user_data, NULL);
 	g_source_attach(stdout_src, context);
 	user_data.out_watch = stdout_src;
+	g_source_unref(stdout_src);
 
 	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP | G_IO_NVAL);
 	g_source_set_callback(stderr_src, (GSourceFunc)wsh_check_stderr, &user_data, NULL);
 	g_source_attach(stderr_src, context);
 	user_data.err_watch = stderr_src;
+	g_source_unref(stderr_src);
 
 	GSource* stdin_src = g_io_create_watch(in, G_IO_OUT | G_IO_HUP | G_IO_NVAL);
 	g_source_set_callback(stdin_src, (GSourceFunc)wsh_write_stdin, &user_data, NULL);
 	g_source_attach(stdin_src, context);
 	user_data.in_watch = stdin_src;
+	g_source_unref(stdin_src);
 
 	// Add timeout if present
 	if (req->timeout != 0) {
@@ -434,9 +422,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 
 	g_io_channel_unref(out);
 	g_io_channel_unref(err);
-	g_source_unref(watch_src);
-	g_source_unref(stderr_src);
-	g_source_unref(stdout_src);
 
 	// Start dat loop
 	g_main_loop_run(loop);

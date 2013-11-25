@@ -14,6 +14,7 @@
 #  Copyright (c) 2007 Alban Browaeys <prahal@yahoo.com>
 #  Copyright (c) 2008 Michael Bell <michael.bell@web.de>
 #  Copyright (c) 2008 Bjoern Ricks <bjoern.ricks@googlemail.com>
+#  Copyright (c) 2013 William Orr <will@worrbase.com>
 #
 #  Redistribution and use is allowed according to the terms of the New
 #  BSD license.
@@ -26,28 +27,30 @@ IF (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
   SET(GLIB2_FOUND TRUE)
 ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
 
-  INCLUDE(FindPkgConfig)
+    IF( NOT LINKEDIN )
+      INCLUDE(FindPkgConfig)
 
-  ## Glib
-  IF ( GLIB2_FIND_REQUIRED )
-    SET( _pkgconfig_REQUIRED "REQUIRED" )
-  ELSE ( GLIB2_FIND_REQUIRED )
-    SET( _pkgconfig_REQUIRED "" )
-  ENDIF ( GLIB2_FIND_REQUIRED )
+      ## Glib
+      IF ( GLIB2_FIND_REQUIRED )
+        SET( _pkgconfig_REQUIRED "REQUIRED" )
+      ELSE ( GLIB2_FIND_REQUIRED )
+        SET( _pkgconfig_REQUIRED "" )
+      ENDIF ( GLIB2_FIND_REQUIRED )
 
-  IF ( GLIB2_MIN_VERSION )
-    PKG_SEARCH_MODULE( GLIB2 ${_pkgconfig_REQUIRED} glib-2.0>=${GLIB2_MIN_VERSION} )
-  ELSE ( GLIB2_MIN_VERSION )
-    PKG_SEARCH_MODULE( GLIB2 ${_pkgconfig_REQUIRED} glib-2.0 )
-    PKG_SEARCH_MODULE( GTHREAD2 ${_pkgconfig_REQUIRED} gthread-2.0 )
-  ENDIF ( GLIB2_MIN_VERSION )
-  IF ( PKG_CONFIG_FOUND )
-    IF ( GLIB2_FOUND )
-      SET ( GLIB2_CORE_FOUND TRUE )
-    ELSE ( GLIB2_FOUND )
-      SET ( GLIB2_CORE_FOUND FALSE )
-    ENDIF ( GLIB2_FOUND )
-  ENDIF ( PKG_CONFIG_FOUND )
+      IF ( GLIB2_MIN_VERSION )
+        PKG_SEARCH_MODULE( GLIB2 ${_pkgconfig_REQUIRED} glib-2.0>=${GLIB2_MIN_VERSION} )
+      ELSE ( GLIB2_MIN_VERSION )
+        PKG_SEARCH_MODULE( GLIB2 ${_pkgconfig_REQUIRED} glib-2.0 )
+        PKG_SEARCH_MODULE( GTHREAD2 ${_pkgconfig_REQUIRED} gthread-2.0 )
+      ENDIF ( GLIB2_MIN_VERSION )
+      IF ( PKG_CONFIG_FOUND )
+        IF ( GLIB2_FOUND )
+          SET ( GLIB2_CORE_FOUND TRUE )
+        ELSE ( GLIB2_FOUND )
+          SET ( GLIB2_CORE_FOUND FALSE )
+        ENDIF ( GLIB2_FOUND )
+      ENDIF ( PKG_CONFIG_FOUND )
+    ENDIF( NOT LINKEDIN )
 
   # Look for glib2 include dir and libraries w/o pkgconfig
   IF ( NOT GLIB2_FOUND AND NOT PKG_CONFIG_FOUND )
@@ -56,6 +59,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
     NAMES
       glibconfig.h
     PATHS
+      ${CMAKE_LIBRARY_PATH}
       /opt/gnome/lib64
       /opt/gnome/lib
       /opt/lib/
@@ -64,7 +68,6 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       /usr/lib64
       /usr/lib
       /usr/local/include
-      ${CMAKE_LIBRARY_PATH}
     PATH_SUFFIXES
       glib-2.0/include
     )
@@ -74,6 +77,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
     NAMES
       glib.h
     PATHS
+      ${CMAKE_INCLUDE_PATH}
       /opt/gnome/include
       /opt/local/include
       /sw/include
@@ -91,6 +95,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       glib-2.0
       glib
     PATHS
+      ${CMAKE_LIBRARY_PATH}
       /opt/gnome/lib
       /opt/local/lib
       /sw/lib
@@ -101,30 +106,31 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
         SET ( _glib2_FOUND TRUE )
     ENDIF ( _glib2_include_DIR AND _glib2_link_DIR )
 
-	FIND_LIBRARY(
+    FIND_LIBRARY(
       _gthread2_link_DIR
-	NAMES
-	  gthread-2.0
-	  gthread
+    NAMES
+      gthread-2.0
+      gthread
     PATHS
+      ${CMAKE_LIBRARY_PATH}
       /opt/gnome/lib
       /opt/local/lib
       /sw/lib
       /usr/lib
       /usr/local/lib
-	)
+    )
 
-	IF ( _gthread2_link_DIR )
-		SET ( _gthread2_FOUND TRUE )
-	ENDIF ( _gthread2_link_DIR )
+    IF ( _gthread2_link_DIR )
+        SET ( _gthread2_FOUND TRUE )
+    ENDIF ( _gthread2_link_DIR )
 
     IF ( _glib2_FOUND )
         SET ( GLIB2_INCLUDE_DIRS ${_glib2_include_DIR} ${_glibconfig_include_DIR} )
         SET ( GLIB2_LIBRARIES ${_glib2_link_DIR} )
         SET ( GLIB2_CORE_FOUND TRUE )
-		IF ( _gthread2_FOUND )
-			SET ( GTHREAD2_LIBRARIES ${_gthread2_link_DIR} )
-		ENDIF ( _gthread2_link_DIR )
+        IF ( _gthread2_FOUND )
+            SET ( GTHREAD2_LIBRARIES ${_gthread2_link_DIR} )
+        ENDIF ( _gthread2_FOUND )
     ELSE ( _glib2_FOUND )
         SET ( GLIB2_CORE_FOUND FALSE )
     ENDIF ( _glib2_FOUND )
@@ -136,6 +142,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       NAMES
         libintl.h
       PATHS
+        ${CMAKE_INCLUDE_PATH}
         /opt/gnome/include
         /opt/local/include
         /sw/include
@@ -147,6 +154,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       NAMES
         intl
       PATHS
+        ${CMAKE_LIBRARY_PATH}
         /opt/gnome/lib
         /opt/local/lib
         /sw/lib
@@ -165,6 +173,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       NAMES
         iconv.h
       PATHS
+        ${CMAKE_INCLUDE_PATH}
         /opt/gnome/include
         /opt/local/include
         /opt/local/include
@@ -180,6 +189,7 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       NAMES
         iconv
       PATHS
+        ${CMAKE_LIBRARY_PATH}
         /opt/gnome/lib
         /opt/local/lib
         /sw/lib
@@ -227,11 +237,11 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
 ENDIF (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS)
 
 IF ( GLIB2_FOUND )
-	# Check if system has a newer version of glib
-	# which supports g_regex_match_simple
-	INCLUDE( CheckIncludeFiles )
-	SET( CMAKE_REQUIRED_INCLUDES ${GLIB2_INCLUDE_DIRS} )
-	CHECK_INCLUDE_FILES ( glib/gregex.h HAVE_GLIB_GREGEX_H )
-	# Reset CMAKE_REQUIRED_INCLUDES
-	SET( CMAKE_REQUIRED_INCLUDES "" )
+    # Check if system has a newer version of glib
+    # which supports g_regex_match_simple
+    INCLUDE( CheckIncludeFiles )
+    SET( CMAKE_REQUIRED_INCLUDES ${GLIB2_INCLUDE_DIRS} )
+    CHECK_INCLUDE_FILES ( glib/gregex.h HAVE_GLIB_GREGEX_H )
+    # Reset CMAKE_REQUIRED_INCLUDES
+    SET( CMAKE_REQUIRED_INCLUDES "" )
 ENDIF( GLIB2_FOUND )

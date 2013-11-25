@@ -12,7 +12,7 @@ machines and run one-off commands very simply
 
 ## Dependencies
 
-* `glib2`
+* `glib2` >= 2.32
 * `libssh` (**NOT** `libssh2`) 
 * `protobuf-c`
 * `sudo`

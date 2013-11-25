@@ -31,6 +31,12 @@ include( CPack )
 include( MacroEnsureOutOfSourceBuild )
 include( OS )
 
+if( LINKEDIN )
+	include( LinkedIn )
+endif( LINKEDIN )
+
+set( GLIB2_MIN_VERSION "2.32.0" )
+
 macro_ensure_out_of_source_build( "You must build outside of the source tree" )
 
 set( CMAKE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build )

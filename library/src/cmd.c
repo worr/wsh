@@ -141,10 +141,6 @@ static gboolean wsh_check_exit_status(GPid pid, gint status, struct cmd_data* da
 	g_assert(res != NULL);
 	g_assert(req != NULL);
 
-	// early error from sigaction handler
-	if (res->err)
-		return FALSE;
-
 	// res->exit_status is set to -1 if killed
 	if (res->exit_status != -1) {
 		res->exit_status = WEXITSTATUS(status);

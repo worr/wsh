@@ -139,8 +139,11 @@ static gboolean wsh_check_exit_status(GPid pid, gint status, struct cmd_data* da
 	wsh_cmd_res_t* res = data->res;
 	wsh_cmd_req_t* req = data->req;
 	g_assert(res != NULL);
-	g_assert(res-> err == NULL);
 	g_assert(req != NULL);
+
+	// early error from sigaction handler
+	if (res->err)
+		return FALSE;
 
 	// res->exit_status is set to -1 if killed
 	if (res->exit_status != -1) {
@@ -260,6 +263,15 @@ write_stdin_err:
 	return FALSE;
 }
 
+struct cmd_data* __c;
+static void early_chld_sig(gint signo, siginfo_t* info, gpointer context) {
+	GPid pid = info->si_pid;
+	gint status = 0;
+
+	(void)waitpid(pid, &status, WNOHANG);
+	wsh_check_exit_status(pid, status, __c);
+}
+
 // retval should be g_free'd
 gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 	g_assert(req != NULL);
@@ -291,11 +303,12 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
 }
 
-struct cmd_data* __c;
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_assert(res != NULL);
 	g_assert(res->err == NULL);
 	g_assert(req != NULL);
+
+	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
 
 	gchar** argcv = NULL;
 	gchar* old_path = "";
@@ -304,6 +317,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gint argcp;
 	gint ret = EXIT_SUCCESS;
 	GPid pid;
+	struct sigaction sa, oldsa;
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = wsh_construct_sudo_cmd(req);
@@ -357,6 +371,20 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	};
 	__c = &user_data;
 
+	memset(&sa, 0, sizeof(sa));
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = early_chld_sig;
+
+	// Sometimes the command will finish before the mainloop starts
+	// We set up a sigchld handler to manage this
+	if (sigaction(SIGCHLD, &sa, &oldsa)) {
+		ret = EXIT_FAILURE;
+		res->err = g_error_new(WSH_CMD_ERROR, WSH_CMD_SIG_ERR, "%s",
+			strerror(errno));
+		goto run_cmd_error;
+	}
+
 	g_spawn_async_with_pipes(
 		req->cwd,  // working dir
 		argcv, // argv
@@ -381,6 +409,13 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_source_attach(watch_src, context);
 	user_data.cmd_watch = watch_src;
 	g_source_unref(watch_src);
+
+	if (sigaction(SIGCHLD, &sa, &oldsa)) {
+		ret = EXIT_FAILURE;
+		res->err = g_error_new(WSH_CMD_ERROR, WSH_CMD_SIG_ERR, "%s",
+			strerror(errno));
+		goto run_cmd_error;
+	}
 
 	// Initialize IO Channels
 	out = g_io_channel_unix_new(res->out_fd);
@@ -423,13 +458,20 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_io_channel_unref(out);
 	g_io_channel_unref(err);
 
+	if (sigaction(SIGCHLD, &oldsa, NULL)) {
+		ret = EXIT_FAILURE;
+		res->err = g_error_new(WSH_CMD_ERROR, WSH_CMD_SIG_ERR, "%s",
+			strerror(errno));
+		goto run_cmd_error;
+	}
+
 	// Start dat loop
 	g_main_loop_run(loop);
 
+run_cmd_error:
 	g_main_context_unref(context);
 	g_main_loop_unref(loop);
 
-run_cmd_error:
 	g_free(log_cmd);
 
 run_cmd_error_no_log_cmd:

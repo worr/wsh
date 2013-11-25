@@ -52,6 +52,16 @@ extern const guint MAX_CMD_ARGS;
 /** Our sudo command prefix */
 extern const gchar* SUDO_CMD;	
 
+/** GQuark for error reporting */
+GQuark WSH_CMD_ERROR;
+
+/**
+ * Error enum
+ */
+typedef enum {
+	WSH_CMD_SIG_ERR,		/**< error setting up signal handler */
+} wsh_cmd_errors_enum;
+
 /**
  * @brief Runs a command from a given request
  *

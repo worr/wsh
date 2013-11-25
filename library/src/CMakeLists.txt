@@ -64,3 +64,9 @@ target_link_libraries( wsh
 	${LIBCRANGE_LIBRARY}
 	${LIBAPR_LIBRARY}
 )
+
+set_target_properties( wsh
+	PROPERTIES
+		VERSION ${APPLICATION_VERSION}
+		SOVERSION ${APPLICATION_VERSION}
+)

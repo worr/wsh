@@ -238,38 +238,59 @@ static void test_unpacking_cmd_response(void) {
 	command_reply__free_unpacked(reply, NULL);
 }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void test_unpacking_corrupted_request_subprocess(void) {
+	CommandRequest* req = NULL;
+	command_request__unpack(NULL, corrupted_req_len, corrupted_req);
+	g_assert(req == NULL);
+
+	exit(0);
+}
+#endif
+
 static void test_unpacking_corrupted_request(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandRequest/subprocess", 0, 0);
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout("data too short after length-prefix of *\n");
+#else
 	CommandRequest* req = NULL;
 
-#if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandRequest", 0, 0);
-	if (g_test_subprocess()) {
-#else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
-#endif
 		req = command_request__unpack(NULL, corrupted_req_len, corrupted_req);
 		exit(0);
 	}
 
 	g_test_trap_assert_stdout("data too short after length-prefix of *\n");
 	g_assert(req == NULL);
+#endif
 }
 
-static void test_unpacking_corrupted_response(void) {
-	CommandReply* reply = NULL;
-
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply", 0, 0);
-	if (g_test_subprocess()) {
-#else
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
+static void test_unpacking_corrupted_response_subproccess(void) {
+	CommandReply* reply = NULL;
+	command_reply__unpack(NULL, corrupted_reply_len, corrupted_reply);
+	g_assert(reply == NULL);
+
+	exit(0);
+}
 #endif
+
+static void test_unpacking_corrupted_response(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply/subprocess", 0, 0);
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
+#else
+	CommandReply* reply = NULL;
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
 		reply = command_reply__unpack(NULL, corrupted_reply_len, corrupted_reply);
 		exit(0);
 	}
 
 	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 	g_assert(reply == NULL);
+#endif
 }
 
 int main(int argc, char** argv) {
@@ -285,6 +306,11 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Protocol/UnpackCommandReply", test_unpacking_cmd_response);
 	g_test_add_func("/Library/Protocol/UnpackCorruptCommandRequest", test_unpacking_corrupted_request);
 	g_test_add_func("/Library/Protocol/UnpackCorruptCommandReply", test_unpacking_corrupted_response);
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_add_func("/Library/Protocol/UnpackCorruptCommandRequest/subprocess", test_unpacking_corrupted_request_subprocess);
+	g_test_add_func("/Library/Protocol/UnpackCorruptCommandReply/subprocess", test_unpacking_corrupted_response_subproccess);
+#endif
 
 	return g_test_run();
 }

@@ -67,20 +67,31 @@ static void test_unpacking_auth_proto(void) {
 	auth_info__free_unpacked(ai, NULL);
 }
 
-static void test_unpacking_corrupted(void) {
-	AuthInfo* ai = NULL;
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptedAuthInfo", 0, 0);
-	if (g_test_subprocess()) {
-#else
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
+static void test_unpacking_corrupted_subprocess(void) {
+	AuthInfo* ai = NULL;
+	ai = auth_info__unpack(NULL, ai_corrupted_encoded_len, ai_corrupted_encoded);
+	g_assert(ai == NULL);
+
+	exit(0);
+}
 #endif
+
+static void test_unpacking_corrupted(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess", 0, 0);
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
+#else
+	AuthInfo* ai = NULL;
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
 		ai = auth_info__unpack(NULL, ai_corrupted_encoded_len, ai_corrupted_encoded);
 		exit(0);
 	}
 
 	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 	g_assert(ai == NULL);
+#endif
 }
 
 int main(int argc, char** argv) {
@@ -89,6 +100,10 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Protocol/PackAuthInfo", test_packing_auth_proto);
 	g_test_add_func("/Library/Protocol/UnpackAuthInfo", test_unpacking_auth_proto);
 	g_test_add_func("/Library/Protocol/UnpackCorruptedAuthInfo", test_unpacking_corrupted);
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_add_func("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess", test_unpacking_corrupted_subprocess);
+#endif
 
 	return g_test_run();
 }

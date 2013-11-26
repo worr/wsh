@@ -35,62 +35,93 @@ gint fchmod_t() { fchown_called = TRUE; return fchown_ret; }
 gint mkstemp_t() { mkstemp_called = TRUE; return mkstemp_ret; }
 gint close_t() { close_called = TRUE; return EXIT_SUCCESS; }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void init_output_failure_subprocess(void) {
+	wshc_init_output(NULL);
+	exit(0);
+}
+#endif
+
 static void init_output_failure(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestInitOutputFail", 0, 0);
-	if (g_test_subprocess()) {
+	g_test_trap_subprocess("/Client/TestInitOutputFail/subprocess", 0, 0);
 #else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
-#endif
 		wshc_init_output(NULL);
 		exit(0);
 	}
+#endif
+
 	g_test_trap_assert_failed();
 }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void init_output_success_subprocess(void) {
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	exit(0);
+}
+#endif
+
 static void init_output_success(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestInitOutputSuccess", 0, 0);
-	if (g_test_subprocess()) {
+	g_test_trap_subprocess("/Client/TestInitOutputSuccess/subprocess", 0, 0);
 #else
 	if (g_test_trap_fork(0, 0)) {
-#endif
 		wshc_output_info_t* out;
 		wshc_init_output(&out);
 		exit(0);
 	}
+#endif
 
 	g_test_trap_assert_passed();
 }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void cleanup_output_failure_subprocess(void) {
+	wshc_output_info_t* out = NULL;
+	wshc_cleanup_output(&out);
+	exit(0);
+}
+#endif
+
 static void cleanup_output_failure(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestCleanupOutputFail", 0, 0);
-	if (g_test_subprocess()) {
+	g_test_trap_subprocess("/Client/TestCleanupOutputFail/subprocess", 0, 0);
 #else
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDERR|G_TEST_TRAP_SILENCE_STDOUT)) {
-#endif
 		wshc_output_info_t* out = NULL;
 		wshc_cleanup_output(&out);
 		exit(0);
 	}
+#endif
 
 	g_test_trap_assert_failed();
 }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void cleanup_output_success_subprocess(void) {
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	wshc_cleanup_output(&out);
+	g_assert(out == NULL);
+
+	exit(0);
+}
+#endif
+
 static void cleanup_output_success(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestCleanupOutputSuccess", 0, 0);
-	if (g_test_subprocess()) {
+	g_test_trap_subprocess("/Client/TestCleanupOutputSuccess/subprocess", 0, 0);
 #else
 	if (g_test_trap_fork(0, 0)) {
-#endif
 		wshc_output_info_t* out;
 		wshc_init_output(&out);
 		wshc_cleanup_output(&out);
 		g_assert(out == NULL);
 		exit(0);
 	}
+#endif
 
 	g_test_trap_assert_passed();
 }
@@ -190,14 +221,12 @@ static void collate_output(void) {
 	g_strfreev(testable_output);
 }
 
-static void hostname_output(void) {
+// XXX: Remove duplication
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void hostname_output_subprocess(void) {
 	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
 	gchar* a_out[] = { "other", "test", NULL };
 	set_isatty_ret(1);
-
-	gchar* expected_err =
-		"localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
-	gchar* expected_out = "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\nlocalhost: exit code: 0\n\n";
 
 	wsh_cmd_res_t res = {
 		.std_error = a_err,
@@ -211,29 +240,53 @@ static void hostname_output(void) {
 	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
-#if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestHostnameOutput", 0, 0);
-	if (g_test_subprocess()) {
-#else
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+	gint ret = wshc_write_output(out, "localhost", &res);
+	exit(ret);
+	
+}
 #endif
+
+static void hostname_output(void) {
+	gchar* expected_err =
+		"localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	gchar* expected_out = "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\nlocalhost: exit code: 0\n\n";
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestHostnameOutput/subprocess", 0, 0);
+#else
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+	set_isatty_ret(1);
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 0,
+		.std_error_len = 4,
+		.std_output_len = 2,
+	};
+
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+
+
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
+#endif
 
 	g_test_trap_assert_passed();
 	g_test_trap_assert_stdout(expected_out);
 	g_test_trap_assert_stderr(expected_err);
 }
 
-static void hostname_output_piped(void) {
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void hostname_output_piped_subprocess(void) {
 	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
 	gchar* a_out[] = { "other", "test", NULL };
 	set_isatty_ret(0);
-
-	gchar* expected_err =
-		"localhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
-	gchar* expected_out = "localhost: other\nlocalhost: test\n";
 
 	wsh_cmd_res_t res = {
 		.std_error = a_err,
@@ -247,20 +300,44 @@ static void hostname_output_piped(void) {
 	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
-#if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestHostnameOutputPiped", 0, 0);
-	if (g_test_subprocess()) {
-#else
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+	gint ret = wshc_write_output(out, "localhost", &res);
+	exit(ret);
+}
 #endif
+
+static void hostname_output_piped(void) {
+	gchar* expected_err =
+		"localhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	gchar* expected_out = "localhost: other\nlocalhost: test\n";
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestHostnameOutputPiped/subprocess", 0, 0);
+#else
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+	set_isatty_ret(0);
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 0,
+		.std_error_len = 4,
+		.std_output_len = 2,
+	};
+
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+
+	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
+#endif
 
 	g_test_trap_assert_passed();
 	g_test_trap_assert_stdout(expected_out);
 	g_test_trap_assert_stderr(expected_err);
-
 }
 
 int main(int argc, char** argv) {
@@ -284,6 +361,15 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Client/TestHostnameOutput", hostname_output);
 	g_test_add_func("/Client/TestHostnameOutputPiped", hostname_output_piped);
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_add_func("/Client/TestInitOutputFail/subprocess", init_output_failure_subprocess);
+	g_test_add_func("/Client/TestInitOutputSuccess/subprocess", init_output_success_subprocess);
+	g_test_add_func("/Client/TestCleanupOutputFail/subprocess", cleanup_output_failure_subprocess);
+	g_test_add_func("/Client/TestCleanupOutputSuccess/subprocess", cleanup_output_success_subprocess);
+	g_test_add_func("/Client/TestHostnameOutput/subprocess", hostname_output_subprocess);
+	g_test_add_func("/Client/TestHostnameOutputPiped/subprocess", hostname_output_piped_subprocess);
+#endif
 
 	return g_test_run();
 }

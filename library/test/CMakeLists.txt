@@ -12,6 +12,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/library/test/mock
 	${GLIB2_INCLUDE_DIRS}
 	${PROTOBUF_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}
 )
 
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )

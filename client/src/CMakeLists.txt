@@ -6,6 +6,7 @@ include_directories(
 	${GLIB2_INCLUDE_DIRS}
 	${LIBSSH_INCLUDE_DIR}
 	${PROTOBUF_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}
 )
 
 target_link_libraries( wshc

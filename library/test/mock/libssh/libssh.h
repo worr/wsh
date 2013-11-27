@@ -21,6 +21,7 @@
 #ifndef __WSH_MOCK_SSH_H
 #define __WSH_MOCK_SSH_H
 
+#include "config.h"
 #include <glib.h>
 
 #define SSH_OK 0

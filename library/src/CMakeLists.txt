@@ -54,6 +54,7 @@ include_directories(
 	${LIBSSH_INCLUDE_DIR}
 	${LIBCRANGE_INCLUDE_DIR}
 	${LIBAPR_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}
 )
 
 target_link_libraries( wsh 

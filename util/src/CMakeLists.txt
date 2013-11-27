@@ -11,10 +11,11 @@ install( TARGETS wsh-add-hostkeys RUNTIME DESTINATION bin )
 install( TARGETS wsh-askpass RUNTIME DESTINATION libexec )
 install( TARGETS wscp RUNTIME DESTINATION bin )
 
-INCLUDE_Directories(
+include_directories(
 	${WSH_INCLUDE_DIRS}
 	${GLIB2_INCLUDE_DIRS}
 	${PROTOBUF_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}
 )
 
 target_link_libraries( wsh-add-hostkeys

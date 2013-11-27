@@ -18,16 +18,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "config.h"
-#include "isatty.h"
+#ifndef __CONFIG_H
+#define __CONFIG_H
 
-int isatty_ret = 0;
+#cmakedefine HAVE_TERMIOS_H
+#cmakedefine HAVE_UNISTD_H
+#cmakedefine HAVE_MEMSET_S
 
-int isatty(int fd) {
-	return isatty_ret;
-}
+/* libssh crap */
+#cmakedefine HAVE_SSH_CHANNEL_POLL_TIMEOUT
+#cmakedefine HAVE_SSH_USERAUTH_NONE
+#cmakedefine HAVE_SSH_GET_PUBLICKEY
 
-void set_isatty_ret(int ret) {
-	isatty_ret = ret;
-}
+#define APPLICATION_VERSION "${APPLICATION_VERSION}"
+
+#endif
 

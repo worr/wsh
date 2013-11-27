@@ -3,7 +3,7 @@ project( wsh C )
 
 set( APPLICATION_VERSION_MAJOR "1" )
 set( APPLICATION_VERSION_MINOR "0" )
-set( APPLICATION_VERSION_PATCH "0" )
+set( APPLICATION_VERSION_PATCH "0rc5" )
 
 set( APPLICATION_VERSION
 	"${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}.${APPLICATION_VERSION_PATCH}"
@@ -54,14 +54,7 @@ set( WSH_INCLUDE_DIRS ${CMAKE_OUTPUT_DIRECTORY}/gen ${CMAKE_SOURCE_DIR}/library/
 set( WSH_LIBRARIES wsh )
 
 check_include_file( termios.h HAVE_TERMIOS_H )
-if( HAVE_TERMIOS_H )
-	add_definitions( -DHAVE_TERMIOS_H )
-endif( HAVE_TERMIOS_H )
-
 check_include_file( unistd.h HAVE_UNISTD_H )
-if( HAVE_UNISTD_H )
-	add_definitions( -DHAVE_UNISTD_H )
-endif( HAVE_UNISTD_H )
 
 if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	add_definitions( -DDEBUG )
@@ -120,9 +113,6 @@ endif( IS_DIRECTORY /usr/pkg/lib )
 # Function tests
 if( HAVE_C11 )
 	check_function_exists( memset_s HAVE_MEMSET_S )
-	if( HAVE_MEMSET_S )
-		add_definitions( -DHAVE_MEMSET_S )
-	endif( HAVE_MEMSET_S )
 endif( HAVE_C11 )
 
 set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} )
@@ -130,21 +120,14 @@ set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} )
 
 # This function is only in newer versions of libssh
 check_function_exists( ssh_channel_poll_timeout HAVE_SSH_CHANNEL_POLL_TIMEOUT )
-if( HAVE_SSH_CHANNEL_POLL_TIMEOUT )
-	add_definitions( -DHAVE_SSH_CHANNEL_POLL_TIMEOUT )
-endif( HAVE_SSH_CHANNEL_POLL_TIMEOUT )
 
 # New versions of libssh need this to be called before any other auth
 check_function_exists( ssh_userauth_none HAVE_SSH_USERAUTH_NONE )
-if( HAVE_SSH_USERAUTH_NONE )
-	add_definitions( -DHAVE_SSH_USERAUTH_NONE )
-endif( HAVE_SSH_USERAUTH_NONE )
 
 # Even newer versions of libssh require that you use ssh_get_publickey instead of ssh_get_pubkey
 check_function_exists( ssh_get_publickey HAVE_SSH_GET_PUBLICKEY )
-if( HAVE_SSH_GET_PUBLICKEY )
-	add_definitions( -DHAVE_SSH_GET_PUBLICKEY )
-endif( HAVE_SSH_GET_PUBLICKEY )
+
+configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 
 add_subdirectory( library/src )
 

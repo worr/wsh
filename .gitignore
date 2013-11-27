@@ -19,3 +19,4 @@ doc
 *.html
 *.css
 *.png
+config.h

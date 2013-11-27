@@ -32,7 +32,7 @@ static gboolean force = FALSE;
 static gint port = 22;
 static gchar* password = NULL;
 static gchar* filename = NULL;
-#ifdef RANGE
+#ifdef WITH_RANGE
 static gboolean range = FALSE;
 #endif
 
@@ -43,7 +43,7 @@ static GOptionEntry entries[] = {
 	{ "file", 'f', 0, G_OPTION_ARG_STRING, &filename, "Filename to read or execute for hosts", NULL },
 	{ "port", 'p', 0, G_OPTION_ARG_INT, &port, "Port to use, if not 22", NULL },
 	{ "password", 'P', 0, G_OPTION_ARG_INT, &password, "SSH password", NULL },
-#ifdef RANGE
+#ifdef WITH_RANGE
 	{ "range", 'r', 0, G_OPTION_ARG_NONE, &range, "Use range for hostname expansion", NULL },
 #endif
 	{ NULL }
@@ -130,7 +130,7 @@ gint main(gint argc, gchar** argv) {
 		}
 	}
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 	if (range) {
 		if (wsh_exp_range(&hosts, &num_hosts, argv[1], &err)) {
 			g_printerr("%s\n", err->message);

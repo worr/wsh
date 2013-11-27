@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 #include "range_expansion.h"
 
 gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query, GError** err) { 

@@ -60,10 +60,6 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	add_definitions( -DDEBUG )
 endif( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
-if( WITH_RANGE )
-	add_definitions( -DRANGE )
-endif( WITH_RANGE )
-
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake
 find_package( GLIB2 REQUIRED )

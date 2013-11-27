@@ -102,7 +102,7 @@ static void wsh_exp_filename_success(void) {
 	g_strfreev(hosts);
 }
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 static void wsh_exp_range_success(void) {
 	gchar** hosts = NULL;
 	const gchar* range_query = "test01..10";
@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/Expansion/FileSuccess", wsh_exp_filename_success);
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 	g_test_add_func("/Library/Expansion/RangeSuccess", wsh_exp_range_success);
 #endif
 

@@ -32,7 +32,7 @@
 #include <libwsh/ssh.h>
 #include <libwsh/types.h>
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 # include <libwsh/range_expansion.h>
 #endif
 

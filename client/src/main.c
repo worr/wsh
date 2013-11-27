@@ -78,7 +78,7 @@ static GOptionEntry entries[] = {
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
 	{ "file", 'f', 0, G_OPTION_ARG_STRING, &file_arg, "Filename to read hosts from", NULL },
-#ifdef RANGE
+#ifdef WITH_RANGE
 	{ "range", 'r', 0, G_OPTION_ARG_STRING, &range, "Range query for hostname expansion", NULL },
 #endif
 
@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
 		hosts_arg = NULL;
 	}
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 	if (range) {
 		if (wsh_exp_range(&hosts, &num_hosts, range, &err)) {
 			g_printerr("%s\n", err->message);

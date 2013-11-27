@@ -26,7 +26,7 @@
 
 #include <glib.h>
 
-#ifdef RANGE
+#ifdef WITH_RANGE
 /**
  * @brief Expands a set of range queries
  *

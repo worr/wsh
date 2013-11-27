@@ -203,7 +203,7 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
  */
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, gboolean executable, GError** err);
 
-#ifdef UNIT_TESTING
+#ifdef BUILD_TESTS
 /**
  * @internal
  * @brief polls an ssh channel for output

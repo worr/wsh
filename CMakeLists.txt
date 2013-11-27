@@ -60,10 +60,6 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	add_definitions( -DDEBUG )
 endif( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
-if( BUILD_TESTS )
-	add_definitions( -DUNIT_TESTING )
-endif( BUILD_TESTS )
-
 if( WITH_RANGE )
 	add_definitions( -DRANGE )
 endif( WITH_RANGE )
@@ -135,7 +131,6 @@ if( BUILD_TESTS )
 	# enable testing for whole project
 	enable_testing()
 
-	add_definitions( -DBUILD_TESTS )
 	add_subdirectory( library/test )
 endif( BUILD_TESTS )
 

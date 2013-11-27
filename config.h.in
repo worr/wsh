@@ -21,6 +21,8 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#cmakedefine BUILD_TESTS
+
 #cmakedefine HAVE_TERMIOS_H
 #cmakedefine HAVE_UNISTD_H
 #cmakedefine HAVE_MEMSET_S

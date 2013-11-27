@@ -48,6 +48,7 @@ static gchar* sudo_username = NULL;
 static gint threads = 0;
 static gint timeout = -1;
 static gchar* script = NULL;
+static gboolean version = FALSE;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -74,6 +75,7 @@ static GOptionEntry entries[] = {
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 30)", NULL },
 	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "Script to execute on remote host", NULL },
+	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -187,6 +189,12 @@ int main(int argc, char** argv) {
 		g_printerr("Option parsing failed: %s\n", err->message);
 		g_error_free(err);
 		return EXIT_FAILURE;
+	}
+
+	if (version) {
+		g_print("wshc %s\n", APPLICATION_VERSION);
+		g_print("Copyright (C) 2013 William Orr\n");
+		return EXIT_SUCCESS;
 	}
 
 	gchar* mesg = NULL;

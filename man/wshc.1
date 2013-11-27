@@ -1,4 +1,4 @@
-.Dd October 17, 2013
+.Dd November 27, 2013
 .Dt WSHC 1
 .Os
 .Sh NAME
@@ -15,6 +15,7 @@
 .Op Fl s | -script Ar script
 .Op Fl c | -print-collated
 .Op Fl H | -print-hostnames
+.Op Fl V | -version
 .Op Fl -grep Ar pcre
 .Op Fl -head Ar num
 .Op Fl -tail Ar num
@@ -64,6 +65,10 @@ is killed
 .It Fl s | -script Ar script
 Sends and executes a script, named
 .Ar script .
+.It Fl V | -version
+Prints the version of
+.Nm
+and exits
 .El
 .Ss Host selection arguments
 .Bl -tag -width u

@@ -101,19 +101,34 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 	g_assert(session->session != NULL);
 	g_assert(session->hostname != NULL);
 
-	guchar* hash = NULL;
 	gint ret = 0;
-	gint state, hash_len;
+	gint state;
 
 	state = ssh_is_server_known(session->session);
 
+#ifdef HAVE_SSH_GET_PUBLICKEY
+	ssh_key key = NULL;
+	if (ssh_get_publickey(session->session, &key)) {
+		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
+			"%s: error getting hostkey: %s", session->hostname, ssh_get_error(session->session));
+		wsh_ssh_disconnect(session);
+		ssh_key_free(key);
+		return WSH_SSH_HOST_KEY_ERROR;
+	}
+	ssh_key_free(key);
+#else
+	guchar* hash = NULL;
+	gint hash_len = 0;
 	hash_len = ssh_get_pubkey_hash(session->session, &hash);
 	if (hash_len < 0) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
 			"%s: error getting hostkey: %s", session->hostname, ssh_get_error(session->session));
 		wsh_ssh_disconnect(session);
-		ret = WSH_SSH_HOST_KEY_ERROR;
+		free(hash);
+		return WSH_SSH_HOST_KEY_ERROR;
 	}
+	free(hash);
+#endif
 
 	// Let's add the hostkey if it didn't change or anything
 	switch (state) {
@@ -146,7 +161,6 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gbool
 			break;
 	}
 
-	free(hash);
 	return ret;
 }
 

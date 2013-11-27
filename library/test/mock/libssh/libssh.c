@@ -54,9 +54,18 @@ gint ssh_channel_poll_timeout_ret;
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
 
+#ifdef HAVE_SSH_GET_PUBLICKEY
+gint ssh_get_publickey() {
+	return 0;
+}
+
+void ssh_key_free() {
+}
+#else
 gint ssh_get_pubkey_hash() {
 	return 1;
 }
+#endif
 
 void ssh_set_blocking() {
 }

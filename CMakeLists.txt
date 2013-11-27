@@ -140,6 +140,12 @@ if( HAVE_SSH_USERAUTH_NONE )
 	add_definitions( -DHAVE_SSH_USERAUTH_NONE )
 endif( HAVE_SSH_USERAUTH_NONE )
 
+# Even newer versions of libssh require that you use ssh_get_publickey instead of ssh_get_pubkey
+check_function_exists( ssh_get_publickey HAVE_SSH_GET_PUBLICKEY )
+if( HAVE_SSH_GET_PUBLICKEY )
+	add_definitions( -DHAVE_SSH_GET_PUBLICKEY )
+endif( HAVE_SSH_GET_PUBLICKEY )
+
 add_subdirectory( library/src )
 
 if( BUILD_TESTS )

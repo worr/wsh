@@ -71,3 +71,13 @@ fab -H $(paste -s hosts -d,) -D -P -- uname -a  176.96s user 90.55s system 332% 
 [ worr on worr-ld1 ] ( ~ ) % wc -l hosts
 1611 hosts
 ```
+
+# Where can I get help?
+
+The mailing list:
+
+* https://groups.google.com/forum/#!forum/wsh-users
+
+Or the IRC channel on Freenode
+
+* #wsh

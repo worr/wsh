@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,14 +25,14 @@
 #include "auth.pb-c.h"
 
 static const gsize ai_encoded_len = 12;
-static const guint8 ai_encoded[12] 
-	= { 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x12, 0x04, 0x74, 0x65, 0x73, 0x74 };
+static const guint8 ai_encoded[12]
+    = { 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x12, 0x04, 0x74, 0x65, 0x73, 0x74 };
 static gchar* ai_username = "will";
 static gchar* ai_password = "test";
 
 static const gsize ai_corrupted_encoded_len = 12;
-static const guint8 ai_corrupted_encoded[11] 
-	= { 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x04, 0x74, 0x65, 0x73, 0x74 };
+static const guint8 ai_corrupted_encoded[11]
+    = { 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x04, 0x74, 0x65, 0x73, 0x74 };
 
 static void test_packing_auth_proto(void) {
 	AuthInfo ai = AUTH_INFO__INIT;
@@ -60,7 +60,7 @@ static void test_unpacking_auth_proto(void) {
 	AuthInfo* ai = NULL;
 
 	ai = auth_info__unpack(NULL, ai_encoded_len, ai_encoded);
-	
+
 	g_assert(ai != NULL);
 	g_assert_cmpstr(ai->username, ==, ai_username);
 	g_assert_cmpstr(ai->password, ==, ai_password);
@@ -80,7 +80,8 @@ static void test_unpacking_corrupted_subprocess(void) {
 
 static void test_unpacking_corrupted(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess", 0, 0);
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess",
+	                       0, 0);
 	g_test_trap_assert_passed();
 	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 #else
@@ -100,10 +101,12 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/Protocol/PackAuthInfo", test_packing_auth_proto);
 	g_test_add_func("/Library/Protocol/UnpackAuthInfo", test_unpacking_auth_proto);
-	g_test_add_func("/Library/Protocol/UnpackCorruptedAuthInfo", test_unpacking_corrupted);
+	g_test_add_func("/Library/Protocol/UnpackCorruptedAuthInfo",
+	                test_unpacking_corrupted);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_add_func("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess", test_unpacking_corrupted_subprocess);
+	g_test_add_func("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess",
+	                test_unpacking_corrupted_subprocess);
 #endif
 
 	return g_test_run();

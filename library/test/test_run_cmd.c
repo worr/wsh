@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,8 @@ struct test_wsh_run_cmd_data {
 	wsh_cmd_res_t* res;
 };
 
-static void setup(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void setup(struct test_wsh_run_cmd_data* fixture,
+                  gconstpointer user_data) {
 	struct test_wsh_run_cmd_data* data = fixture;
 	data->req = g_slice_new0(wsh_cmd_req_t);
 	data->res = g_slice_new0(wsh_cmd_res_t);
@@ -50,12 +51,13 @@ static void setup(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data
 	wsh_init_logger(WSH_LOGGER_SERVER);
 }
 
-static void teardown(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void teardown(struct test_wsh_run_cmd_data* fixture,
+                     gconstpointer user_data) {
 	struct test_wsh_run_cmd_data* data = fixture;
 
 	if (data->res->err != NULL)
 		g_error_free(data->res->err);
-	
+
 	for (gint i = 0; i < data->res->std_output_len; i++) {
 		g_free(data->res->std_output[i]);
 	}
@@ -72,7 +74,8 @@ static void teardown(struct test_wsh_run_cmd_data* fixture, gconstpointer user_d
 	wsh_exit_logger();
 }
 
-static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture,
+                               gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
@@ -88,7 +91,8 @@ static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture, gconstpoin
 	g_assert(res->exit_status == 1);
 }
 
-static void test_run_stdout(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
+                            gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
@@ -109,7 +113,8 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture, gconstpointer
 	g_assert(res->std_output_len == 0);
 }
 
-static void test_run_stderr(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
+                            gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
@@ -121,7 +126,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture, gconstpointer
 
 	res->std_error = NULL;
 	res->std_error_len = 0;
-	
+
 	req->cmd_string = "/bin/sh -c 'exit 0'";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
@@ -129,7 +134,8 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture, gconstpointer
 	g_assert(res->std_error_len == 0);
 }
 
-static void test_run_err(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_run_err(struct test_wsh_run_cmd_data* fixture,
+                         gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
@@ -151,7 +157,8 @@ static void test_run_err(struct test_wsh_run_cmd_data* fixture, gconstpointer us
 	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_CHDIR);
 }
 
-static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
+                                    gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 
 	req->cmd_string = "/bin/ls";
@@ -188,7 +195,8 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture, gcons
 	g_assert(res == NULL);
 }
 
-static void test_wsh_run_cmd_path(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_wsh_run_cmd_path(struct test_wsh_run_cmd_data* fixture,
+                                  gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
@@ -197,21 +205,24 @@ static void test_wsh_run_cmd_path(struct test_wsh_run_cmd_data* fixture, gconstp
 	g_assert(res->exit_status == 0);
 }
 
-static void g_environ_getenv_override(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void g_environ_getenv_override(struct test_wsh_run_cmd_data* fixture,
+                                      gconstpointer user_data) {
 	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
 
 	const gchar* path = g_environ_getenv_ov(envp, "PATH");
 	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
 }
 
-static void g_environ_getenv_override_fail(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void g_environ_getenv_override_fail(struct test_wsh_run_cmd_data*
+        fixture, gconstpointer user_data) {
 	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
 
 	const gchar* horkus = g_environ_getenv_ov(envp, "HORKUS");
 	g_assert(horkus == NULL);
 }
 
-static void g_environ_getenv_override_mid(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void g_environ_getenv_override_mid(struct test_wsh_run_cmd_data* fixture,
+        gconstpointer user_data) {
 	gchar* envp[] = { "USER=will", "PATH=/bin:/usr/bin", NULL };
 
 	const gchar* path = g_environ_getenv_ov(envp, "PATH");
@@ -249,7 +260,8 @@ static void g_environ_getenv_override_mid(struct test_wsh_run_cmd_data* fixture,
 	close(fds[1]);
 }*/
 
-static void test_wsh_run_cmd_timeout(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
+static void test_wsh_run_cmd_timeout(struct test_wsh_run_cmd_data* fixture,
+                                     gconstpointer user_data) {
 	g_test_timer_start();
 
 	fixture->req->cmd_string = "/bin/sleep 5";
@@ -264,17 +276,29 @@ static void test_wsh_run_cmd_timeout(struct test_wsh_run_cmd_data* fixture, gcon
 int main(int argc, char** argv, char** env) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add("/Library/RunCmd/ConstructSudoCmd", struct test_wsh_run_cmd_data, NULL, setup, test_construct_sudo_cmd, teardown);
-	g_test_add("/Library/RunCmd/ExitCode", struct test_wsh_run_cmd_data, NULL, setup, test_run_exit_code, teardown);
-	g_test_add("/Library/RunCmd/Stdout", struct test_wsh_run_cmd_data, NULL, setup, test_run_stdout, teardown);
-	g_test_add("/Library/RunCmd/Stderr", struct test_wsh_run_cmd_data, NULL, setup, test_run_stderr, teardown);
-	g_test_add("/Library/RunCmd/Errors", struct test_wsh_run_cmd_data, NULL, setup, test_run_err, teardown);
-	g_test_add("/Library/RunCmd/EnvironGetEnvOverride", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
-	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideFail", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail, teardown);
-	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideMid", struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid, teardown);
-	g_test_add("/Library/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_path, teardown);
+	g_test_add("/Library/RunCmd/ConstructSudoCmd", struct test_wsh_run_cmd_data,
+	           NULL, setup, test_construct_sudo_cmd, teardown);
+	g_test_add("/Library/RunCmd/ExitCode", struct test_wsh_run_cmd_data, NULL,
+	           setup, test_run_exit_code, teardown);
+	g_test_add("/Library/RunCmd/Stdout", struct test_wsh_run_cmd_data, NULL, setup,
+	           test_run_stdout, teardown);
+	g_test_add("/Library/RunCmd/Stderr", struct test_wsh_run_cmd_data, NULL, setup,
+	           test_run_stderr, teardown);
+	g_test_add("/Library/RunCmd/Errors", struct test_wsh_run_cmd_data, NULL, setup,
+	           test_run_err, teardown);
+	g_test_add("/Library/RunCmd/EnvironGetEnvOverride",
+	           struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
+	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideFail",
+	           struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail,
+	           teardown);
+	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideMid",
+	           struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid,
+	           teardown);
+	g_test_add("/Library/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup,
+	           test_wsh_run_cmd_path, teardown);
 	//g_test_add("/Library/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin_sudo, teardown);
-	g_test_add("/Library/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_run_cmd_timeout, teardown);
+	g_test_add("/Library/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup,
+	           test_wsh_run_cmd_timeout, teardown);
 
 	return g_test_run();
 }

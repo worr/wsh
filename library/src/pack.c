@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,8 @@
 #include "types.h"
 
 // buf MUST be g_free()d
-void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) {
+void wsh_pack_request(guint8** buf, guint32* buf_len,
+                      const wsh_cmd_req_t* req) {
 	AuthInfo ai = AUTH_INFO__INIT;
 	CommandRequest cmd_req = COMMAND_REQUEST__INIT;
 
@@ -55,7 +56,8 @@ void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) 
 		cmd_req.has_filter = TRUE;
 		cmd_req.filter = (CommandRequest__Filtertype)req->filter_type;
 
-		if (req->filter_type == WSH_FILTER_TAIL || req->filter_type == WSH_FILTER_HEAD) {
+		if (req->filter_type == WSH_FILTER_TAIL ||
+		        req->filter_type == WSH_FILTER_HEAD) {
 			cmd_req.has_filter_intarg = TRUE;
 			cmd_req.filter_intarg = req->filter_intarg;
 		}
@@ -72,15 +74,18 @@ void wsh_pack_request(guint8** buf, guint32* buf_len, const wsh_cmd_req_t* req) 
 }
 
 // req ought to be allocated
-void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, guint32 buf_len) {
+void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf,
+                        guint32 buf_len) {
 	CommandRequest* cmd_req;
 
 	cmd_req = command_request__unpack(NULL, buf_len, buf);
 
 	if (cmd_req->auth->username)
-		(*req)->username = g_strndup(cmd_req->auth->username, strlen(cmd_req->auth->username));
+		(*req)->username = g_strndup(cmd_req->auth->username,
+		                             strlen(cmd_req->auth->username));
 	if (cmd_req->auth->password) {
-		(*req)->password = g_strndup(cmd_req->auth->password, strlen(cmd_req->auth->password));
+		(*req)->password = g_strndup(cmd_req->auth->password,
+		                             strlen(cmd_req->auth->password));
 		(*req)->sudo = TRUE;
 	}
 
@@ -88,7 +93,8 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf, guint32 buf_len)
 
 	(*req)->std_input = g_new0(gchar*, cmd_req->n_stdin + 1);
 	for (gsize i = 0; i < cmd_req->n_stdin; i++)
-		(*req)->std_input[i] = g_strndup(cmd_req->stdin[i], strlen(cmd_req->stdin[i]) + 1);
+		(*req)->std_input[i] = g_strndup(cmd_req->stdin[i],
+		                                 strlen(cmd_req->stdin[i]) + 1);
 	(*req)->std_input[cmd_req->n_stdin] = NULL;
 	(*req)->std_input_len = cmd_req->n_stdin;
 
@@ -124,7 +130,8 @@ void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
 	*req = NULL;
 }
 
-void wsh_pack_response(guint8** buf, guint32* buf_len, const wsh_cmd_res_t* res) {
+void wsh_pack_response(guint8** buf, guint32* buf_len,
+                       const wsh_cmd_res_t* res) {
 	CommandReply cmd_res = COMMAND_REPLY__INIT;
 
 	cmd_res.stdout = res->std_output;
@@ -140,7 +147,8 @@ void wsh_pack_response(guint8** buf, guint32* buf_len, const wsh_cmd_res_t* res)
 	command_reply__pack(&cmd_res, *buf);
 }
 
-void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf, guint32 buf_len) {
+void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf,
+                         guint32 buf_len) {
 	CommandReply* cmd_res;
 
 	cmd_res = command_reply__unpack(NULL, buf_len, buf);

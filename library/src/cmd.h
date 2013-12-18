@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -50,7 +50,7 @@ struct cmd_data {
 extern const guint MAX_CMD_ARGS;
 
 /** Our sudo command prefix */
-extern const gchar* SUDO_CMD;	
+extern const gchar* SUDO_CMD;
 
 /** GQuark for error reporting */
 GQuark WSH_CMD_ERROR;
@@ -90,7 +90,8 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
  *
  * @returns FALSE if event source should be removed
  */
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, struct cmd_data* data);
+gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond,
+                          struct cmd_data* data);
 
 /**
  * @brief Checks stderr for new output to save in our wsh_cmd_res_t
@@ -101,7 +102,8 @@ gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond, struct cmd_data* d
  *
  * @returns FALSE if event source should be removed
  */
-gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, struct cmd_data* data);
+gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond,
+                          struct cmd_data* data);
 
 /**
  * @brief Writes stdin to the command
@@ -112,7 +114,8 @@ gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond, struct cmd_data* d
  *
  * @returns FALSE if event source should be removed
  */
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond, struct cmd_data* data);
+gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
+                         struct cmd_data* data);
 
 /** @cond */
 #ifdef BUILD_TESTS
@@ -126,13 +129,13 @@ struct test_cmd_data {
 	gboolean err_closed;
 };
 
-const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable); 
+const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable);
 
 #endif
 
 # if GLIB_CHECK_VERSION( 2, 32, 0 )
 # else
-const gchar* g_environ_getenv(gchar** envp, const gchar* variable); 
+const gchar* g_environ_getenv(gchar** envp, const gchar* variable);
 # endif
 /** @endcond */
 

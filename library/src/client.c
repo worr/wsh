@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,8 +45,9 @@ gint wsh_client_lock_password_pages(void** passwd_mem) {
 		if (errno == EINTR)
 			errno = 0;
 
-		if ((gintptr)(*passwd_mem = mmap(NULL, WSH_MAX_PASSWORD_LEN * 3, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1 &&
-				errno != EINTR)
+		if ((gintptr)(*passwd_mem = mmap(NULL, WSH_MAX_PASSWORD_LEN * 3,
+		                                 PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0)) == -1 &&
+		        errno != EINTR)
 			return errno;
 
 		if (*passwd_mem == NULL && errno != EINTR)
@@ -85,10 +86,14 @@ gint wsh_client_unlock_password_pages(void* passwd_mem) {
 }
 
 /* Save our signals */
-static void pw_int_handler(int sig) { signos[sig] = 1; }
-gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt, void* passwd_mem) {
+static void pw_int_handler(int sig) {
+	signos[sig] = 1;
+}
+gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
+                        void* passwd_mem) {
 	struct termios old_flags, new_flags;
-	struct sigaction sa, saveint, savehup, savequit, saveterm, savetstp, savettin, savettou;
+	struct sigaction sa, saveint, savehup, savequit, saveterm, savetstp, savettin,
+			savettou;
 	gint save_errno = 0;
 
 	if (tcgetattr(fileno(stdin), &old_flags))

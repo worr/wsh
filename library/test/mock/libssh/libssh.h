@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -104,7 +104,8 @@ void set_ssh_channel_write_ret(gint ret);
 gint ssh_channel_write();
 void set_ssh_channel_read_ret(gint ret);
 void set_ssh_channel_read_set(void* buf);
-gint ssh_channel_read(ssh_channel channel, void* buf, guint32 buf_len, gboolean is_stderr);
+gint ssh_channel_read(ssh_channel channel, void* buf, guint32 buf_len,
+                      gboolean is_stderr);
 void set_ssh_channel_request_pty_ret(gint ret);
 gint ssh_channel_request_pty();
 void set_ssh_channel_request_shell_ret(gint ret);

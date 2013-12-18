@@ -176,3 +176,9 @@ endif( BUILD_CLIENT )
 add_custom_target( doc 
 	COMMAND doxygen ../Doxyfile
 )
+
+add_custom_target( indent
+	COMMAND find ../client ../server ../library -name '*.[hc]' -print0 | xargs -0
+	astyle --style=google --indent=tab -xC80 -xL --indent-cases
+	--indent-switches
+)

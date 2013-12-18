@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,7 +30,8 @@ static void wsh_exp_flat_filename_success(void) {
 	GError* err = NULL;
 	gint ret = 0;
 
-	ret = wsh_exp_flat_filename(&hosts, &num_hosts, "../../../library/test/worrtest", &err);
+	ret = wsh_exp_flat_filename(&hosts, &num_hosts,
+	                            "../../../library/test/worrtest", &err);
 
 	g_assert_no_error(err);
 	g_assert(num_hosts == 1);
@@ -44,7 +45,8 @@ static void wsh_exp_flat_filename_no_file(void) {
 	GError* err = NULL;
 	gint ret = 0;
 
-	ret = wsh_exp_flat_filename(&hosts, &num_hosts, "totally-nonexistant-file", &err);
+	ret = wsh_exp_flat_filename(&hosts, &num_hosts, "totally-nonexistant-file",
+	                            &err);
 
 	g_assert_error(err, G_FILE_ERROR, G_FILE_ERROR_NOENT);
 	g_assert(ret == EXIT_FAILURE);
@@ -56,7 +58,8 @@ static void wsh_exp_exec_filename_success(void) {
 	GError* err = NULL;
 	gint ret = 0;
 
-	ret = wsh_exp_exec_filename(&hosts, &num_hosts, "../../../library/test/worr2test.sh", &err);
+	ret = wsh_exp_exec_filename(&hosts, &num_hosts,
+	                            "../../../library/test/worr2test.sh", &err);
 
 	g_assert_no_error(err);
 	g_assert(num_hosts == 1);
@@ -70,7 +73,8 @@ static void wsh_exp_exec_filename_no_file(void) {
 	GError* err = NULL;
 	gint ret = 0;
 
-	ret = wsh_exp_exec_filename(&hosts, &num_hosts, "totally-nonexistant-file", &err);
+	ret = wsh_exp_exec_filename(&hosts, &num_hosts, "totally-nonexistant-file",
+	                            &err);
 
 	g_assert_error(err, G_SPAWN_ERROR, G_SPAWN_ERROR_NOENT);
 	g_assert(ret == EXIT_FAILURE);
@@ -82,7 +86,8 @@ static void wsh_exp_filename_success(void) {
 	GError* err = NULL;
 	gint ret = 0;
 
-	ret = wsh_exp_filename(&hosts, &num_hosts, "../../../library/test/worr2test.sh", &err);
+	ret = wsh_exp_filename(&hosts, &num_hosts, "../../../library/test/worr2test.sh",
+	                       &err);
 
 	g_assert_no_error(err);
 	g_assert(num_hosts == 1);
@@ -93,7 +98,8 @@ static void wsh_exp_filename_success(void) {
 	hosts = NULL;
 	num_hosts = 0;
 
-	ret = wsh_exp_filename(&hosts, &num_hosts, "../../../library/test/worrtest", &err);
+	ret = wsh_exp_filename(&hosts, &num_hosts, "../../../library/test/worrtest",
+	                       &err);
 
 	g_assert_no_error(err);
 	g_assert(num_hosts == 1);
@@ -136,11 +142,15 @@ static void wsh_exp_range_success(void) {
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add_func("/Library/Expansion/FlatFileSuccess", wsh_exp_flat_filename_success);
-	g_test_add_func("/Library/Expansion/FlatFileNonexistant", wsh_exp_flat_filename_no_file);
+	g_test_add_func("/Library/Expansion/FlatFileSuccess",
+	                wsh_exp_flat_filename_success);
+	g_test_add_func("/Library/Expansion/FlatFileNonexistant",
+	                wsh_exp_flat_filename_no_file);
 
-	g_test_add_func("/Library/Expansion/ExecFileSuccess", wsh_exp_exec_filename_success);
-	g_test_add_func("/Library/Expansion/ExecFileNonexistant", wsh_exp_exec_filename_no_file);
+	g_test_add_func("/Library/Expansion/ExecFileSuccess",
+	                wsh_exp_exec_filename_success);
+	g_test_add_func("/Library/Expansion/ExecFileNonexistant",
+	                wsh_exp_exec_filename_no_file);
 
 	g_test_add_func("/Library/Expansion/FileSuccess", wsh_exp_filename_success);
 

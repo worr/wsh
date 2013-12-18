@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,9 +32,18 @@ static gboolean fchown_called;
 static gboolean mkstemp_called;
 static gboolean close_called;
 
-gint fchmod_t() { fchown_called = TRUE; return fchown_ret; }
-gint mkstemp_t() { mkstemp_called = TRUE; return mkstemp_ret; }
-gint close_t() { close_called = TRUE; return EXIT_SUCCESS; }
+gint fchmod_t() {
+	fchown_called = TRUE;
+	return fchown_ret;
+}
+gint mkstemp_t() {
+	mkstemp_called = TRUE;
+	return mkstemp_ret;
+}
+gint close_t() {
+	close_called = TRUE;
+	return EXIT_SUCCESS;
+}
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 static void init_output_failure_subprocess(void) {
@@ -47,7 +56,8 @@ static void init_output_failure(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestInitOutputFail/subprocess", 0, 0);
 #else
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+	if (g_test_trap_fork(0,
+	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		wshc_init_output(NULL);
 		exit(0);
 	}
@@ -90,7 +100,8 @@ static void cleanup_output_failure(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestCleanupOutputFail/subprocess", 0, 0);
 #else
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDERR|G_TEST_TRAP_SILENCE_STDOUT)) {
+	if (g_test_trap_fork(0,
+	                     G_TEST_TRAP_SILENCE_STDERR|G_TEST_TRAP_SILENCE_STDOUT)) {
 		wshc_output_info_t* out = NULL;
 		wshc_cleanup_output(&out);
 		exit(0);
@@ -141,7 +152,8 @@ static void write_output_mem(void) {
 
 	gint ret = wshc_write_output(out, "localhost", &res);
 
-	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output, "localhost");
+	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output,
+	                                      "localhost");
 
 	g_assert(ret == EXIT_SUCCESS);
 
@@ -174,7 +186,8 @@ static void write_output_mem_null(void) {
 
 	gint ret = wshc_write_output(out, "localhost", &res);
 
-	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output, "localhost");
+	wshc_host_output_t* test_output_res = g_hash_table_lookup(out->output,
+	                                      "localhost");
 
 	g_assert(ret == EXIT_SUCCESS);
 
@@ -243,14 +256,15 @@ static void hostname_output_subprocess(void) {
 
 	gint ret = wshc_write_output(out, "localhost", &res);
 	exit(ret);
-	
+
 }
 #endif
 
 static void hostname_output(void) {
 	gchar* expected_err =
-		"localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
-	gchar* expected_out = "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\nlocalhost: exit code: 0\n\n";
+	    "localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	gchar* expected_out =
+	    "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\nlocalhost: exit code: 0\n\n";
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestHostnameOutput/subprocess", 0, 0);
@@ -272,7 +286,8 @@ static void hostname_output(void) {
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
 
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+	if (g_test_trap_fork(0,
+	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
@@ -308,7 +323,7 @@ static void hostname_output_piped_subprocess(void) {
 
 static void hostname_output_piped(void) {
 	gchar* expected_err =
-		"localhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	    "localhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
 	gchar* expected_out = "localhost: other\nlocalhost: test\n";
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
@@ -330,7 +345,8 @@ static void hostname_output_piped(void) {
 	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
-	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+	if (g_test_trap_fork(0,
+	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
@@ -364,12 +380,18 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestHostnameOutputPiped", hostname_output_piped);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_add_func("/Client/TestInitOutputFail/subprocess", init_output_failure_subprocess);
-	g_test_add_func("/Client/TestInitOutputSuccess/subprocess", init_output_success_subprocess);
-	g_test_add_func("/Client/TestCleanupOutputFail/subprocess", cleanup_output_failure_subprocess);
-	g_test_add_func("/Client/TestCleanupOutputSuccess/subprocess", cleanup_output_success_subprocess);
-	g_test_add_func("/Client/TestHostnameOutput/subprocess", hostname_output_subprocess);
-	g_test_add_func("/Client/TestHostnameOutputPiped/subprocess", hostname_output_piped_subprocess);
+	g_test_add_func("/Client/TestInitOutputFail/subprocess",
+	                init_output_failure_subprocess);
+	g_test_add_func("/Client/TestInitOutputSuccess/subprocess",
+	                init_output_success_subprocess);
+	g_test_add_func("/Client/TestCleanupOutputFail/subprocess",
+	                cleanup_output_failure_subprocess);
+	g_test_add_func("/Client/TestCleanupOutputSuccess/subprocess",
+	                cleanup_output_success_subprocess);
+	g_test_add_func("/Client/TestHostnameOutput/subprocess",
+	                hostname_output_subprocess);
+	g_test_add_func("/Client/TestHostnameOutputPiped/subprocess",
+	                hostname_output_piped_subprocess);
 #endif
 
 	return g_test_run();

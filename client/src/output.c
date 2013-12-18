@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -73,7 +73,7 @@ void wshc_init_output(wshc_output_info_t** out) {
 #endif
 
 	(*out)->output = g_hash_table_new_full(g_str_hash, g_str_equal,
-		(GDestroyNotify)g_free, (GDestroyNotify)free_output);
+	                                       (GDestroyNotify)g_free, (GDestroyNotify)free_output);
 }
 
 void wshc_cleanup_output(wshc_output_info_t** out) {
@@ -92,7 +92,8 @@ void wshc_cleanup_output(wshc_output_info_t** out) {
 	*out = NULL;
 }
 
-static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
+static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname,
+                             const wsh_cmd_res_t* res) {
 	// Freed on destruction
 	wshc_host_output_t* host_out = g_slice_new0(wshc_host_output_t);
 	host_out->error = g_strdupv(res->std_error);
@@ -106,7 +107,8 @@ static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname, con
 	return EXIT_SUCCESS;
 }
 
-static gint hostname_output(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
+static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
+                            const wsh_cmd_res_t* res) {
 	g_mutex_lock(out->mut);
 	gboolean stdout_tty = isatty(STDOUT_FILENO);
 	gboolean stderr_tty = isatty(STDERR_FILENO);
@@ -138,7 +140,8 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname, cons
 }
 
 // This is the user's entrypoint into output crap
-gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res) {
+gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
+                       const wsh_cmd_res_t* res) {
 	/* If there's an error, output it immediately */
 	if (res->error_message) {
 		g_printerr("%s: %s\n", hostname, res->error_message);
@@ -150,7 +153,8 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname, const wsh
 			return write_output_mem(out, hostname, res);
 		case WSHC_OUTPUT_TYPE_HOSTNAME:
 			return hostname_output(out, hostname, res);
-		default: return EXIT_FAILURE;
+		default:
+			return EXIT_FAILURE;
 	}
 }
 
@@ -183,11 +187,12 @@ static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
 	return TRUE;
 }
 
-static void hash_compare(gchar* hostname, wshc_host_output_t* out, GSList** clist) {
+static void hash_compare(gchar* hostname, wshc_host_output_t* out,
+                         GSList** clist) {
 	for (GSList* p = *clist; p != NULL && p->data != NULL; p = p->next) {
 		if (cmp((struct collate*)(p->data), out)) {
 			((struct collate*)(p->data))->hosts =
-				g_slist_prepend(((struct collate*)(p->data))->hosts, hostname);
+			    g_slist_prepend(((struct collate*)(p->data))->hosts, hostname);
 			return;
 		}
 	}
@@ -212,13 +217,15 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 
 	// Calculate size of host list
 	gsize host_list_len = 0;
-	for (GSList* host_list = c->hosts; host_list != NULL; host_list = host_list->next) {
+	for (GSList* host_list = c->hosts; host_list != NULL;
+	        host_list = host_list->next) {
 		host_list_len += strlen(host_list->data) + 2;
 	}
 
 	// Build host list string
 	host_list_str_base = g_slice_alloc0(host_list_len + WSHC_STDERR_TAIL_SIZE);
-	for (GSList* host_list = c->hosts; host_list != NULL; host_list = host_list->next) {
+	for (GSList* host_list = c->hosts; host_list != NULL;
+	        host_list = host_list->next) {
 		g_strlcat(host_list_str_base, host_list->data, host_list_len);
 		g_strlcat(host_list_str_base, " ", host_list_len);
 	}
@@ -230,7 +237,8 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 		host_list_str_stderr = host_list_str_base;
 	else {
 		host_list_str_stdout = host_list_str_base;
-		host_list_str_stderr = g_slice_copy(host_list_len + WSHC_STDOUT_TAIL_SIZE, host_list_str_base);
+		host_list_str_stderr = g_slice_copy(host_list_len + WSHC_STDOUT_TAIL_SIZE,
+		                                    host_list_str_base);
 	}
 
 	// Add the tails of the host command to the host list
@@ -247,13 +255,15 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	for (gchar** p = c->output; *p != NULL; p++) stdout_len += (strlen(*p) + 1);
 
 	// Allocate memory until requirement is satisfied
-	new_len = 1 + stderr_len + stdout_len + host_list_len * 2 + WSHC_STDOUT_TAIL_SIZE + WSHC_STDERR_TAIL_SIZE;
+	new_len = 1 + stderr_len + stdout_len + host_list_len * 2 +
+	          WSHC_STDOUT_TAIL_SIZE + WSHC_STDERR_TAIL_SIZE;
 	while (*f->size == 0 || new_len + strlen(*f->out) > *f->size) {
 		gchar* new_output = g_slice_alloc0(*f->size + WSHC_ALLOC_LEN);
 		g_memmove(new_output, *f->out, *f->size);
 		if (*f->size)
 			g_slice_free1(*f->size, *f->out);
-		*f->out = new_output; *f->size += WSHC_ALLOC_LEN;
+		*f->out = new_output;
+		*f->size += WSHC_ALLOC_LEN;
 	}
 
 	// Start copying data into out
@@ -298,7 +308,8 @@ static void construct_out(struct collate* c, struct f_collate* f) {
  * f_collate is a struct containing the output buffer and the size of the output
  * buffer
  */
-gint wshc_collate_output(wshc_output_info_t* out, gchar** output, gsize* output_size) {
+gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
+                         gsize* output_size) {
 	g_assert(output);
 	g_assert(out);
 	g_assert(! *output_size);

@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,7 +31,8 @@
 
 GQuark WSH_SSH_ERROR;		/**< GQuark for SSH Error reporting */
 
-extern const gint WSH_SSH_NEED_ADD_HOST_KEY;	/**< Return for not having a hostkey for a machine */
+extern const gint
+WSH_SSH_NEED_ADD_HOST_KEY;	/**< Return for not having a hostkey for a machine */
 extern const gint WSH_SSH_HOST_KEY_ERROR;		/**< Return for hostkey change */
 
 /** Different types of auth available */
@@ -111,7 +112,8 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err);
  *
  * @returns 0 on success, anything else on failure
  */
-gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey, gboolean force_add, GError** err);
+gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
+                         gboolean force_add, GError** err);
 
 /**
  * @brief Adds a hostkey to a known_hosts file
@@ -152,7 +154,8 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err);
  *
  * @returns 0 on success, anything else on failure
  */
-gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GError** err);
+gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req,
+                      GError** err);
 
 /**
  * @brief Gets the result of running the command from the remote host
@@ -163,7 +166,8 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req, GErr
  *
  * @returns 0 on success, anything else on failure
  */
-gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res, GError** err);
+gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
+                          GError** err);
 
 /**
  * @brief Disconnects from a remote host
@@ -201,7 +205,8 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
  *
  * @returns 0 on success, anything else on failure
  */
-gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, gboolean executable, GError** err);
+gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file,
+                      gboolean executable, GError** err);
 
 #ifdef BUILD_TESTS
 /**
@@ -212,7 +217,8 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file, gboolean ex
  * @param[in] timeout The maximum time in ms that we'll wait for output
  * @param[in] is_stderr Are we looking for stderrr?
  */
-gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout, gboolean is_stderr);
+gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout,
+                                  gboolean is_stderr);
 #endif
 
 #endif

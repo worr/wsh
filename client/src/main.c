@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -134,7 +134,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 		req->filter_intarg = tail;
 	}
 }
- 
+
 static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
 	if (req->env != NULL)
 		g_strfreev(req->env);
@@ -159,7 +159,8 @@ static gboolean valid_arguments(gchar** mesg) {
 		return FALSE;
 	}
 
-	if ((head && (tail || grep)) || (tail && grep) || (lines && (tail || grep)) || (head && lines)) {
+	if ((head && (tail || grep)) || (tail && grep) || (lines && (tail || grep)) ||
+	        (head && lines)) {
 		*mesg = g_strdup("Use only one filtering option");
 		return FALSE;
 	}
@@ -219,7 +220,8 @@ int main(int argc, char** argv) {
 
 	if (ask_password) {
 		password = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 0);
-		if ((ret = wsh_client_getpass(password, WSH_MAX_PASSWORD_LEN, "SSH password: ", passwd_mem))) {
+		if ((ret = wsh_client_getpass(password, WSH_MAX_PASSWORD_LEN, "SSH password: ",
+		                              passwd_mem))) {
 			g_printerr("getpass: %s\n", strerror(ret));
 			return ret;
 		}
@@ -229,7 +231,8 @@ int main(int argc, char** argv) {
 
 	if (sudo_username) {
 		sudo_password = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 1);
-		if ((ret = wsh_client_getpass(sudo_password, WSH_MAX_PASSWORD_LEN, "sudo password: ", passwd_mem))) {
+		if ((ret = wsh_client_getpass(sudo_password, WSH_MAX_PASSWORD_LEN,
+		                              "sudo password: ", passwd_mem))) {
 			g_printerr("getpass: %s\n", strerror(ret));
 			return ret;
 		}
@@ -237,7 +240,8 @@ int main(int argc, char** argv) {
 		if (! sudo_password) return EXIT_FAILURE;
 	}
 
-	if ((ask_password || sudo_username) && mprotect(passwd_mem, WSH_MAX_PASSWORD_LEN * 3, PROT_READ)) {
+	if ((ask_password || sudo_username) &&
+	        mprotect(passwd_mem, WSH_MAX_PASSWORD_LEN * 3, PROT_READ)) {
 		perror("mprotect");
 		return EXIT_FAILURE;
 	}
@@ -347,7 +351,8 @@ int main(int argc, char** argv) {
 		}
 	} else {
 		GThreadPool* gtp;
-		if ((gtp = g_thread_pool_new((GFunc)wshc_try_ssh, &cmd_info, threads, TRUE, &err)) == NULL) {
+		if ((gtp = g_thread_pool_new((GFunc)wshc_try_ssh, &cmd_info, threads, TRUE,
+		                             &err)) == NULL) {
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
 			return EXIT_FAILURE;
@@ -377,7 +382,8 @@ int main(int argc, char** argv) {
 	}
 
 	if (password) memset_s(password, WSH_MAX_PASSWORD_LEN, 0, strlen(password));
-	if (sudo_password) memset_s(sudo_password, WSH_MAX_PASSWORD_LEN, 0, strlen(sudo_password));
+	if (sudo_password) memset_s(sudo_password, WSH_MAX_PASSWORD_LEN, 0,
+		                            strlen(sudo_password));
 	if (password || sudo_password) wsh_client_unlock_password_pages(passwd_mem);
 
 	wsh_ssh_cleanup();

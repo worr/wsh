@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,14 +41,15 @@ int main(int argc, char** argv, char** env) {
 	wsh_cmd_req_t* req = NULL;
 	wsh_cmd_res_t* res = g_slice_new0(wsh_cmd_res_t);
 
-    wsh_init_logger(WSH_LOGGER_SERVER);
+	wsh_init_logger(WSH_LOGGER_SERVER);
 
 	do {
 		if (errno == EINTR)
 			errno = 0;
 
-		if ((gintptr)(req = (wsh_cmd_req_t*)mmap(NULL, sizeof(*req), PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1 &&
-				errno != EINTR) {
+		if ((gintptr)(req = (wsh_cmd_req_t*)mmap(NULL, sizeof(*req),
+		                    PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0)) == -1 &&
+		        errno != EINTR) {
 			wsh_log_message(strerror(errno));
 			return EXIT_FAILURE;
 		}

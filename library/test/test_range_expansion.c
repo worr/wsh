@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -82,14 +82,15 @@ static void wsh_exp_range_expand_complex(void** f, const void* u) {
 gint main(gint argc, gchar** argv) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add_func("/Library/RangeExpansion/InitSuccess", wsh_exp_range_init_success);
+	g_test_add_func("/Library/RangeExpansion/InitSuccess",
+	                wsh_exp_range_init_success);
 
 	g_test_add("/Library/RangeExpansion/ExpandSimple",
-		void*, NULL,
-		init, wsh_exp_range_expand_simple, cleanup);
+	           void*, NULL,
+	           init, wsh_exp_range_expand_simple, cleanup);
 	g_test_add("/Library/RangeExpansion/ExpandComplex",
-		void*, NULL,
-		init, wsh_exp_range_expand_complex, cleanup);
+	           void*, NULL,
+	           init, wsh_exp_range_expand_complex, cleanup);
 
 	return g_test_run();
 }

@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -71,7 +71,7 @@ void wshc_init_output(wshc_output_info_t** out);
 void wshc_cleanup_output(wshc_output_info_t** out);
 
 /**
- * @brief Writes output from a host to desired location based on 
+ * @brief Writes output from a host to desired location based on
  * command flags
  *
  * @param[out] out Our wshc_output_info_t struct describing our output
@@ -80,7 +80,8 @@ void wshc_cleanup_output(wshc_output_info_t** out);
  *
  * @return 0 on success, anything else on failure
  */
-gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname, const wsh_cmd_res_t* res);
+gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
+                       const wsh_cmd_res_t* res);
 
 /**
  * @brief Takes the given output, and collates it into an easy-to-parse format
@@ -91,7 +92,8 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname, const wsh
  *
  * @note Expects not to be threaded
  */
-gint wshc_collate_output(wshc_output_info_t* out, gchar** output, gsize* output_size);
+gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
+                         gsize* output_size);
 
 #endif
 

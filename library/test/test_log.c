@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,7 +39,8 @@ static void test_init_logger(void) {
 	wsh_init_logger(WSH_LOGGER_CLIENT);
 
 	gchar* recv_ident = g_slice_alloc0(strlen(test_ident) + 1);
-	g_assert(openlog_called(recv_ident, strlen(test_ident) + 1, &recv_logopt, &recv_facility) == 1);
+	g_assert(openlog_called(recv_ident, strlen(test_ident) + 1, &recv_logopt,
+	                        &recv_facility) == 1);
 	g_assert_cmpstr(recv_ident, ==, test_ident);
 	g_assert(recv_logopt == LOG_PID);
 	g_assert(recv_facility == LOG_DAEMON);
@@ -63,7 +64,8 @@ static void test_log_message_from_client(void) {
 
 	// Expected result
 	test_message = "CLIENT: this is a test message";
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(test_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
@@ -83,7 +85,8 @@ static void test_log_message_from_server(void) {
 	wsh_log_message(test_message);
 
 	test_message = "SERVER: this is a test message";
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(test_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_INFO);
@@ -104,7 +107,8 @@ static void test_error_log_from_client(void) {
 	test_message = "CLIENT ERROR 0: TEST ERROR: this is an error";
 	gchar* recv_message = g_slice_alloc0(strlen(test_message) + 1);
 
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(test_message) + 1) == ++expected_syslog_count);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(test_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, test_message);
 	g_assert(recv_priority == LOG_ERR);
@@ -119,7 +123,8 @@ static void test_log_run_command_from_server(void) {
 	gchar* test_user = "will";
 	gchar* test_source = "127.0.0.1";
 	gchar* test_cwd = "/usr/home/will";
-	gchar* expected_message = "SERVER: running command `ls` as user `will` in dir `/usr/home/will` from host `127.0.0.1`";
+	gchar* expected_message =
+	    "SERVER: running command `ls` as user `will` in dir `/usr/home/will` from host `127.0.0.1`";
 
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
@@ -127,7 +132,8 @@ static void test_log_run_command_from_server(void) {
 	wsh_init_logger(WSH_LOGGER_SERVER);
 
 	wsh_log_server_cmd(test_cmd, test_user, test_source, test_cwd);
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
@@ -141,7 +147,8 @@ static void test_log_run_command_from_client(void) {
 	gchar* test_user = "will";
 	gchar* test_dest[] = { "192.168.1.1", NULL };
 	gchar* test_cwd = "/usr/home/will";
-	gchar* expected_message = "CLIENT: running command `ls` as user `will` in dir `/usr/home/will` on hosts `192.168.1.1`";
+	gchar* expected_message =
+	    "CLIENT: running command `ls` as user `will` in dir `/usr/home/will` on hosts `192.168.1.1`";
 
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
@@ -149,7 +156,8 @@ static void test_log_run_command_from_client(void) {
 	wsh_init_logger(WSH_LOGGER_CLIENT);
 
 	wsh_log_client_cmd(test_cmd, test_user, test_dest, test_cwd);
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
@@ -164,15 +172,18 @@ static void test_log_command_status_server(void) {
 	gchar* test_source = "127.0.0.1";
 	gchar* test_cwd = "/usr/home/will";
 	gint test_status = 0;
-	gchar* expected_message = "SERVER: command `ls` run as user `will` in dir `/usr/home/will` from host `127.0.0.1` exited with code `0`";
+	gchar* expected_message =
+	    "SERVER: command `ls` run as user `will` in dir `/usr/home/will` from host `127.0.0.1` exited with code `0`";
 
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
 	wsh_init_logger(WSH_LOGGER_SERVER);
 
-	wsh_log_server_cmd_status(test_cmd, test_user, test_source, test_cwd, test_status);
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
+	wsh_log_server_cmd_status(test_cmd, test_user, test_source, test_cwd,
+	                          test_status);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
@@ -187,15 +198,18 @@ static void test_log_command_status_client(void) {
 	gchar* test_dest = "192.168.1.1";
 	gchar* test_cwd = "/usr/home/will";
 	gint test_status = 0;
-	gchar* expected_message = "CLIENT: command `ls` run as user `will` in dir `/usr/home/will` exited with code `0` on host `192.168.1.1`";
+	gchar* expected_message =
+	    "CLIENT: command `ls` run as user `will` in dir `/usr/home/will` exited with code `0` on host `192.168.1.1`";
 
 	gchar* recv_message = g_slice_alloc0(strlen(expected_message) + 1);
 	gint recv_priority;
 
 	wsh_init_logger(WSH_LOGGER_CLIENT);
 
-	wsh_log_client_cmd_status(test_cmd, test_user, test_dest, test_cwd, test_status);
-	g_assert(syslog_called(&recv_priority, recv_message, strlen(expected_message) + 1) == ++expected_syslog_count);
+	wsh_log_client_cmd_status(test_cmd, test_user, test_dest, test_cwd,
+	                          test_status);
+	g_assert(syslog_called(&recv_priority, recv_message,
+	                       strlen(expected_message) + 1) == ++expected_syslog_count);
 
 	g_assert_cmpstr(recv_message, ==, expected_message);
 	g_assert(recv_priority == LOG_INFO);
@@ -209,13 +223,20 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/Logging/InitLogger", test_init_logger);
 	g_test_add_func("/Library/Logging/ExitLogger", test_exit_logger);
-	g_test_add_func("/Library/Logging/LogMessageFromClient", test_log_message_from_client);
-	g_test_add_func("/Library/Logging/LogMessageFromServer", test_log_message_from_server);
-	g_test_add_func("/Library/Logging/LogErrorFromClient", test_error_log_from_client);
-	g_test_add_func("/Library/Logging/LogRunCommandFromServer", test_log_run_command_from_server);
-	g_test_add_func("/Library/Logging/LogRunCommandFromClient", test_log_run_command_from_client);
-	g_test_add_func("/Library/Logging/LogCommandStatusFromServer", test_log_command_status_server);
-	g_test_add_func("/Library/Logging/LogCommandStatusFromClient", test_log_command_status_client);
+	g_test_add_func("/Library/Logging/LogMessageFromClient",
+	                test_log_message_from_client);
+	g_test_add_func("/Library/Logging/LogMessageFromServer",
+	                test_log_message_from_server);
+	g_test_add_func("/Library/Logging/LogErrorFromClient",
+	                test_error_log_from_client);
+	g_test_add_func("/Library/Logging/LogRunCommandFromServer",
+	                test_log_run_command_from_server);
+	g_test_add_func("/Library/Logging/LogRunCommandFromClient",
+	                test_log_run_command_from_client);
+	g_test_add_func("/Library/Logging/LogCommandStatusFromServer",
+	                test_log_command_status_server);
+	g_test_add_func("/Library/Logging/LogCommandStatusFromClient",
+	                test_log_command_status_client);
 
 	return g_test_run();
 }

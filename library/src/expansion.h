@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,7 +42,8 @@
  *
  * @returns 0 if success, anything else on failure
  */
-gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query, GError** err);
+gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query,
+                   GError** err);
 #endif
 
 /**
@@ -60,7 +61,8 @@ gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query, G
  *
  * @returns 0 if success, anything else on failure
  */
-gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename, GError** err);
+gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
+                      GError** err);
 
 /**
  * @brief Expands host from a flat, non-executable file.
@@ -76,7 +78,8 @@ gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename, G
  *
  * @returns 0 if success, anything else on failure
  */
-gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename, GError** err);
+gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,
+                           const gchar* filename, GError** err);
 
 /**
  * @brief Expands host from an executable file
@@ -92,7 +95,8 @@ gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts, const gchar* filena
  *
  * @returns 0 if success, anything else on failure
  */
-gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename, GError** err);
+gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts,
+                           const gchar* filename, GError** err);
 
 #endif
 

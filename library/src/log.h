@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -80,7 +80,8 @@ void wsh_log_error(gint msg_num, gchar* message);
  * @param[in] source the host that ran the command
  * @param[in] cwd The directory that the command was run in
  */
-void wsh_log_server_cmd(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd);
+void wsh_log_server_cmd(const gchar* command, const gchar* user,
+                        const gchar* source, const gchar* cwd);
 
 /**
  * @brief Log a client command
@@ -90,7 +91,8 @@ void wsh_log_server_cmd(const gchar* command, const gchar* user, const gchar* so
  * @param[in] dests The set of destinations that we're requesting the command run on
  * @param[in] cwd The directory the user wants it to execute in
  */
-void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests, const gchar* cwd);
+void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests,
+                        const gchar* cwd);
 
 /**
  * @brief Log the status of a command
@@ -101,7 +103,8 @@ void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests, 
  * @param[in] cwd The directory the command was executed in
  * @param[in] status The return code of the command
  */
-void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gchar* source, const gchar* cwd, gint status);
+void wsh_log_server_cmd_status(const gchar* command, const gchar* user,
+                               const gchar* source, const gchar* cwd, gint status);
 
 /**
  * @brief Log the status of a command on the client
@@ -112,7 +115,8 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user, const gc
  * @param[in] cwd The directory the command was run from
  * @param[in] status The return code of the command
  */
-void wsh_log_client_cmd_status(const gchar* command, const gchar* user, const gchar* dest, const gchar* cwd, gint status);
+void wsh_log_client_cmd_status(const gchar* command, const gchar* user,
+                               const gchar* dest, const gchar* cwd, gint status);
 
 #endif
 

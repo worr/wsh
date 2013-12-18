@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +27,8 @@
 #include "log.h"
 #include "ssh.h"
 
-void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) {
+void wshc_try_ssh(wshc_host_info_t* host_info,
+                  const wshc_cmd_info_t* cmd_info) {
 	g_assert(cmd_info != NULL);
 	g_assert(host_info != NULL);
 
@@ -102,7 +103,8 @@ void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info) 
 		return;
 	}
 
-	wsh_log_client_cmd_status(cmd_info->req->cmd_string, cmd_info->req->username, host_info->hostname, cmd_info->req->cwd, (*host_info->res)->exit_status);
+	wsh_log_client_cmd_status(cmd_info->req->cmd_string, cmd_info->req->username,
+	                          host_info->hostname, cmd_info->req->cwd, (*host_info->res)->exit_status);
 	wshc_write_output(cmd_info->out, host_info->hostname, *host_info->res);
 
 	wsh_ssh_disconnect(&session);

@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,7 +47,7 @@ static gchar* req_cwd = "/tmp";
 static const guint64 req_timeout = 5;
 
 static guint8 encoded_res[17]
-	= { 0x0a, 0x03, 0x66, 0x6f, 0x6f, 0x0a, 0x03, 0x62, 0x61, 0x72, 0x12, 0x03, 0x62, 0x61, 0x7a, 0x18, 0x00 };
+    = { 0x0a, 0x03, 0x66, 0x6f, 0x6f, 0x0a, 0x03, 0x62, 0x61, 0x72, 0x12, 0x03, 0x62, 0x61, 0x7a, 0x18, 0x00 };
 
 static void host_not_reachable(void) {
 	set_ssh_connect_res(SSH_ERROR);
@@ -650,63 +650,63 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/SSH/AddHostKey", add_host_key);
 
 	g_test_add_func("/Library/SSH/AuthenticatePasswordUnsuccessfully",
-		authenticate_password_unsuccessfully);
+	                authenticate_password_unsuccessfully);
 	g_test_add_func("/Library/SSH/AuthenticatePasswordFailure",
-		authenticate_password_denied);
+	                authenticate_password_denied);
 	g_test_add_func("/Library/SSH/AuthicatePasswordSuccess",
-		authenticate_password_successful);
+	                authenticate_password_successful);
 
 	g_test_add_func("/Library/SSH/AuthenticatePubkeyUnsuccessfully",
-		authenticate_pubkey_unsuccessful);
+	                authenticate_pubkey_unsuccessful);
 	g_test_add_func("/Library/SSH/AuthenticatePubkeyFailure",
-		authenticate_pubkey_denied);
+	                authenticate_pubkey_denied);
 	g_test_add_func("/Library/SSH/AuthenticatePubkeySuccess",
-		authenticate_pubkey_successful);
+	                authenticate_pubkey_successful);
 
 	g_test_add_func("/Library/SSH/AuthenticateKbdintUnsuccessfully",
-		authenticate_kbdint_unsuccessful);
+	                authenticate_kbdint_unsuccessful);
 	g_test_add_func("/Library/SSH/AuthenticateKbdintFailure",
-		authenticate_kbdint_denied);
+	                authenticate_kbdint_denied);
 	g_test_add_func("/Library/SSH/AuthenticateKbdintSuccess",
-		authenticate_kbdint_successful);
+	                authenticate_kbdint_successful);
 
 	g_test_add_func("/Library/SSH/ExecWshdChannelFailure",
-		exec_wshd_channel_failure);
+	                exec_wshd_channel_failure);
 	g_test_add_func("/Library/SSH/ExecWshdExecError",
-		exec_wshd_channel_exec_failure);
+	                exec_wshd_channel_exec_failure);
 #ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
 	g_test_add_func("/Library/SSH/ExecWshdPollError",
-		exec_wshd_poll_failure);
+	                exec_wshd_poll_failure);
 #endif
 	g_test_add_func("/Library/SSH/ExecWshSuccess",
-		exec_wshd_success);
+	                exec_wshd_success);
 
 	g_test_add_func("/Library/SSH/SendCmdWriteFailure",
-		send_cmd_write_failure);
+	                send_cmd_write_failure);
 	g_test_add_func("/Library/SSH/SendCmdWriteSuccess",
-		send_cmd_write_success);
+	                send_cmd_write_success);
 
 	g_test_add_func("/Library/SSH/RecvResSuccess",
-		recv_result_success);
+	                recv_result_success);
 
 	g_test_add_func("/Library/SSH/SSHInitFailure",
-		ssh_init_fails);
+	                ssh_init_fails);
 	g_test_add_func("/Library/SSH/SSHSetCallbacksFailure",
-		ssh_set_callbacks_fails);
+	                ssh_set_callbacks_fails);
 	g_test_add_func("/Library/SSH/WshSshInitSuccess",
-		wsh_ssh_init_success);
+	                wsh_ssh_init_success);
 
 	g_test_add_func("/Library/SSH/SFTPAllocFails",
-		scp_alloc_fails);
+	                scp_alloc_fails);
 	g_test_add_func("/Library/SSH/SFTPInitFails",
-		scp_init_fails);
+	                scp_init_fails);
 	g_test_add_func("/Library/SSH/SFTPInitSuccess",
-		scp_init_success);
+	                scp_init_success);
 
 	g_test_add_func("/Library/SSH/PollTimeout",
-		poll_timeout);
+	                poll_timeout);
 	g_test_add_func("/Library/SSH/PollFailure",
-		poll_exec_fail);
+	                poll_exec_fail);
 
 	return g_test_run();
 }

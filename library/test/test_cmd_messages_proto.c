@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,16 +36,17 @@ static const gsize simple_req_len = 6;
 static const guint8 simple_req[] = { 0x0a, 0x02, 0x6c, 0x73, 0x3a, 0x00 };
 
 static const gsize auth_req_len = 20;
-static const guint8 auth_req[] 
-	= { 0x0a, 0x02, 0x6c, 0x73, 0x12, 0x0c, 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x12, 0x04, 0x74, 0x65, 0x73, 0x74, 0x3a, 0x00 };
+static const guint8 auth_req[]
+    = { 0x0a, 0x02, 0x6c, 0x73, 0x12, 0x0c, 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x12, 0x04, 0x74, 0x65, 0x73, 0x74, 0x3a, 0x00 };
 
 static const gsize complex_req_len = 75;
 static const guint8 complex_req[]
-	= { 0x0a, 0x02, 0x6c, 0x73, 0x1a, 0x03, 0x79, 0x65, 0x73, 0x1a, 0x02, 0x6e, 0x6f, 0x22, 0x0d, 0x50, 0x41, 0x54, 
-	    0x48, 0x3d, 0x2f, 0x75, 0x73, 0x72, 0x2f, 0x62, 0x69, 0x6e, 0x22, 0x09, 0x55, 0x53, 0x45, 0x52, 0x3d, 0x77, 
-		0x69, 0x6c, 0x6c, 0x22, 0x18, 0x4d, 0x41, 0x49, 0x4c, 0x54, 0x4f, 0x3d, 0x77, 0x69, 0x6c, 0x6c, 0x40, 0x77, 
-		0x6f, 0x72, 0x72, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x2a, 0x04, 0x2f, 0x74, 0x6d, 0x70, 0x30,
-		0x05, 0x3a, 0x00 } ;
+    = { 0x0a, 0x02, 0x6c, 0x73, 0x1a, 0x03, 0x79, 0x65, 0x73, 0x1a, 0x02, 0x6e, 0x6f, 0x22, 0x0d, 0x50, 0x41, 0x54,
+        0x48, 0x3d, 0x2f, 0x75, 0x73, 0x72, 0x2f, 0x62, 0x69, 0x6e, 0x22, 0x09, 0x55, 0x53, 0x45, 0x52, 0x3d, 0x77,
+        0x69, 0x6c, 0x6c, 0x22, 0x18, 0x4d, 0x41, 0x49, 0x4c, 0x54, 0x4f, 0x3d, 0x77, 0x69, 0x6c, 0x6c, 0x40, 0x77,
+        0x6f, 0x72, 0x72, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x2a, 0x04, 0x2f, 0x74, 0x6d, 0x70, 0x30,
+        0x05, 0x3a, 0x00
+      } ;
 
 static gchar* reply_stdout[4] = { "main.c", "cmd.c", "log.c", "tons of tests" };
 static gchar** reply_stderr = NULL;
@@ -53,18 +54,20 @@ static const gint reply_ret_code = 0;
 
 static const gsize simple_reply_len = 39;
 static const guint8 simple_reply[39]
-	= { 0x0a, 0x06, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x63, 0x0a, 0x05, 0x63, 0x6d, 0x64, 0x2e, 0x63, 0x0a, 0x05, 0x6c, 
-	    0x6f, 0x67, 0x2e, 0x63, 0x0a, 0x0d, 0x74, 0x6f, 0x6e, 0x73, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x65, 0x73, 0x74, 
-		0x73, 0x18, 0x00 };
+    = { 0x0a, 0x06, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x63, 0x0a, 0x05, 0x63, 0x6d, 0x64, 0x2e, 0x63, 0x0a, 0x05, 0x6c,
+        0x6f, 0x67, 0x2e, 0x63, 0x0a, 0x0d, 0x74, 0x6f, 0x6e, 0x73, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x65, 0x73, 0x74,
+        0x73, 0x18, 0x00
+      };
 
 static const gsize corrupted_req_len = 4;
 static const guint8 corrupted_req[5] = { 0x0a, 0x05, 0x02, 0x6c, 0x73 };
 
 static const gsize corrupted_reply_len = 39;
 static const guint8 corrupted_reply[39]
-	= { 0x5a, 0x06, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x63, 0x0a, 0x05, 0x63, 0x6d, 0x64, 0x2e, 0x63, 0x0a, 0x05, 0x6c, 
-	    0x6f, 0x67, 0x2e, 0x63, 0x1e, 0x0d, 0x74, 0x6f, 0x6e, 0x73, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x65, 0x73, 0x74, 
-		0x73, 0x18, 0x00 };
+    = { 0x5a, 0x06, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x63, 0x0a, 0x05, 0x63, 0x6d, 0x64, 0x2e, 0x63, 0x0a, 0x05, 0x6c,
+        0x6f, 0x67, 0x2e, 0x63, 0x1e, 0x0d, 0x74, 0x6f, 0x6e, 0x73, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x65, 0x73, 0x74,
+        0x73, 0x18, 0x00
+      };
 
 static void test_packing_simple_cmd_request(void) {
 	CommandRequest req = COMMAND_REQUEST__INIT;
@@ -173,7 +176,7 @@ static void test_packing_complex_cmd_request(void) {
 
 static void test_unpacking_complex_cmd_request(void) {
 	CommandRequest* req;
-	
+
 	req = command_request__unpack(NULL, complex_req_len, complex_req);
 
 	g_assert_cmpstr(req->command, ==, req_cmd);
@@ -250,7 +253,8 @@ static void test_unpacking_corrupted_request_subprocess(void) {
 
 static void test_unpacking_corrupted_request(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandRequest/subprocess", 0, 0);
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandRequest/subprocess",
+	                       0, 0);
 	g_test_trap_assert_passed();
 	g_test_trap_assert_stdout("data too short after length-prefix of *\n");
 #else
@@ -278,7 +282,8 @@ static void test_unpacking_corrupted_response_subproccess(void) {
 
 static void test_unpacking_corrupted_response(void) {
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply/subprocess", 0, 0);
+	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply/subprocess",
+	                       0, 0);
 	g_test_trap_assert_passed();
 	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 #else
@@ -296,20 +301,32 @@ static void test_unpacking_corrupted_response(void) {
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
-	g_test_add_func("/Library/Protocol/PackSimpleCommandRequest", test_packing_simple_cmd_request);
-	g_test_add_func("/Library/Protocol/UnpackSimpleCommandRequest", test_unpacking_simple_cmd_request);
-	g_test_add_func("/Library/Protocol/PackAuthCommandRequest", test_packing_auth_cmd_request);
-	g_test_add_func("/Library/Protocol/UnpackAuthCommandRequest", test_unpacking_auth_cmd_request);
-	g_test_add_func("/Library/Protocol/PackComplexCommandRequest", test_packing_complex_cmd_request);
-	g_test_add_func("/Library/Protocol/UnpackComplexCommandRequest", test_unpacking_complex_cmd_request);
-	g_test_add_func("/Library/Protocol/PackCommandReply", test_packing_cmd_response);
-	g_test_add_func("/Library/Protocol/UnpackCommandReply", test_unpacking_cmd_response);
-	g_test_add_func("/Library/Protocol/UnpackCorruptCommandRequest", test_unpacking_corrupted_request);
-	g_test_add_func("/Library/Protocol/UnpackCorruptCommandReply", test_unpacking_corrupted_response);
+	g_test_add_func("/Library/Protocol/PackSimpleCommandRequest",
+	                test_packing_simple_cmd_request);
+	g_test_add_func("/Library/Protocol/UnpackSimpleCommandRequest",
+	                test_unpacking_simple_cmd_request);
+	g_test_add_func("/Library/Protocol/PackAuthCommandRequest",
+	                test_packing_auth_cmd_request);
+	g_test_add_func("/Library/Protocol/UnpackAuthCommandRequest",
+	                test_unpacking_auth_cmd_request);
+	g_test_add_func("/Library/Protocol/PackComplexCommandRequest",
+	                test_packing_complex_cmd_request);
+	g_test_add_func("/Library/Protocol/UnpackComplexCommandRequest",
+	                test_unpacking_complex_cmd_request);
+	g_test_add_func("/Library/Protocol/PackCommandReply",
+	                test_packing_cmd_response);
+	g_test_add_func("/Library/Protocol/UnpackCommandReply",
+	                test_unpacking_cmd_response);
+	g_test_add_func("/Library/Protocol/UnpackCorruptCommandRequest",
+	                test_unpacking_corrupted_request);
+	g_test_add_func("/Library/Protocol/UnpackCorruptCommandReply",
+	                test_unpacking_corrupted_response);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_add_func("/Library/Protocol/UnpackCorruptCommandRequest/subprocess", test_unpacking_corrupted_request_subprocess);
-	g_test_add_func("/Library/Protocol/UnpackCorruptCommandReply/subprocess", test_unpacking_corrupted_response_subproccess);
+	g_test_add_func("/Library/Protocol/UnpackCorruptCommandRequest/subprocess",
+	                test_unpacking_corrupted_request_subprocess);
+	g_test_add_func("/Library/Protocol/UnpackCorruptCommandReply/subprocess",
+	                test_unpacking_corrupted_response_subproccess);
 #endif
 
 	return g_test_run();

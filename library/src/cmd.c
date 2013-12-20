@@ -280,7 +280,7 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 
 	// If not sudo, don't actually construct the command
 	if (! req->sudo)
-		return g_strconcat("sh -c '", req->cmd_string, "'", NULL);
+		return g_strdup(req->cmd_string);
 
 	// Construct cmd to escalate privs assuming use of sudo
 	// Should probably get away from relying explicitly on sudo, but it's good
@@ -296,10 +296,10 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
 		}
 
 		if (clean)
-			return g_strconcat(SUDO_CMD, req->username, " sh -c '", req->cmd_string, "'", NULL);
+			return g_strconcat(SUDO_CMD, req->username, " ", req->cmd_string, NULL);
 	}
 
-	return g_strconcat(SUDO_CMD, "root", " sh -c '", req->cmd_string, "'", NULL);
+	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
 }
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {

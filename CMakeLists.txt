@@ -125,6 +125,12 @@ check_function_exists( ssh_get_publickey HAVE_SSH_GET_PUBLICKEY )
 
 configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 
+# We need to set these per target
+set( ORIG_CFLAGS ${CMAKE_C_FLAGS} )
+set( CMAKE_C_FLAGS "${ORIG_CFLAGS} ${WSH_LIB_COMPILER_FLAGS}" )
+set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${WSH_EXE_LINKER_FLAGS}" )
+set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${WSH_LIB_LINKER_FLAGS}" )
+
 add_subdirectory( library/src )
 
 if( BUILD_TESTS )
@@ -135,6 +141,7 @@ if( BUILD_TESTS )
 endif( BUILD_TESTS )
 
 if( BUILD_UTILS )
+	set( CMAKE_C_FLAGS "${ORIG_CFLAGS} ${WSH_EXE_COMPILER_FLAGS}" )
 	add_subdirectory( util/src )
 	if( BUILD_TESTS )
 		#add_subdirectory( util/test )
@@ -147,6 +154,7 @@ if( BUILD_UTILS )
 endif( BUILD_UTILS )
 
 if( BUILD_SERVER )
+	set( CMAKE_C_FLAGS "${ORIG_CFLAGS} ${WSH_EXE_COMPILER_FLAGS}" )
 	add_subdirectory( server/src )
 	if( BUILD_TESTS )
 		add_subdirectory( server/test )
@@ -159,6 +167,7 @@ if( BUILD_SERVER )
 endif( BUILD_SERVER )
 
 if( BUILD_CLIENT )
+	set( CMAKE_C_FLAGS "${ORIG_CFLAGS} ${WSH_EXE_COMPILER_FLAGS}" )
 	add_subdirectory( client/src )
 	if( BUILD_TESTS )
 		add_subdirectory( client/test )

@@ -201,8 +201,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			switch (ret = ssh_userauth_autopubkey(session->session, NULL)) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_ERR,
-									   "%s: Error authenticating with pubkey: %s",
-									   session->hostname, ssh_get_error(session->session));
+					                   "%s: Error authenticating with pubkey: %s",
+					                   session->hostname, ssh_get_error(session->session));
 					goto wsh_ssh_authenticate_failure;
 				case SSH_AUTH_DENIED:
 					pubkey_denied = TRUE;
@@ -257,8 +257,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			switch (ret) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_ERR,
-									   "%s: Error authenticating with password: %s",
-									   session->hostname, ssh_get_error(session->session));
+					                   "%s: Error authenticating with password: %s",
+					                   session->hostname, ssh_get_error(session->session));
 					goto wsh_ssh_authenticate_failure;
 				case SSH_AUTH_DENIED:
 					password_denied = TRUE;

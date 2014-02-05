@@ -148,20 +148,20 @@ restore_sigs:
 	(void) sigaction(SIGTTIN, &savettin, NULL);
 	(void) sigaction(SIGTTOU, &savettou, NULL);
 
-	if (!target)
-		return save_errno;
+	if (tcsetattr(fileno(stdin), TCSANOW, &old_flags)) {
+		target = NULL;
+		return errno;
+	}
 
 	// Resend all of our signals
 	for (int i = 0; i < NSIG; i++) {
 		if (signos[i]) kill(getpid(), i);
 	}
 
-	g_strchomp(target);
+	if (!target)
+		return save_errno;
 
-	if (tcsetattr(fileno(stdin), TCSANOW, &old_flags)) {
-		target = NULL;
-		return errno;
-	}
+	g_strchomp(target);
 
 	return EXIT_SUCCESS;
 }

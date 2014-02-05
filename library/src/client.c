@@ -125,7 +125,10 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
 		goto restore_sigs;
 	}
 
-	g_printerr("%s", prompt);
+	if (isatty(STDOUT_FILENO))
+		g_print("%s", prompt);
+	else if (isatty(STDERR_FILENO))
+		g_printerr("%s", prompt);
 
 	if (!fgets(target, target_len, stdin)) {
 		save_errno = errno;

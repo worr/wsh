@@ -436,7 +436,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
 	do {
 		buf_len_inc = ssh_channel_read(session->channel, buf_ptr, buf_len_left, FALSE);
 
-		buf_len_left -= buf_len;
+		buf_len_left -= buf_len_inc;
 		buf_ptr += buf_len_inc;
 		buf_len += buf_len_inc;
 	} while (buf_len != buf_u.size);

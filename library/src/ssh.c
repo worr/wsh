@@ -197,17 +197,19 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 
 	if ((session->auth_type == WSH_SSH_AUTH_PUBKEY) &&
 	        (method & SSH_AUTH_METHOD_PUBLICKEY)) {
-		switch (ret = ssh_userauth_autopubkey(session->session, NULL)) {
-			case SSH_AUTH_ERROR:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_ERR,
-				                   "%s: Error authenticating with pubkey: %s",
-				                   session->hostname, ssh_get_error(session->session));
-				goto wsh_ssh_authenticate_failure;
-			case SSH_AUTH_DENIED:
-				pubkey_denied = TRUE;
-			default:
-				break;
-		}
+		do {
+			switch (ret = ssh_userauth_autopubkey(session->session, NULL)) {
+				case SSH_AUTH_ERROR:
+					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_ERR,
+									   "%s: Error authenticating with pubkey: %s",
+									   session->hostname, ssh_get_error(session->session));
+					goto wsh_ssh_authenticate_failure;
+				case SSH_AUTH_DENIED:
+					pubkey_denied = TRUE;
+				default:
+					break;
+			}
+		} while (ret == SSH_AUTH_AGAIN);
 	} else {
 		pubkey_denied = TRUE;
 	}
@@ -242,7 +244,7 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			}
 
 			ret = ssh_userauth_kbdint(session->session, NULL, NULL);
-		} while (ret == SSH_AUTH_INFO);
+		} while (ret == SSH_AUTH_INFO || ret == SSH_AUTH_AGAIN);
 	} else {
 		kbdint_denied = TRUE;
 	}
@@ -251,17 +253,19 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	        (method & SSH_AUTH_METHOD_PASSWORD)) {
 		g_assert(session->password != NULL);
 		ret = ssh_userauth_password(session->session, NULL, session->password);
-		switch (ret) {
-			case SSH_AUTH_ERROR:
-				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_ERR,
-				                   "%s: Error authenticating with password: %s",
-				                   session->hostname, ssh_get_error(session->session));
-				goto wsh_ssh_authenticate_failure;
-			case SSH_AUTH_DENIED:
-				password_denied = TRUE;
-			default:
-				break;
-		}
+		do {
+			switch (ret) {
+				case SSH_AUTH_ERROR:
+					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_ERR,
+									   "%s: Error authenticating with password: %s",
+									   session->hostname, ssh_get_error(session->session));
+					goto wsh_ssh_authenticate_failure;
+				case SSH_AUTH_DENIED:
+					password_denied = TRUE;
+				default:
+					break;
+			}
+		} while (ret == SSH_AUTH_AGAIN);
 	} else {
 		password_denied = TRUE;
 	}

@@ -42,6 +42,8 @@ typedef struct {
 	GMutex* mut;				/**< mutex that gets locked on writing out */
 	GHashTable* output;			/**< output hash map */
 	enum wshc_output_type_enum type;	/**< method to display output */
+	gboolean stdout_tty;		/**< is stdout a tty? */
+	gboolean stderr_tty;		/**< is stderr a tty? */
 } wshc_output_info_t;
 
 /** Final output data

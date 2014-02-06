@@ -74,6 +74,9 @@ void wshc_init_output(wshc_output_info_t** out) {
 
 	(*out)->output = g_hash_table_new_full(g_str_hash, g_str_equal,
 	                                       (GDestroyNotify)g_free, (GDestroyNotify)free_output);
+
+	(*out)->stderr_tty = isatty(STDERR_FILENO);
+	(*out)->stdout_tty = isatty(STDOUT_FILENO);
 }
 
 void wshc_cleanup_output(wshc_output_info_t** out) {
@@ -110,28 +113,26 @@ static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname,
 static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
                             const wsh_cmd_res_t* res) {
 	g_mutex_lock(out->mut);
-	gboolean stdout_tty = isatty(STDOUT_FILENO);
-	gboolean stderr_tty = isatty(STDERR_FILENO);
 
 	if (res->std_output_len) {
-		if (stdout_tty)
+		if (out->stdout_tty)
 			g_print("%s: stdout ****\n", hostname);
 		for (guint32 i = 0; i < res->std_output_len; i++)
 			g_print("%s: %s\n", hostname, res->std_output[i]);
 	}
 
 	if (res->std_output_len || res->std_error_len)
-		if (stdout_tty)
+		if (out->stdout_tty)
 			g_print("\n");
 
 	if (res->std_error_len) {
-		if (stderr_tty)
+		if (out->stderr_tty)
 			g_printerr("%s: stderr ****\n", hostname);
 		for (guint32 i = 0; i < res->std_error_len; i++)
 			g_printerr("%s: %s\n", hostname, res->std_error[i]);
 	}
 
-	if (stdout_tty)
+	if (out->stdout_tty)
 		g_print("%s: exit code: %d\n\n", hostname, res->exit_status);
 
 	g_mutex_unlock(out->mut);
@@ -324,5 +325,12 @@ gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
 	g_slist_foreach(clist, (GFunc)construct_out, &f);
 
 	return EXIT_SUCCESS;
+}
+
+gint wshc_add_failed_host(wshc_output_info_t* out, gchar* host,
+                          gchar* message) {
+	g_assert(out);
+	g_assert(host);
+	return 0;
 }
 

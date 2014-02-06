@@ -357,6 +357,58 @@ static void hostname_output_piped(void) {
 	g_test_trap_assert_stderr(expected_err);
 }
 
+static void add_failed_host(void) {
+	gchar* message = "testing";
+	gchar* host = "test host";
+
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+
+	wshc_add_failed_host(out, host, message);
+	g_assert(g_hash_table_lookup(out->failed_hosts, host));
+	g_assert_cmpstr(message, ==, g_hash_table_lookup(out->failed_hosts, host));
+}
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void failed_host_output_subprocess(void) {
+	gchar* host = "test host";
+	gchar* message = "testing";
+
+	wshc_output_info_t* out;
+	set_isatty_ret(1);
+	wshc_init_output(&out);
+	wshc_add_failed_host(out, host, message);
+	wshc_write_failed_hosts(out);
+}
+#endif
+
+static void failed_host_output(void) {
+	gchar* host = "test host";
+	gchar* message = "testing";
+	gchar* expected_err =
+		g_strdup_printf("The following hosts failed:\n%s: %s\n",
+                  host, message);
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestWriteFailedHosts/subprocess", 0, 0);
+#else
+	wshc_output_info_t* out;
+	set_isatty_ret(1);
+	wshc_init_output(&out);
+
+	wshc_add_failed_host(out, host, message);
+
+	if (g_test_trap_fork(0, 0)) {
+		wshc_write_failed_hosts(out);
+		exit(EXIT_SUCCESS);
+	}
+#endif
+
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stderr(expected_err);
+	g_free(expected_err);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -392,7 +444,12 @@ int main(int argc, char** argv) {
 	                hostname_output_subprocess);
 	g_test_add_func("/Client/TestHostnameOutputPiped/subprocess",
 	                hostname_output_piped_subprocess);
+	g_test_add_func("/Client/TestWriteFailedHosts/subprocess",
+	                failed_host_output_subprocess);
 #endif
+
+	g_test_add_func("/Client/TestAddFailedHost", add_failed_host);
+	g_test_add_func("/Client/TestWriteFailedHosts", failed_host_output);
 
 	return g_test_run();
 }

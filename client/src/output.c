@@ -23,6 +23,7 @@
 
 #include <errno.h>
 #include <glib.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -32,14 +33,12 @@
 
 #include "cmd.h"
 
-static const gint WSHC_MAX_OUT_LEN = 50;
-static const gint WSHC_MAX_HOSTS = 20;
-static const gint WSHC_SCORE_THRESHOLD = 2;
 static const gsize WSHC_ALLOC_LEN = 4096;
 static const gchar* WSHC_STDERR_TAIL = "stderr:\n";
 static const gchar* WSHC_STDOUT_TAIL = "stdout:\n";
 static const gsize WSHC_STDERR_TAIL_SIZE = 9;
 static const gsize WSHC_STDOUT_TAIL_SIZE = 9;
+static const gsize WSHC_ERROR_MAX_LEN = 1024;
 
 struct collate {
 	GSList* hosts;
@@ -73,7 +72,12 @@ void wshc_init_output(wshc_output_info_t** out) {
 #endif
 
 	(*out)->output = g_hash_table_new_full(g_str_hash, g_str_equal,
-	                                       (GDestroyNotify)g_free, (GDestroyNotify)free_output);
+	                                       (GDestroyNotify)g_free,
+                                           (GDestroyNotify)free_output);
+
+	(*out)->failed_hosts = g_hash_table_new_full(g_str_hash, g_str_equal,
+                                                 (GDestroyNotify)g_free,
+                                                 (GDestroyNotify)g_free);
 
 	(*out)->stderr_tty = isatty(STDERR_FILENO);
 	(*out)->stdout_tty = isatty(STDOUT_FILENO);
@@ -83,6 +87,7 @@ void wshc_cleanup_output(wshc_output_info_t** out) {
 	g_assert(*out);
 
 	g_hash_table_destroy((*out)->output);
+	g_hash_table_destroy((*out)->failed_hosts);
 
 #if GLIB_CHECK_VERSION(2, 32, 0)
 	g_mutex_clear((*out)->mut);
@@ -145,7 +150,7 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
                        const wsh_cmd_res_t* res) {
 	/* If there's an error, output it immediately */
 	if (res->error_message) {
-		g_printerr("%s: %s\n", hostname, res->error_message);
+		wshc_add_failed_host(out, hostname, res->error_message);
 		return EXIT_SUCCESS;
 	}
 
@@ -327,10 +332,29 @@ gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
 	return EXIT_SUCCESS;
 }
 
-gint wshc_add_failed_host(wshc_output_info_t* out, gchar* host,
-                          gchar* message) {
+void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
+                          const gchar* message) {
 	g_assert(out);
 	g_assert(host);
-	return 0;
+	g_assert(message);
+
+	g_mutex_lock(out->mut);
+	g_hash_table_insert(out->failed_hosts,
+                        g_strndup(host, HOST_NAME_MAX),
+                        g_strndup(message, WSHC_ERROR_MAX_LEN));
+	g_mutex_unlock(out->mut);
+}
+
+static void print_host(const gchar* key, const gchar* val,
+                       const void* user_data) {
+	g_printerr("%s: %s\n", key, val);
+}
+
+void wshc_write_failed_hosts(wshc_output_info_t* out) {
+	g_assert(out);
+
+	if (out->stderr_tty)
+		g_printerr("The following hosts failed:\n");
+	g_hash_table_foreach(out->failed_hosts, (GHFunc)print_host, NULL);
 }
 

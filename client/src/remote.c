@@ -47,21 +47,21 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 		session.auth_type = WSH_SSH_AUTH_PASSWORD;
 
 	if (wsh_ssh_host(&session, &err)) {
-		g_printerr("%s\n", err->message);
+		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
 
 	if (wsh_verify_host_key(&session, FALSE, FALSE, &err)) {
-		g_printerr("%s\n", err->message);
+		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
 
 	if (wsh_ssh_authenticate(&session, &err)) {
-		g_printerr("%s\n", err->message);
+		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
@@ -69,12 +69,12 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 
 	if (cmd_info->script) {
 		if (wsh_ssh_scp_init(&session, "~")) {
-			g_printerr("%s\n", "Could not init scp");
+			wshc_add_failed_host(cmd_info->out, host_info->hostname, "Could not init scp");
 			return;
 		}
 
 		if (wsh_ssh_scp_file(&session, cmd_info->script, TRUE, &err)) {
-			g_printerr("%s\n", err->message);
+			wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 			g_error_free(err);
 			err = NULL;
 		}
@@ -83,21 +83,21 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 	}
 
 	if (wsh_ssh_exec_wshd(&session, &err)) {
-		g_printerr("%s\n", err->message);
+		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
 
 	if (wsh_ssh_send_cmd(&session, cmd_info->req, &err)) {
-		g_printerr("%s\n", err->message);
+		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
 
 	if (wsh_ssh_recv_cmd_res(&session, host_info->res, &err)) {
-		g_printerr("%s\n", err->message);
+		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;

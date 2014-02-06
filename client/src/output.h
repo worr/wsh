@@ -41,6 +41,7 @@ enum wshc_output_type_enum {
 typedef struct {
 	GMutex* mut;				/**< mutex that gets locked on writing out */
 	GHashTable* output;			/**< output hash map */
+	GHashTable* failed_hosts;	/**< failed hosts and messages */
 	enum wshc_output_type_enum type;	/**< method to display output */
 	gboolean stdout_tty;		/**< is stdout a tty? */
 	gboolean stderr_tty;		/**< is stderr a tty? */
@@ -97,5 +98,22 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
 gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
                          gsize* output_size);
 
+
+/**
+ * @brief Adds a host that had an error to the failed host hashtable
+ *
+ * @param[in] out Our output metadata
+ * @param[in] host The hostname that failed
+ * @param[in] message The error that caused the failure
+ */
+void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
+                          const gchar* message);
+
+/**
+ * @brief Print failed hosts
+ *
+ * @param[in] out Our output metadata
+ */
+void wshc_write_failed_hosts(wshc_output_info_t* out);
 #endif
 

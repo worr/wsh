@@ -417,6 +417,7 @@ int main(int argc, char** argv) {
 	gsize output_len = 0;
 	wshc_collate_output(out_info, &output, &output_len);
 	if (output) g_print("%s", output);
+	wshc_write_failed_hosts(out_info);
 
 	return ret;
 }

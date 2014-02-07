@@ -3,7 +3,7 @@ compiler:
    - clang
 
 before_install:
-   - brew gettext install cmake glib protobuf protobuf-c libssh doxygen
+   - brew install gettext cmake glib protobuf protobuf-c libssh doxygen
    - brew link -f gettext
 
 script:

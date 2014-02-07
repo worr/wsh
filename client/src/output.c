@@ -23,7 +23,6 @@
 
 #include <errno.h>
 #include <glib.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -340,7 +339,7 @@ void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
 
 	g_mutex_lock(out->mut);
 	g_hash_table_insert(out->failed_hosts,
-                        g_strndup(host, HOST_NAME_MAX),
+                        g_strndup(host, sysconf(_SC_HOST_NAME_MAX)),
                         g_strndup(message, WSHC_ERROR_MAX_LEN));
 	g_mutex_unlock(out->mut);
 }

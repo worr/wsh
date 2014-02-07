@@ -1,10 +1,10 @@
-language: c
+language: objective-c
 compiler:
    - clang
    - gcc
 
 before_install:
-   - sudo apt-get install protobuf-c-compiler libprotobuf-c0-dev libprotobuf-c0 libssh-4 libssh-dev doxygen
+   - brew install cmake glib protobuf protobuf-c libssh doxygen
 
 script:
    - mkdir -p build/doc

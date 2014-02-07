@@ -13,8 +13,7 @@ script:
    - make
    - ctest -V
    - make doc
-   - cat doxylog
-   - [ ! -s doxylog ]
+   - cat doxylog && [ ! -s doxylog ]
 
 env:
     - CFLAGS="-O3"

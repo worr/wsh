@@ -1,10 +1,10 @@
 language: objective-c
 compiler:
    - clang
-   - gcc
 
 before_install:
-   - brew install cmake glib protobuf protobuf-c libssh doxygen
+   - brew gettext install cmake glib protobuf protobuf-c libssh doxygen
+   - brew link -f gettext
 
 script:
    - mkdir -p build/doc

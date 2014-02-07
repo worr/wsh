@@ -272,7 +272,7 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 
 	if (pubkey_denied && kbdint_denied && password_denied) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_DENIED,
-		                   "%s: %s\n", session->hostname, ssh_get_error(session->session));
+		                   "%s: %s", session->hostname, ssh_get_error(session->session));
 		ret = WSH_SSH_PASSWORD_AUTH_DENIED;
 		goto wsh_ssh_authenticate_failure;
 	}

@@ -68,7 +68,6 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
 gboolean wsh_client_get_dark_bg(void);
 
 /**
- * @internal
  * @brief Reset internal dark_bg val
  */
 void wsh_client_reset_dark_bg(void);

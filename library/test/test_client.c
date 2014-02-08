@@ -53,8 +53,10 @@ static void get_bg(void) {
 	for (gsize i = 0; i < matrix_len; i++)
 		get_bg_test_func(matrix[i][0], matrix[i][1], matrix[i][2]);
 
-	g_setenv("TERM", old_term, TRUE);
-	g_setenv("COLORFGBG", old_colorfgfg, TRUE);
+	if (old_term)
+		g_setenv("TERM", old_term, TRUE);
+	if (old_colorfgfg)
+		g_setenv("COLORFGBG", old_colorfgfg, TRUE);
 }
 
 int main(int argc, char** argv) {
@@ -64,3 +66,4 @@ int main(int argc, char** argv) {
 
 	return g_test_run();
 }
+

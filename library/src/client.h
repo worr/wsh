@@ -60,5 +60,18 @@ gint wsh_client_unlock_password_pages(void* passwd_mem);
 gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
                         void* passwd_mem);
 
+/**
+ * @brief Determines whether or not the terminal background is light or dark
+ *
+ * @returns TRUE if dark, FALSE if light
+ */
+gboolean wsh_client_get_dark_bg(void);
+
+/**
+ * @internal
+ * @brief Reset internal dark_bg val
+ */
+void wsh_client_reset_dark_bg(void);
+
 #endif
 

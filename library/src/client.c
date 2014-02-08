@@ -36,8 +36,14 @@
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
 
-const gsize WSH_MAX_PASSWORD_LEN = 1024;
+enum wsh_client_bg_t {
+	bg_undecided=-1,
+	bg_light,
+	bg_dark,
+};
 
+const gsize WSH_MAX_PASSWORD_LEN = 1024;
+static enum wsh_client_bg_t _wsh_client_bg_dark = bg_undecided;
 static volatile sig_atomic_t signos[NSIG];
 
 gint wsh_client_lock_password_pages(void** passwd_mem) {
@@ -164,5 +170,38 @@ restore_sigs:
 	g_strchomp(target);
 
 	return EXIT_SUCCESS;
+}
+
+gboolean wsh_client_get_dark_bg(void) {
+	if (_wsh_client_bg_dark != bg_undecided)
+		return (gboolean)_wsh_client_bg_dark;
+
+	const gchar* term_env = g_getenv("TERM");
+	if (!term_env)
+		return FALSE;
+
+	if (strncmp(term_env, "linux", 6) == 0 ||
+        strncmp(term_env, "putty", 6) == 0 ||
+        strncmp(term_env, "screen.linux", 13) == 0) {
+		_wsh_client_bg_dark = bg_dark;
+		return TRUE;
+	}
+
+	const gchar* colorfgbg = g_getenv("COLORFGBG");
+	gchar* semi = NULL;
+	if (colorfgbg && (semi = strchr(colorfgbg, ';'))) {
+		if (((semi[1] >= '0'&& semi[1] <= '6') || semi[1] == '8')
+            && semi[2] == '\0') {
+			_wsh_client_bg_dark = bg_dark;
+			return TRUE;
+		}
+	}
+
+	_wsh_client_bg_dark = bg_light;
+	return FALSE;
+}
+
+void wsh_client_reset_dark_bg(void) {
+	_wsh_client_bg_dark = bg_undecided;
 }
 

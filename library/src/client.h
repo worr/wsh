@@ -72,5 +72,17 @@ gboolean wsh_client_get_dark_bg(void);
  */
 void wsh_client_reset_dark_bg(void);
 
+/**
+ * @brief Determines if the terminal has colors
+ *
+ * @returns TRUE if colors available, FALSE otherwise
+ */
+gboolean wsh_client_has_colors(void);
+
+/**
+ * @brief Clear internal has_colors val
+ */
+void wsh_client_reset_colors(void);
+
 #endif
 

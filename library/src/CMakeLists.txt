@@ -64,6 +64,7 @@ target_link_libraries( wsh
 	${LIBSSH_LIBRARY}
 	${LIBCRANGE_LIBRARY}
 	${LIBAPR_LIBRARY}
+	${CURSES_LIBRARIES}
 )
 
 set_target_properties( wsh

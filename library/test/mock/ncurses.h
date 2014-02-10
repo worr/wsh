@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2014 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,31 +18,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef __CONFIG_H
-#define __CONFIG_H
 
-#cmakedefine BUILD_TESTS
+#ifndef __MOCK_NCURSES_H
+#define __MOCK_NCURSES_H
 
-#cmakedefine WITH_RANGE
+#include <stdbool.h>
 
-#cmakedefine HAVE_TERMIOS_H
-#cmakedefine HAVE_UNISTD_H
-#cmakedefine HAVE_MEMSET_S
-#cmakedefine HAVE_TERM_H
+#define ERR -1
 
-/* libssh crap */
-#cmakedefine HAVE_SSH_CHANNEL_POLL_TIMEOUT
-#cmakedefine HAVE_SSH_USERAUTH_NONE
-#cmakedefine HAVE_SSH_GET_PUBLICKEY
+int setupterm(char* term, int filedes, int* err);
+bool has_colors(void);
 
-/* curses */
-#cmakedefine CURSES_LIBRARIES
-#cmakedefine CURSES_HAVE_CURSES_H
-#cmakedefine CURSES_HAVE_NCURSES_H
-#cmakedefine CURSES_HAVE_NCURSES_NCURSES_H
-#cmakedefine CURSES_HAVE_NCURSES_CURSES_H
-
-#define APPLICATION_VERSION "${APPLICATION_VERSION}"
+void set_setupterm_ret(int ret);
+void set_has_colors_ret(bool ret);
 
 #endif
 

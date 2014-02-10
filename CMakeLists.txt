@@ -74,6 +74,9 @@ find_package( PROTOBUF-C REQUIRED )
 find_package( Threads REQUIRED )
 find_package( SSH REQUIRED )
 
+find_package( Curses )
+check_include_file( term.h HAVE_TERM_H )
+
 # Optional dep
 if( WITH_RANGE )
 	find_package( CRANGE )

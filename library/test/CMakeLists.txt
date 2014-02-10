@@ -29,6 +29,7 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/src/expansion.c
 	${CMAKE_SOURCE_DIR}/library/src/client.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/ncurses.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c
 )
 

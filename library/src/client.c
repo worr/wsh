@@ -32,6 +32,22 @@
 #include <termios.h>
 #include <unistd.h>
 
+#ifdef CURSES_HAVE_NCURSES_H
+#include <ncurses.h>
+#endif
+#ifdef CURSES_HAVE_NCURSES_NCURSES_H
+#include <ncurses/ncurses.h>
+#endif
+#ifdef CURSES_HAVE_NCURSES_CURSES_H
+#include <ncurses/curses.h>
+#endif
+#ifdef CURSES_HAVE_CURSES_H
+#include <curses.h>
+#endif
+#ifdef HAVE_TERM_H
+#include <term.h>
+#endif
+
 #ifndef HAVE_MEMSET_S
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
@@ -42,8 +58,15 @@ enum wsh_client_bg_t {
 	bg_dark,
 };
 
+enum wsh_client_colors_t {
+	colors_undecided=-1,
+	colors_unavail,
+	colors_avail,
+};
+
 const gsize WSH_MAX_PASSWORD_LEN = 1024;
 static enum wsh_client_bg_t _wsh_client_bg_dark = bg_undecided;
+static enum wsh_client_colors_t _wsh_client_colors = colors_undecided;
 static volatile sig_atomic_t signos[NSIG];
 
 gint wsh_client_lock_password_pages(void** passwd_mem) {
@@ -203,5 +226,35 @@ gboolean wsh_client_get_dark_bg(void) {
 
 void wsh_client_reset_dark_bg(void) {
 	_wsh_client_bg_dark = bg_undecided;
+}
+
+#ifdef CURSES_LIBRARIES
+gboolean wsh_client_has_colors(void) {
+	if (_wsh_client_colors != colors_undecided)
+		return (gboolean)_wsh_client_colors;
+
+	// Use error here so we don't output a message on failure
+	gint err = 0;
+	if (setupterm(NULL, fileno(stdout), &err) == ERR) {
+		_wsh_client_colors = colors_unavail;
+		return _wsh_client_colors;
+	}
+
+	if (has_colors()) {
+		_wsh_client_colors = colors_avail;
+		return _wsh_client_colors;
+	}
+
+	_wsh_client_colors = colors_unavail;
+	return _wsh_client_colors;
+}
+#else
+gboolean wsh_client_has_colors(void) {
+	return FALSE;
+}
+#endif
+
+void wsh_client_reset_colors(void) {
+	_wsh_client_colors = colors_undecided;
 }
 

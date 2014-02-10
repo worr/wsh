@@ -19,8 +19,11 @@
  * SOFTWARE.
  */
 #include "config.h"
-#include <glib.h>
 #include "client.h"
+#include "ncurses.h"
+
+#include <glib.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 static void get_bg_test_func(gchar* term, gchar* colorfgbg, gchar* result) {
@@ -59,10 +62,40 @@ static void get_bg(void) {
 		g_setenv("COLORFGBG", old_colorfgfg, TRUE);
 }
 
+static void has_colors_success(void) {
+	wsh_client_reset_colors();
+	set_setupterm_ret(0);
+	set_has_colors_ret(true);
+
+	g_assert(wsh_client_has_colors());
+	g_assert(wsh_client_has_colors());
+}
+
+static void has_colors_setupterm_fail(void) {
+	wsh_client_reset_colors();
+	set_setupterm_ret(ERR);
+	set_has_colors_ret(true);
+
+	g_assert(!wsh_client_has_colors());
+	g_assert(!wsh_client_has_colors());
+}
+
+static void has_colors_has_colors_fail(void) {
+	wsh_client_reset_colors();
+	set_setupterm_ret(0);
+	set_has_colors_ret(false);
+
+	g_assert(!wsh_client_has_colors());
+	g_assert(!wsh_client_has_colors());
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
 	g_test_add_func("/Library/Client/TestGetBg", get_bg);
+	g_test_add_func("/Library/Client/TestHasColorsSuccess", has_colors_success);
+	g_test_add_func("/Library/Client/TestHasColorsSetupTermFail", has_colors_setupterm_fail);
+	g_test_add_func("/Library/Client/TestHasColorsHasColorsFail", has_colors_has_colors_fail);
 
 	return g_test_run();
 }

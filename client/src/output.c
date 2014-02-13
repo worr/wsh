@@ -168,26 +168,46 @@ static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
 		return FALSE;
 
 	gsize i = 0;
+
 	for (gchar** cur = col->error; *cur != NULL; cur++) {
 		if (! out->error[i])
 			return FALSE;
 
-		if (strncmp(out->error[i], *cur, strlen(*cur)))
+		gsize out_err_len = strlen(out->error[i]);
+		gsize cur_err_len = strlen(*cur);
+
+		if (out_err_len != cur_err_len)
+			return FALSE;
+
+		if (strncmp(out->error[i], *cur, MIN(out_err_len, cur_err_len) + 1))
 			return FALSE;
 
 		i++;
 	}
+
+	// Ensure that length is the same
+	if (col->error[i] != NULL || out->error[i] != NULL)
+		return FALSE;
 
 	i = 0;
 	for (gchar** cur = col->output; *cur != NULL; cur++) {
 		if (! out->output[i])
 			return FALSE;
 
-		if (strncmp(out->output[i], *cur, strlen(*cur)))
+		gsize out_out_len = strlen(out->output[i]);
+		gsize cur_out_len = strlen(*cur);
+
+		if (out_out_len != cur_out_len)
+			return FALSE;
+
+		if (strncmp(out->output[i], *cur, MIN(out_out_len, cur_out_len) + 1))
 			return FALSE;
 
 		i++;
 	}
+
+	if (col->output[i] != NULL || out->output[i] != NULL)
+		return FALSE;
 
 	return TRUE;
 }

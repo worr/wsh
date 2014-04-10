@@ -23,7 +23,9 @@
 
 #include <errno.h>
 #include <glib.h>
+#include <glib/gprintf.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -256,5 +258,46 @@ gboolean wsh_client_has_colors(void) {
 
 void wsh_client_reset_colors(void) {
 	_wsh_client_colors = colors_undecided;
+}
+
+static void color_print(const char* color, FILE* file, const char* format, va_list args) {
+	gboolean colors = wsh_client_has_colors();
+	if (colors && isatty(fileno(file)))
+		g_fprintf(file, "%s", color);
+
+	g_vfprintf(file, format, args);
+
+	if (colors && isatty(fileno(file)))
+		g_fprintf(file, "%s", "\x1b[39m");
+}
+
+void wsh_client_print_error(const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	if (wsh_client_get_dark_bg())
+		color_print("\x1b[91m", stderr, format, args);
+	else
+		color_print("\x1b[31m", stderr, format, args);
+	va_end(args);
+}
+
+void wsh_client_print_success(const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	if (wsh_client_get_dark_bg())
+		color_print("\x1b[92m", stdout, format, args);
+	else
+		color_print("\x1b[32m", stdout, format, args);
+	va_end(args);
+}
+
+void wsh_client_print_header(FILE* file, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	if (wsh_client_get_dark_bg())
+		color_print("\x1b[94m", file, format, args);
+	else
+		color_print("\x1b[34m", file, format, args);
+	va_end(args);
 }
 

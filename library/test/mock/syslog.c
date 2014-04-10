@@ -118,3 +118,4 @@ void syslog(int priority, const char* message, ...) {
 
 	num_syslog_called++;
 }
+

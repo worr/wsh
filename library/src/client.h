@@ -25,6 +25,7 @@
 #define __WSH_CLIENT_H
 
 #include <glib.h>
+#include <stdio.h>
 
 /** Maximum password length that wshc will accept */
 extern const gsize WSH_MAX_PASSWORD_LEN;
@@ -83,6 +84,9 @@ gboolean wsh_client_has_colors(void);
  * @brief Clear internal has_colors val
  */
 void wsh_client_reset_colors(void);
+void wsh_client_print_error(const char* format, ...);
+void wsh_client_print_success(const char* format, ...);
+void wsh_client_print_header(FILE* file, const char* format, ...);
 
 #endif
 

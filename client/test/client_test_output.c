@@ -262,9 +262,9 @@ static void hostname_output_subprocess(void) {
 
 static void hostname_output(void) {
 	gchar* expected_err =
-	    "localhost: stderr ****\nlocalhost: testing\nlocalhost: 1\nlocalhost: 2\nlocalhost: 3\n";
+	    "\x1b[94mlocalhost: stderr ****\n\x1b[39m\x1b[91mlocalhost: testing\n\x1b[39m\x1b[91mlocalhost: 1\n\x1b[39m\x1b[91mlocalhost: 2\n\x1b[39m\x1b[91mlocalhost: 3\n\x1b[39m";
 	gchar* expected_out =
-	    "localhost: stdout ****\nlocalhost: other\nlocalhost: test\n\nlocalhost: exit code: 0\n\n";
+	    "\x1b[94mlocalhost: stdout ****\n\x1b[39m\x1b[92mlocalhost: other\n\x1b[39m\x1b[92mlocalhost: test\n\x1b[39m\n\x1b[94mlocalhost: exit code: 0\n\n\x1b[39m";
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestHostnameOutput/subprocess", 0, 0);
@@ -285,9 +285,9 @@ static void hostname_output(void) {
 	wshc_init_output(&out);
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
-
 	if (g_test_trap_fork(0,
 	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
+		g_setenv("TERM", "linux"); // guarantee dark bg
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
@@ -386,7 +386,7 @@ static void failed_host_output(void) {
 	gchar* host = "test host";
 	gchar* message = "testing";
 	gchar* expected_err =
-		g_strdup_printf("The following hosts failed:\n%s: %s\n",
+		g_strdup_printf("\x1b[94mThe following hosts failed:\n\x1b[39m\x1b[91m%s: %s\n\x1b[39m",
                   host, message);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)

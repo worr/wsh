@@ -25,6 +25,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline void cleanup_hostnames(gchar** hosts, gsize num_hosts) {
+	for (gsize i = 0; i < num_hosts; i++)
+		g_strstrip(hosts[i]);
+}
+
 #ifdef WITH_RANGE
 #include "range_expansion.h"
 
@@ -45,6 +50,7 @@ gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query,
 	wsh_exp_range_cleanup();
 
 	*num_hosts = g_strv_length(*hosts);
+	cleanup_hostnames(*hosts, *num_hosts);
 
 	return EXIT_SUCCESS;
 }
@@ -69,6 +75,7 @@ gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,
 	*hosts = g_strsplit(file_contents, "\n", 0);
 	*num_hosts = g_strv_length(*hosts) - 1;
 	g_free(file_contents);
+	cleanup_hostnames(*hosts, *num_hosts);
 
 	return EXIT_SUCCESS;
 }
@@ -91,6 +98,7 @@ gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts,
 
 	*hosts = g_strsplit(output, "\n", 0);
 	*num_hosts = g_strv_length(*hosts) - 1;
+	cleanup_hostnames(*hosts, *num_hosts);
 
 wsh_exp_exec_filename_fail:
 	g_free(new_filename);

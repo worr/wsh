@@ -108,7 +108,6 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 
 	state = ssh_is_server_known(session->session);
 
-#ifdef HAVE_SSH_GET_PUBLICKEY
 	ssh_key key = NULL;
 	if (ssh_get_publickey(session->session, &key)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
@@ -119,20 +118,6 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 		return WSH_SSH_HOST_KEY_ERROR;
 	}
 	ssh_key_free(key);
-#else
-	guchar* hash = NULL;
-	gint hash_len = 0;
-	hash_len = ssh_get_pubkey_hash(session->session, &hash);
-	if (hash_len < 0) {
-		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
-		                   "%s: error getting hostkey: %s", session->hostname,
-		                   ssh_get_error(session->session));
-		wsh_ssh_disconnect(session);
-		free(hash);
-		return WSH_SSH_HOST_KEY_ERROR;
-	}
-	free(hash);
-#endif
 
 	// Let's add the hostkey if it didn't change or anything
 	switch (state) {
@@ -186,10 +171,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session != NULL);
 	g_assert(session->hostname != NULL);
 
-#ifdef HAVE_SSH_USERAUTH_NONE
-	// Are you fucking serious?
 	(void)ssh_userauth_none(session->session, NULL);
-#endif
+
 	gint method = ssh_userauth_list(session->session, NULL);
 	gint ret = -1;
 	gboolean pubkey_denied, password_denied, kbdint_denied;
@@ -285,25 +268,6 @@ wsh_ssh_authenticate_failure:
 	return ret;
 }
 
-gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout,
-                                  gboolean is_stderr) {
-	struct pollfd fds[1];
-	fds[0].fd = ssh_get_fd(session->session);
-	fds[0].events = POLLIN;
-	fds[0].revents = 0;
-
-	return poll(fds, 1, 100);
-}
-
-static gint poll_timeout(wsh_ssh_session_t* session, gint timeout,
-                         gboolean is_stderr) {
-#ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
-	return ssh_channel_poll_timeout(session->channel, timeout, is_stderr);
-#else
-	return wsh_ssh_channel_poll_timeout(session, timeout, is_stderr);
-#endif
-}
-
 gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->session != NULL);
@@ -336,7 +300,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 		goto wsh_ssh_exec_wshd_error;
 	}
 
-	if (poll_timeout(session, 100, TRUE)) {
+	if (ssh_channel_poll_timeout(session->channel, 100, TRUE)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
 		                   "%s: Can't execute wshd", session->hostname);
 		ret = WSH_SSH_EXEC_WSHD_ERR;

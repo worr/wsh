@@ -48,7 +48,6 @@ foreach( TEST_EXECUTABLE ${TEST_EXECUTABLES} )
 		add_executable(
 			${TEST_EXECUTABLE}
 			${TEST_EXECUTABLE}.c
-			${CMAKE_SOURCE_DIR}/library/test/mock/poll.c
 			${SOURCES}
 		)
 	else( TEST_EXECUTABLE STREQUAL "test_ssh" )

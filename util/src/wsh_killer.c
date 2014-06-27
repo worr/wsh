@@ -96,7 +96,8 @@ int main(int argc, char **argv) {
 	}
 
 	// We don't care about previous alarms
-	(void) alarm(sleep_time);
+	if (sleep_time)
+		(void) alarm(sleep_time);
 
 	if (sigaction(SIGALRM, &sa, &oldsa)) {
 		perror("sigaction");

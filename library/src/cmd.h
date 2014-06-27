@@ -61,6 +61,7 @@ GQuark WSH_CMD_ERROR;
 typedef enum {
 	WSH_CMD_SIG_ERR,		/**< error setting up signal handler */
 	WSH_CMD_PW_ERR,			/**< error looking up username in passwd */
+	WSH_CMD_ALLOC_ERR,		/**< error allocating memory */
 } wsh_cmd_errors_enum;
 
 /**

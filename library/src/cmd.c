@@ -40,12 +40,6 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 const guint MAX_CMD_ARGS = 255;
 const gchar* SUDO_CMD = "sudo -sA -u ";
 
-// Struct that we pass to our timeout callback
-struct kill_data {
-	wsh_cmd_res_t* res;
-	GPid pid;
-};
-
 // This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
 // close enough.
 // This is a separate function to make testing easier.
@@ -122,24 +116,6 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 	wsh_add_line(res, line, &res->std_error, &res->std_error_len);
 }
 
-static gboolean wsh_kill_proccess(gpointer user_data) {
-	g_assert(user_data != NULL);
-	struct kill_data* kdata = (struct kill_data*)user_data;
-
-	if (kill(kdata->pid, SIGKILL)) {
-		wsh_log_error(WSH_ERR_COMMAND_FAILED_TO_DIE, strerror(errno));
-		return FALSE;
-	}
-
-	gchar* mesg = g_strdup_printf("Timeout reached. Killed %d", kdata->pid);
-	wsh_log_error(WSH_ERR_COMMAND_TIMEOUT, mesg);
-	kdata->res->error_message = mesg;
-
-	kdata->res->exit_status =
-	    -1; /* Signal wsh_check_exit_status that there was a failure */
-	return FALSE;
-}
-
 // All this should do is log the status code and add it to our data struct
 static gboolean wsh_check_exit_status(GPid pid, gint status,
                                       struct cmd_data* data) {
@@ -150,12 +126,9 @@ static gboolean wsh_check_exit_status(GPid pid, gint status,
 	g_assert(res != NULL);
 	g_assert(req != NULL);
 
-	// res->exit_status is set to -1 if killed
-	if (res->exit_status != -1) {
-		res->exit_status = WEXITSTATUS(status);
-		wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd,
-		                          res->exit_status);
-	}
+	res->exit_status = WEXITSTATUS(status);
+	wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd,
+							  res->exit_status);
 
 	g_spawn_close_pid(pid);
 
@@ -275,38 +248,48 @@ write_stdin_err:
 	return FALSE;
 }
 
-static char* sudo_constructor(const char* cmd_string, const char* username, GError** err) {
+static char* sudo_constructor(const wsh_cmd_req_t* req, GError** err) {
 	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
+	const char* username = req->username;
+	const char* cmd_string = req->cmd_string;
 
 	g_assert(cmd_string != NULL);
 	g_assert(*err == NULL);
 	// Construct cmd to escalate privs assuming use of sudo
 	// XXX: su support
-	if (username != NULL && strlen(username) != 0) {
-		struct passwd *result, pwd;
-		char *buf = NULL;
-		size_t buf_len = 0;
-		if ((buf_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == SIZE_MAX) {
-			*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
-			return NULL;
-		}
-
-		buf = g_slice_alloc0(buf_len);
-
-		if (getpwnam_r(username, &pwd, buf, buf_len, &result)) {
-			*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
-			return NULL;
-		}
-
-		if (result == NULL) {
-			*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid username", username);
-			return NULL;
-		}
-
-		return g_strconcat(SUDO_CMD, username, " ", cmd_string, NULL);
+	if (username == NULL || strlen(username) == 0) {
+		username = "root";
 	}
 
-	return g_strconcat(SUDO_CMD, "root", " ", cmd_string, NULL);
+	struct passwd *result, pwd;
+	gchar *buf = NULL;
+	gsize buf_len = 0;
+	if ((buf_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == SIZE_MAX) {
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
+		return NULL;
+	}
+
+	buf = g_slice_alloc0(buf_len);
+
+	if (getpwnam_r(username, &pwd, buf, buf_len, &result)) {
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
+		return NULL;
+	}
+
+	if (result == NULL) {
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid username", username);
+		return NULL;
+	}
+
+	g_slice_free1(buf_len, buf);
+	buf = NULL;
+
+	gchar* timeout = g_strdup_printf("%zu", req->timeout);
+	gchar* ret = g_strconcat(SUDO_CMD, username, " /usr/libexec/wsh-killer ", timeout,
+	                   " " , cmd_string, NULL);
+	g_free(timeout);
+	timeout = NULL;
+	return ret;
 }
 
 // retval should be g_free'd
@@ -317,10 +300,17 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 		return NULL;
 
 	// If not sudo, we still need to enable the wsh killer
-	if (! req->sudo)
-		return g_strdup(req->cmd_string);
+	if (! req->sudo) {
+		gchar* timeout_str = g_strdup_printf("%zu", req->timeout);
 
-	return sudo_constructor(req->cmd_string, req->username, err);
+		gchar* ret = g_strconcat("/usr/libexec/wsh-killer ", timeout_str, " ",
+		                         req->cmd_string, NULL);
+		free(timeout_str);
+		timeout_str = NULL;
+		return ret;
+	}
+
+	return sudo_constructor(req, err);
 }
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
@@ -441,21 +431,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_source_attach(stdin_src, context);
 	user_data.in_watch = stdin_src;
 	g_source_unref(stdin_src);
-
-	// Add timeout if present
-	if (req->timeout != 0) {
-		struct kill_data kdata = {
-			.pid = pid,
-			.res = res,
-		};
-
-		GSource* timeout_src = g_timeout_source_new_seconds(req->timeout);
-		g_source_set_callback(timeout_src, (GSourceFunc)wsh_kill_proccess, &kdata,
-		                      NULL);
-		g_source_attach(timeout_src, context);
-		g_source_unref(timeout_src);
-		user_data.timeout_watch = timeout_src;
-	}
 
 	g_io_channel_unref(out);
 	g_io_channel_unref(err);

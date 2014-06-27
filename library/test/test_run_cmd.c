@@ -146,11 +146,6 @@ static void test_run_err(struct test_wsh_run_cmd_data* fixture,
 	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_BAD_QUOTING);
 
 	res->err = NULL;
-	req->cmd_string = "/blob/foobarbazzle";
-	wsh_run_cmd(res, req);
-	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_NOENT);
-
-	res->err = NULL;
 	req->cmd_string = "/bin/sh -c 'exit -0'";
 	req->cwd = "/foobarbaz";
 	wsh_run_cmd(res, req);
@@ -164,25 +159,25 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 
 	req->cmd_string = "/bin/ls";
 	gchar* res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "/bin/ls");
+	g_assert_cmpstr(res, ==, "/usr/libexec/wsh-killer 0 /bin/ls");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->sudo = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /usr/libexec/wsh-killer 0 /bin/ls");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "worr";
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u worr /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u worr /usr/libexec/wsh-killer 0 /bin/ls");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "";
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /usr/libexec/wsh-killer 0 /bin/ls");
 	g_assert_no_error(err);
 	g_free(res);
 

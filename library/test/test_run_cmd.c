@@ -160,38 +160,49 @@ static void test_run_err(struct test_wsh_run_cmd_data* fixture,
 static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
                                     gconstpointer user_data) {
 	wsh_cmd_req_t* req = fixture->req;
+	GError* err = NULL;
 
 	req->cmd_string = "/bin/ls";
-	gchar* res = wsh_construct_sudo_cmd(req);
+	gchar* res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "/bin/ls");
+	g_assert_no_error(err);
 	g_free(res);
 
 	req->sudo = TRUE;
-	res = wsh_construct_sudo_cmd(req);
+	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
+	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "worr";
-	res = wsh_construct_sudo_cmd(req);
+	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "sudo -sA -u worr /bin/ls");
+	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "";
-	res = wsh_construct_sudo_cmd(req);
+	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
+	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = " ";
-	res = wsh_construct_sudo_cmd(req);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root /bin/ls");
+	res = wsh_construct_sudo_cmd(req, &err);
+	g_assert_cmpstr(res, ==, NULL);
+	g_assert_error(err, WSH_CMD_ERROR, WSH_CMD_PW_ERR);
+	g_error_free(err);
+	err = NULL;
 	g_free(res);
 
 	req->cmd_string = "";
-	res = wsh_construct_sudo_cmd(req);
+	req->username = "";
+	res = wsh_construct_sudo_cmd(req, &err);
+	g_assert_no_error(err);
 	g_assert(res == NULL);
 
 	req->cmd_string = NULL;
-	res = wsh_construct_sudo_cmd(req);
+	res = wsh_construct_sudo_cmd(req, &err);
+	g_assert_no_error(err);
 	g_assert(res == NULL);
 }
 

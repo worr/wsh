@@ -60,6 +60,7 @@ GQuark WSH_CMD_ERROR;
  */
 typedef enum {
 	WSH_CMD_SIG_ERR,		/**< error setting up signal handler */
+	WSH_CMD_PW_ERR,			/**< error looking up username in passwd */
 } wsh_cmd_errors_enum;
 
 /**
@@ -73,13 +74,14 @@ typedef enum {
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 
 /**
- * @brief Helper for building a sudo command
+ * @brief Helper for building a sudo command with wsh-killer capabilities
  *
  * @param[in,out] req The command request that we're modifying
+ * @param[out] res The command result to store errors in
  *
- * @returns the final command to be executed
+ * @returns the final command to be executed or NULL if invalid
  */
-gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err);
 
 /**
  * @brief Checks stdout for new output to save in our wsh_cmd_res_t

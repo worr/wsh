@@ -23,11 +23,14 @@
 
 #include <errno.h>
 #include <glib.h>
+#include <pwd.h>
 #include <signal.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #ifndef HAVE_MEMSET_S
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
@@ -210,6 +213,7 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond,
 
 check_stream_err:
 	g_free(buf);
+	buf = NULL;
 
 	if (data->cmd_exited && data->out_closed && data->err_closed && data->in_closed)
 		g_main_loop_quit(data->loop);
@@ -271,35 +275,52 @@ write_stdin_err:
 	return FALSE;
 }
 
+static char* sudo_constructor(const char* cmd_string, const char* username, GError** err) {
+	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
+
+	g_assert(cmd_string != NULL);
+	g_assert(*err == NULL);
+	// Construct cmd to escalate privs assuming use of sudo
+	// XXX: su support
+	if (username != NULL && strlen(username) != 0) {
+		struct passwd *result, pwd;
+		char *buf = NULL;
+		size_t buf_len = 0;
+		if ((buf_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == SIZE_MAX) {
+			*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
+			return NULL;
+		}
+
+		buf = g_slice_alloc0(buf_len);
+
+		if (getpwnam_r(username, &pwd, buf, buf_len, &result)) {
+			*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
+			return NULL;
+		}
+
+		if (result == NULL) {
+			*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid username", username);
+			return NULL;
+		}
+
+		return g_strconcat(SUDO_CMD, username, " ", cmd_string, NULL);
+	}
+
+	return g_strconcat(SUDO_CMD, "root", " ", cmd_string, NULL);
+}
+
 // retval should be g_free'd
-gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	g_assert(req != NULL);
 
 	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
 		return NULL;
 
-	// If not sudo, don't actually construct the command
+	// If not sudo, we still need to enable the wsh killer
 	if (! req->sudo)
 		return g_strdup(req->cmd_string);
 
-	// Construct cmd to escalate privs assuming use of sudo
-	// Should probably get away from relying explicitly on sudo, but it's good
-	// enough for now
-
-	if (req->username != NULL && strlen(req->username) != 0) {
-		gboolean clean = FALSE;
-		for (gint i = 0; i < strlen(req->username); i++) {
-			if (g_ascii_isalnum((req->username)[i])) {
-				clean = TRUE;
-				break;
-			}
-		}
-
-		if (clean)
-			return g_strconcat(SUDO_CMD, req->username, " ", req->cmd_string, NULL);
-	}
-
-	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
+	return sudo_constructor(req->cmd_string, req->username, err);
 }
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
@@ -318,9 +339,8 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	GPid pid;
 
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
-	gchar* cmd = wsh_construct_sudo_cmd(req);
+	gchar* cmd = wsh_construct_sudo_cmd(req, &(res->err));
 
-// sorry Russ...
 #if GLIB_CHECK_VERSION ( 2, 34, 0 )
 	flags |= G_SPAWN_SEARCH_PATH_FROM_ENVP;
 #else
@@ -448,19 +468,24 @@ run_cmd_error:
 	g_main_loop_unref(loop);
 
 	g_free(log_cmd);
+	log_cmd = NULL;
 
 run_cmd_error_no_log_cmd:
 	// Free results of g_shell_parse_argv()
-	if (argcv != NULL)
+	if (argcv != NULL) {
 		g_strfreev(argcv);
+		argcv = NULL;
+	}
 
 	// Restoring old path
 	if (glib_check_version(2, 34, 0)) {
 		g_setenv("PATH", old_path, TRUE);
 		g_free(old_path);
+		old_path = NULL;
 	}
 
 	g_free(cmd);
+	cmd = NULL;
 
 	if (res->err != NULL) {
 		wsh_log_error(WSH_ERR_COMMAND_FAILED, res->err->message);

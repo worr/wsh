@@ -152,17 +152,17 @@ check_stream_err:
 	return !data->out_closed;
 }
 
-gboolean check_stdout(GIOChannel* out, GIOCondition cond,
+static gboolean check_stdout(GIOChannel* out, GIOCondition cond,
                           struct cmd_data* user_data) {
 	return check_stream(out, cond, user_data, FALSE);
 }
 
-gboolean check_stderr(GIOChannel* out, GIOCondition cond,
+static gboolean check_stderr(GIOChannel* out, GIOCondition cond,
                           struct cmd_data* user_data) {
 	return check_stream(out, cond, user_data, TRUE);
 }
 
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
+static gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
                          struct cmd_data* data) {
 	g_assert(data != NULL);
 

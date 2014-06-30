@@ -365,16 +365,6 @@ int main(int argc, char** argv) {
 		sudo_username = NULL;
 	}
 
-	if (script) {
-		g_free(script);
-		script = NULL;
-	}
-
-	if (grep) {
-		g_free(grep);
-		grep = NULL;
-	}
-
 	free_wsh_cmd_req_fields(&req);
 
 	gchar* output = NULL;

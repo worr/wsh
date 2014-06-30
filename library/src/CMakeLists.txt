@@ -20,7 +20,7 @@ endif( NOT LIB_INSTALL_DIR )
 
 add_library( wsh SHARED ${WSH_PROTOC_SOURCES} ${WSH_SOURCES} )
 install( TARGETS wsh LIBRARY DESTINATION ${libdir} )
-file( GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+set( files log.h cmd.h pack.h ssh.h expansion.h client.h libwsh.h )
 install( FILES ${files} DESTINATION include/libwsh )
 
 # Find protoc-c compiler

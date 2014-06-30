@@ -59,12 +59,6 @@ static gchar* range = NULL;
 static gboolean hostname_output = FALSE;
 static gboolean collate_output = FALSE;
 
-// Filter variables
-static gboolean lines = FALSE;
-static gchar* grep = NULL;
-static gint head = 0;
-static gint tail = 0;
-
 static void* passwd_mem;
 
 static GOptionEntry entries[] = {
@@ -87,12 +81,6 @@ static GOptionEntry entries[] = {
 	// Output options
 	{ "print-hostnames", 'H', 0, G_OPTION_ARG_NONE, &hostname_output, "Display output immediately, prefixed with hostname", NULL },
 	{ "print-collated", 'c', 0, G_OPTION_ARG_NONE, &collate_output, "Display output at the end, collated into matching chunks", NULL },
-
-	// Filter options
-	{ "lines", 0, 0, G_OPTION_ARG_NONE, &lines, "Display line count of output", NULL },
-	{ "grep", 0, 0, G_OPTION_ARG_STRING, &grep, "Display lines based on a PCRE", NULL },
-	{ "head", 0, 0, G_OPTION_ARG_INT, &head, "Display first n lines of output", NULL },
-	{ "tail", 0, 0, G_OPTION_ARG_INT, &tail, "Display last n lines of output", NULL },
 	{ NULL }
 };
 
@@ -115,24 +103,6 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->cwd = "";
 	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
-
-	if (lines)
-		req->filter_type = WSH_FILTER_LINES;
-
-	if (grep) {
-		req->filter_type = WSH_FILTER_GREP;
-		req->filter_stringarg = g_strdup(grep);
-	}
-
-	if (head) {
-		req->filter_type = WSH_FILTER_HEAD;
-		req->filter_intarg = head;
-	}
-
-	if (tail) {
-		req->filter_type = WSH_FILTER_TAIL;
-		req->filter_intarg = tail;
-	}
 }
 
 static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
@@ -156,12 +126,6 @@ static gboolean valid_arguments(gchar** mesg) {
 
 	if (timeout < -1) {
 		*mesg = g_strdup("-T | --timeout must be a positive value, 0 for none or -1 for default\n");
-		return FALSE;
-	}
-
-	if ((head && (tail || grep)) || (tail && grep) || (lines && (tail || grep)) ||
-	        (head && lines)) {
-		*mesg = g_strdup("Use only one filtering option");
 		return FALSE;
 	}
 

@@ -30,15 +30,6 @@ typedef union {
 	gchar buf[4];			/**< Byte string representation of message size */
 } wsh_message_size_t;
 
-/** Filter types */
-typedef enum {
-	WSH_FILTER_NONE,		/**< No filtering */
-	WSH_FILTER_TAIL,		/**< Tail filtering */
-	WSH_FILTER_HEAD,		/**< Head filtering */
-	WSH_FILTER_GREP,		/**< Grep filtering */
-	WSH_FILTER_LINES,		/**< Line count filtering */
-} wsh_filter_type_enum;
-
 /** A command request that we send to a remote host
  */
 typedef struct {
@@ -49,12 +40,9 @@ typedef struct {
 	gchar* password;	/**< The password to use with sudo */
 	gchar* cwd;			/**< Directory to execute in */
 	gchar* host;		/**< The host we're sending the request from */
-	gchar* filter_stringarg; /**< String arguments to filter */
-	gsize filter_intarg;	/**< String argument to filter */
 	gsize std_input_len; /**< The length of std_input */
 	guint64 timeout;	/**< Maximum time to let a command run. 0 for none */
 	gint in_fd;			/**< Internal use only */
-	wsh_filter_type_enum filter_type; 	/**< Type of filtering to use */
 	gboolean sudo;		/**< Whether or not to use sudo */
 } wsh_cmd_req_t;
 

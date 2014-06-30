@@ -16,10 +16,6 @@
 .Op Fl c | -print-collated
 .Op Fl H | -print-hostnames
 .Op Fl V | -version
-.Op Fl -grep Ar pcre
-.Op Fl -head Ar num
-.Op Fl -tail Ar num
-.Op Fl -lines
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
 .Ar command
@@ -59,7 +55,7 @@ can be 0 for no timeout (dangerous), -1 for default (300 seconds) or any
 positive number.
 .sp
 .Em WARNING
-Commands run without timeout may run until 
+Commands run without timeout may run until
 .Xr wshd 1
 is killed
 .It Fl s | -script Ar script
@@ -95,23 +91,6 @@ Print out results immediately, prefixing with hostname:
 Collates the output after all hosts have finished, prints in blocks
 of hosts whose stdout, stderr and exit code match. This is the default.
 .El
-.Ss Filtering arguments
-.Bl -tag -width u
-.It Fl -grep Ar pcre
-Takes a
-.Ar pcre
-and matches all the output on the remote end against it.
-.It Fl -lines
-Returns the line count of the output on the remote host.
-.It Fl -head Ar num
-Returns the first
-.Ar num
-lines of output from the remote host.
-.It Fl -tail Ar num
-Returns the last
-.Ar num
-lines of output from the remote host.
-.El
 .Ss Executing commands
 .Pp
 The remainder of the line will be executed on the remote hosts. If the command
@@ -138,7 +117,7 @@ easier to see errors with commands.
 .Sh EXAMPLES
 .Dl wshc -h localhost -- ls -l
 .Pp
-SSH's into localhost and runs ls -l. 
+SSH's into localhost and runs ls -l.
 .Pp
 .Dl wshc -h app01,app02,app03,app04,app05 -t 5 -- uname -a
 .Pp
@@ -146,7 +125,7 @@ SSH's into app01-5 with 5 threads and runs uname -a.
 .Pp
 .Dl wshc -h app01,app02,app03,app04 -U root whoami
 .Pp
-The 
+The
 .Fl U
 flag will allow you to select the user that
 .Xr wshd 1

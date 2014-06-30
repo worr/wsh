@@ -2,7 +2,7 @@ set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 file( MAKE_DIRECTORY ${PROTO_GEN_DIR} )
 
 set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
-set( WSH_SOURCES log.c cmd.c pack.c ssh.c expansion.c client.c filter.c )
+set( WSH_SOURCES log.c cmd.c pack.c ssh.c expansion.c client.c )
 
 if( NOT HAVE_MEMSET_S )
 	set( WSH_SOURCES memset_s.c ${WSH_SOURCES} )
@@ -34,8 +34,8 @@ file( GLOB PROTO_INPUT RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.proto )
 # Loops over proto files and changes the internal name to compiled names
 foreach( PROTO_FILE ${PROTO_INPUT} )
 	get_filename_component( PROTO_NAME ${PROTO_FILE} NAME_WE )
-	set( PROTO_GEN ${PROTO_GEN} 
-		${PROTO_GEN_DIR}/${PROTO_NAME}.pb-c.h 
+	set( PROTO_GEN ${PROTO_GEN}
+		${PROTO_GEN_DIR}/${PROTO_NAME}.pb-c.h
 		${PROTO_GEN_DIR}/${PROTO_NAME}.pb-c.c )
 endforeach( PROTO_FILE ${PROTO_INPUT} )
 
@@ -57,7 +57,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}
 )
 
-target_link_libraries( wsh 
+target_link_libraries( wsh
 	${GLIB2_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}

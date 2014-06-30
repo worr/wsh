@@ -27,7 +27,6 @@
 #include <unistd.h>
 
 #include "cmd.h"
-#include "filter.h"
 #include "log.h"
 #include "output.h"
 #include "parse.h"
@@ -72,7 +71,6 @@ int main(int argc, char** argv, char** env) {
 	}
 
 	wsh_run_cmd(res, req);
-	wsh_filter(res, req);
 
 wshd_error:
 	do {

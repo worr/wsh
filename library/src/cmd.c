@@ -20,6 +20,7 @@
  */
 #include "config.h"
 #include "cmd.h"
+#include "cmd_internal.h"
 
 #include <errno.h>
 #include <glib.h>
@@ -39,51 +40,6 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 
 const guint MAX_CMD_ARGS = 255;
 const gchar* SUDO_CMD = "sudo -sA -u ";
-
-// This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
-// close enough.
-// This is a separate function to make testing easier.
-const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable) {
-	for (gchar* var = *envp; var != NULL; var = *(envp++)) {
-		if (strstr(var, variable) == var)
-			return strchr(var, '=') + 1;
-	}
-	return NULL;
-}
-
-gchar** g_environ_setenv_ov(gchar** envp, const gchar* variable,
-                            const gchar* value, gboolean overwrite) {
-	gchar* var;
-
-	for (var = *envp; var != NULL; var = *(envp++)) {
-		if (strstr(var, variable) == var)
-			break;
-	}
-
-	if (var != NULL && overwrite) {
-		g_free(var);
-		var = g_strdup_printf("%s=%s", variable, value);
-	} else {
-		gint length = g_strv_length(envp);
-		envp = g_renew(gchar*, envp, length + 2);
-		envp[length] = g_strdup_printf("%s=%s", variable, value);
-		envp[length + 1] = NULL;
-	}
-
-	return envp;
-}
-
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-#else
-const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
-	return g_environ_getenv_ov(envp, variable);
-}
-
-gchar** g_environ_setenv(gchar** envp, const gchar* variable,
-                         const gchar* value, gboolean overwrite) {
-	return g_environ_setenv_ov(envp, variable, value, overwrite);
-}
-#endif
 
 static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
                          gsize* buf_len) {
@@ -117,7 +73,7 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 }
 
 // All this should do is log the status code and add it to our data struct
-static gboolean wsh_check_exit_status(GPid pid, gint status,
+static gboolean check_exit_status(GPid pid, gint status,
                                       struct cmd_data* data) {
 	g_assert(data != NULL);
 
@@ -140,7 +96,7 @@ static gboolean wsh_check_exit_status(GPid pid, gint status,
 	return !data->cmd_exited;
 }
 
-static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond,
+static gboolean check_stream(GIOChannel* out, GIOCondition cond,
                                  struct cmd_data* data, gboolean std_err) {
 	g_assert(data != NULL);
 
@@ -196,14 +152,14 @@ check_stream_err:
 	return !data->out_closed;
 }
 
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond,
+gboolean check_stdout(GIOChannel* out, GIOCondition cond,
                           struct cmd_data* user_data) {
-	return wsh_check_stream(out, cond, user_data, FALSE);
+	return check_stream(out, cond, user_data, FALSE);
 }
 
-gboolean wsh_check_stderr(GIOChannel* out, GIOCondition cond,
+gboolean check_stderr(GIOChannel* out, GIOCondition cond,
                           struct cmd_data* user_data) {
-	return wsh_check_stream(out, cond, user_data, TRUE);
+	return check_stream(out, cond, user_data, TRUE);
 }
 
 gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
@@ -331,25 +287,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
 	gchar* cmd = wsh_construct_sudo_cmd(req, &(res->err));
 
-#if GLIB_CHECK_VERSION ( 2, 34, 0 )
-	flags |= G_SPAWN_SEARCH_PATH_FROM_ENVP;
-#else
-	flags |= G_SPAWN_SEARCH_PATH;
-#endif
-
-	/* Older versions of glib do not include G_SPAWN_SEARCH_PATH_FROM_ENVP
-	 * flag. To get around this, we detect what version of glib we're running,
-	 * copy the user-defined path into the current path, run the command and restore the
-	 * old path.
-	 */
-	if (glib_check_version(2, 34, 0)) {
-		const gchar* new_path;
-		old_path = g_strdup(g_getenv("PATH"));
-
-		if ((new_path = g_environ_getenv(req->env, "PATH")) != NULL)
-			g_setenv(new_path, "PATH", TRUE);
-	}
-
 	if (req->sudo) {
 		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", "/usr/libexec/wsh-askpass",
 		                       TRUE)) {
@@ -399,7 +336,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 
 	// Watch child process
 	GSource* watch_src = g_child_watch_source_new(pid);
-	g_source_set_callback(watch_src, (GSourceFunc)wsh_check_exit_status, &user_data,
+	g_source_set_callback(watch_src, (GSourceFunc)check_exit_status, &user_data,
 	                      NULL);
 	g_source_attach(watch_src, context);
 	user_data.cmd_watch = watch_src;
@@ -412,14 +349,14 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 
 	// Add IO channels
 	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP | G_IO_NVAL);
-	g_source_set_callback(stdout_src, (GSourceFunc)wsh_check_stdout, &user_data,
+	g_source_set_callback(stdout_src, (GSourceFunc)check_stdout, &user_data,
 	                      NULL);
 	g_source_attach(stdout_src, context);
 	user_data.out_watch = stdout_src;
 	g_source_unref(stdout_src);
 
 	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP | G_IO_NVAL);
-	g_source_set_callback(stderr_src, (GSourceFunc)wsh_check_stderr, &user_data,
+	g_source_set_callback(stderr_src, (GSourceFunc)check_stderr, &user_data,
 	                      NULL);
 	g_source_attach(stderr_src, context);
 	user_data.err_watch = stderr_src;

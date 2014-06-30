@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "cmd.h"
+#include "cmd_internal.h"
 #include "log.h"
 
 extern char** environ;
@@ -211,61 +212,6 @@ static void test_wsh_run_cmd_path(struct test_wsh_run_cmd_data* fixture,
 	g_assert(res->exit_status == 0);
 }
 
-static void g_environ_getenv_override(struct test_wsh_run_cmd_data* fixture,
-                                      gconstpointer user_data) {
-	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
-
-	const gchar* path = g_environ_getenv_ov(envp, "PATH");
-	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
-}
-
-static void g_environ_getenv_override_fail(struct test_wsh_run_cmd_data*
-        fixture, gconstpointer user_data) {
-	gchar* envp[] = { "PATH=/bin:/usr/bin", "USER=will", NULL };
-
-	const gchar* horkus = g_environ_getenv_ov(envp, "HORKUS");
-	g_assert(horkus == NULL);
-}
-
-static void g_environ_getenv_override_mid(struct test_wsh_run_cmd_data* fixture,
-        gconstpointer user_data) {
-	gchar* envp[] = { "USER=will", "PATH=/bin:/usr/bin", NULL };
-
-	const gchar* path = g_environ_getenv_ov(envp, "PATH");
-	g_assert_cmpstr(path, ==, "/bin:/usr/bin");
-}
-
-/*static void test_wsh_write_stdin_sudo(struct test_wsh_run_cmd_data* fixture, gconstpointer user_data) {
-	gint fds[2];
-	gchar* buf;
-	gsize buf_len;
-
-	if (pipe(fds))
-		g_assert_not_reached();
-
-	GIOChannel* in = g_io_channel_unix_new(fds[0]);
-	GIOChannel* mock_stdin = g_io_channel_unix_new(fds[1]);
-
-	struct test_cmd_data data = {
-		.req = fixture->req,
-		.res = fixture->res,
-	};
-
-	fixture->req->sudo = TRUE;
-	wsh_write_stdin(mock_stdin, G_IO_IN, &data);
-	g_io_channel_read_line(in, &buf, &buf_len, NULL, NULL);
-
-	g_assert_cmpstr(g_strchomp(buf), ==, "test");
-
-	for (int i = 0; i < 4; i++)
-		g_assert(fixture->req->password[i] == 0);
-
-	g_io_channel_shutdown(in, FALSE, NULL);
-	g_io_channel_shutdown(mock_stdin, FALSE, NULL);
-	close(fds[0]);
-	close(fds[1]);
-}*/
-
 static void test_wsh_run_cmd_timeout(struct test_wsh_run_cmd_data* fixture,
                                      gconstpointer user_data) {
 	g_test_timer_start();
@@ -292,17 +238,8 @@ int main(int argc, char** argv, char** env) {
 	           test_run_stderr, teardown);
 	g_test_add("/Library/RunCmd/Errors", struct test_wsh_run_cmd_data, NULL, setup,
 	           test_run_err, teardown);
-	g_test_add("/Library/RunCmd/EnvironGetEnvOverride",
-	           struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override, teardown);
-	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideFail",
-	           struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_fail,
-	           teardown);
-	g_test_add("/Library/RunCmd/EnvironGetEnvOverrideMid",
-	           struct test_wsh_run_cmd_data, NULL, setup, g_environ_getenv_override_mid,
-	           teardown);
 	g_test_add("/Library/RunCmd/Path", struct test_wsh_run_cmd_data, NULL, setup,
 	           test_wsh_run_cmd_path, teardown);
-	//g_test_add("/Library/RunCmd/Password", struct test_wsh_run_cmd_data, NULL, setup, test_wsh_write_stdin_sudo, teardown);
 	g_test_add("/Library/RunCmd/Timeout", struct test_wsh_run_cmd_data, NULL, setup,
 	           test_wsh_run_cmd_timeout, teardown);
 

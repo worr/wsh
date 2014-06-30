@@ -21,42 +21,6 @@
 /** @cond */
 #ifdef BUILD_TESTS
 
-/**
- * @brief Checks stdout for new output to save in our wsh_cmd_res_t
- *
- * @param[in] out The GIOChannel to check
- * @param[in] cond The GIOCondition that triggered the call
- * @param[out] data Transient main loop data
- *
- * @returns FALSE if event source should be removed
- */
-gboolean check_stdout(GIOChannel* out, GIOCondition cond,
-                          struct cmd_data* data);
-
-/**
- * @brief Checks stderr for new output to save in our wsh_cmd_res_t
- *
- * @param[in] err The GIOChannel to check
- * @param[in] cond The GIOCondition that triggered the call
- * @param[out] data Transient main loop data
- *
- * @returns FALSE if event source should be removed
- */
-gboolean check_stderr(GIOChannel* err, GIOCondition cond,
-                          struct cmd_data* data);
-
-/**
- * @brief Writes stdin to the command
- *
- * @param[in] in The GIOChannel to write to
- * @param[in] cond The GIOCondition that triggered the call
- * @param[out] data Transient main loop data
- *
- * @returns FALSE if event source should be removed
- */
-gboolean write_stdin(GIOChannel* in, GIOCondition cond,
-                         struct cmd_data* data);
-
 struct test_cmd_data {
 	GMainLoop* loop;
 	wsh_cmd_req_t* req;

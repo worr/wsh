@@ -308,7 +308,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gint ret = EXIT_SUCCESS;
 	GPid pid;
 
-	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
+	gint flags = G_SPAWN_DO_NOT_REAP_CHILD|G_SPAWN_SEARCH_PATH;
 	gchar* cmd = wsh_construct_sudo_cmd(req, &(res->err));
 
 	if (req->sudo) {

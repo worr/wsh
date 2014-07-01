@@ -56,16 +56,10 @@ typedef void* ssh_session;
 typedef void* ssh_channel;
 typedef void* ssh_scp;
 typedef void* ssh_pcap_file;
-#ifdef HAVE_SSH_GET_PUBLICKEY
 typedef void* ssh_key;
-#endif
 
-#ifdef HAVE_SSH_GET_PUBLICKEY
 gint ssh_get_publickey();
 void ssh_key_free();
-#else
-gint ssh_get_pubkey_hash();
-#endif
 
 void ssh_set_blocking();
 void set_ssh_init_ret(gint ret);

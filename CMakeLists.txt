@@ -117,15 +117,6 @@ endif( HAVE_C11 )
 set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} )
 set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} )
 
-# This function is only in newer versions of libssh
-check_function_exists( ssh_channel_poll_timeout HAVE_SSH_CHANNEL_POLL_TIMEOUT )
-
-# New versions of libssh need this to be called before any other auth
-check_function_exists( ssh_userauth_none HAVE_SSH_USERAUTH_NONE )
-
-# Even newer versions of libssh require that you use ssh_get_publickey instead of ssh_get_pubkey
-check_function_exists( ssh_get_publickey HAVE_SSH_GET_PUBLICKEY )
-
 configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 
 # We need to set these per target

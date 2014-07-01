@@ -34,9 +34,11 @@ static void wsh_exp_flat_filename_success(void) {
 	                            "../../../library/test/worrtest", &err);
 
 	g_assert_no_error(err);
-	g_assert(num_hosts == 1);
+	g_assert(num_hosts == 3);
 	g_assert(ret == 0);
 	g_assert_cmpstr(hosts[0], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[1], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[2], ==, "rancor.csh.rit.edu");
 }
 
 static void wsh_exp_flat_filename_no_file(void) {
@@ -62,9 +64,11 @@ static void wsh_exp_exec_filename_success(void) {
 	                            "../../../library/test/worr2test.sh", &err);
 
 	g_assert_no_error(err);
-	g_assert(num_hosts == 1);
+	g_assert(num_hosts == 3);
 	g_assert(ret == 0);
 	g_assert_cmpstr(hosts[0], ==, "hactar.csh.rit.edu");
+	g_assert_cmpstr(hosts[1], ==, "brownstoat.csh.rit.edu");
+	g_assert_cmpstr(hosts[2], ==, "brownstoat.csh.rit.edu");
 }
 
 static void wsh_exp_exec_filename_no_file(void) {
@@ -90,9 +94,11 @@ static void wsh_exp_filename_success(void) {
 	                       &err);
 
 	g_assert_no_error(err);
-	g_assert(num_hosts == 1);
+	g_assert(num_hosts == 3);
 	g_assert(ret == 0);
 	g_assert_cmpstr(hosts[0], ==, "hactar.csh.rit.edu");
+	g_assert_cmpstr(hosts[1], ==, "brownstoat.csh.rit.edu");
+	g_assert_cmpstr(hosts[2], ==, "brownstoat.csh.rit.edu");
 	g_strfreev(hosts);
 
 	hosts = NULL;
@@ -102,9 +108,11 @@ static void wsh_exp_filename_success(void) {
 	                       &err);
 
 	g_assert_no_error(err);
-	g_assert(num_hosts == 1);
+	g_assert(num_hosts == 3);
 	g_assert(ret == 0);
 	g_assert_cmpstr(hosts[0], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[1], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[2], ==, "rancor.csh.rit.edu");
 	g_strfreev(hosts);
 }
 

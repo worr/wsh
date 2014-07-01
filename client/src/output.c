@@ -20,6 +20,7 @@
  */
 #include "config.h"
 #include "output.h"
+#include "client.h"
 
 #include <errno.h>
 #include <glib.h>
@@ -120,9 +121,9 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
 
 	if (res->std_output_len) {
 		if (out->stdout_tty)
-			g_print("%s: stdout ****\n", hostname);
+			wsh_client_print_header(stdout, "%s: stdout ****\n", hostname);
 		for (guint32 i = 0; i < res->std_output_len; i++)
-			g_print("%s: %s\n", hostname, res->std_output[i]);
+			wsh_client_print_success("%s: %s\n", hostname, res->std_output[i]);
 	}
 
 	if (res->std_output_len || res->std_error_len)
@@ -131,13 +132,14 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
 
 	if (res->std_error_len) {
 		if (out->stderr_tty)
-			g_printerr("%s: stderr ****\n", hostname);
+			wsh_client_print_header(stderr, "%s: stderr ****\n", hostname);
 		for (guint32 i = 0; i < res->std_error_len; i++)
-			g_printerr("%s: %s\n", hostname, res->std_error[i]);
+			wsh_client_print_error("%s: %s\n", hostname, res->std_error[i]);
 	}
 
 	if (out->stdout_tty)
-		g_print("%s: exit code: %d\n\n", hostname, res->exit_status);
+		wsh_client_print_header(stdout, "%s: exit code: %d\n\n", hostname,
+                                res->exit_status);
 
 	g_mutex_unlock(out->mut);
 
@@ -366,14 +368,16 @@ void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
 
 static void print_host(const gchar* key, const gchar* val,
                        const void* user_data) {
-	g_printerr("%s: %s\n", key, val);
+	wsh_client_print_error("%s: %s\n", key, val);
 }
 
 void wshc_write_failed_hosts(wshc_output_info_t* out) {
 	g_assert(out);
 
-	if (out->stderr_tty)
-		g_printerr("The following hosts failed:\n");
-	g_hash_table_foreach(out->failed_hosts, (GHFunc)print_host, NULL);
+	if (g_hash_table_size(out->failed_hosts)) {
+		if (out->stderr_tty)
+			wsh_client_print_header(stderr, "The following hosts failed:\n");
+		g_hash_table_foreach(out->failed_hosts, (GHFunc)print_host, NULL);
+	}
 }
 

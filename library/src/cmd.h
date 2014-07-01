@@ -60,6 +60,8 @@ GQuark WSH_CMD_ERROR;
  */
 typedef enum {
 	WSH_CMD_SIG_ERR,		/**< error setting up signal handler */
+	WSH_CMD_PW_ERR,			/**< error looking up username in passwd */
+	WSH_CMD_ALLOC_ERR,		/**< error allocating memory */
 } wsh_cmd_errors_enum;
 
 /**
@@ -73,71 +75,14 @@ typedef enum {
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 
 /**
- * @brief Helper for building a sudo command
+ * @brief Helper for building a sudo command with wsh-killer capabilities
  *
  * @param[in,out] req The command request that we're modifying
+ * @param[out] res The command result to store errors in
  *
- * @returns the final command to be executed
+ * @returns the final command to be executed or NULL if invalid
  */
-gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req);
-
-/**
- * @brief Checks stdout for new output to save in our wsh_cmd_res_t
- *
- * @param[in] out The GIOChannel to check
- * @param[in] cond The GIOCondition that triggered the call
- * @param[out] data Transient main loop data
- *
- * @returns FALSE if event source should be removed
- */
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond,
-                          struct cmd_data* data);
-
-/**
- * @brief Checks stderr for new output to save in our wsh_cmd_res_t
- *
- * @param[in] err The GIOChannel to check
- * @param[in] cond The GIOCondition that triggered the call
- * @param[out] data Transient main loop data
- *
- * @returns FALSE if event source should be removed
- */
-gboolean wsh_check_stderr(GIOChannel* err, GIOCondition cond,
-                          struct cmd_data* data);
-
-/**
- * @brief Writes stdin to the command
- *
- * @param[in] in The GIOChannel to write to
- * @param[in] cond The GIOCondition that triggered the call
- * @param[out] data Transient main loop data
- *
- * @returns FALSE if event source should be removed
- */
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
-                         struct cmd_data* data);
-
-/** @cond */
-#ifdef BUILD_TESTS
-
-struct test_cmd_data {
-	GMainLoop* loop;
-	wsh_cmd_req_t* req;
-	wsh_cmd_res_t* res;
-	gboolean cmd_exited;
-	gboolean out_closed;
-	gboolean err_closed;
-};
-
-const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable);
-
-#endif
-
-# if GLIB_CHECK_VERSION( 2, 32, 0 )
-# else
-const gchar* g_environ_getenv(gchar** envp, const gchar* variable);
-# endif
-/** @endcond */
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err);
 
 #endif
 

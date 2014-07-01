@@ -404,7 +404,6 @@ static void exec_wshd_channel_exec_failure(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
-#ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
 static void exec_wshd_poll_failure(void) {
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
@@ -429,7 +428,6 @@ static void exec_wshd_poll_failure(void) {
 
 	session = NULL;
 }
-#endif
 
 static void exec_wshd_success(void) {
 	set_ssh_connect_res(SSH_OK);
@@ -617,30 +615,6 @@ static void scp_init_success(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
-static void poll_timeout(void) {
-	set_poll_ret(0);
-
-	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
-
-	gint ret = wsh_ssh_channel_poll_timeout(session, 100, TRUE);
-
-	g_assert(ret == 0);
-
-	g_slice_free(wsh_ssh_session_t, session);
-}
-
-static void poll_exec_fail(void) {
-	set_poll_ret(1);
-
-	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
-
-	gint ret = wsh_ssh_channel_poll_timeout(session, 100, TRUE);
-
-	g_assert(ret == 1);
-
-	g_slice_free(wsh_ssh_session_t, session);
-}
-
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -674,10 +648,8 @@ int main(int argc, char** argv) {
 	                exec_wshd_channel_failure);
 	g_test_add_func("/Library/SSH/ExecWshdExecError",
 	                exec_wshd_channel_exec_failure);
-#ifdef HAVE_SSH_CHANNEL_POLL_TIMEOUT
 	g_test_add_func("/Library/SSH/ExecWshdPollError",
 	                exec_wshd_poll_failure);
-#endif
 	g_test_add_func("/Library/SSH/ExecWshSuccess",
 	                exec_wshd_success);
 
@@ -702,11 +674,6 @@ int main(int argc, char** argv) {
 	                scp_init_fails);
 	g_test_add_func("/Library/SSH/SFTPInitSuccess",
 	                scp_init_success);
-
-	g_test_add_func("/Library/SSH/PollTimeout",
-	                poll_timeout);
-	g_test_add_func("/Library/SSH/PollFailure",
-	                poll_exec_fail);
 
 	return g_test_run();
 }

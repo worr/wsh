@@ -20,14 +20,18 @@
  */
 #include "config.h"
 #include "cmd.h"
+#include "cmd_internal.h"
 
 #include <errno.h>
 #include <glib.h>
+#include <pwd.h>
 #include <signal.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #ifndef HAVE_MEMSET_S
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
@@ -36,57 +40,6 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 
 const guint MAX_CMD_ARGS = 255;
 const gchar* SUDO_CMD = "sudo -sA -u ";
-
-// Struct that we pass to our timeout callback
-struct kill_data {
-	wsh_cmd_res_t* res;
-	GPid pid;
-};
-
-// This doesn't *exactly* mimic the behavior of g_environ_getenv(), but it's
-// close enough.
-// This is a separate function to make testing easier.
-const gchar* g_environ_getenv_ov(gchar** envp, const gchar* variable) {
-	for (gchar* var = *envp; var != NULL; var = *(envp++)) {
-		if (strstr(var, variable) == var)
-			return strchr(var, '=') + 1;
-	}
-	return NULL;
-}
-
-gchar** g_environ_setenv_ov(gchar** envp, const gchar* variable,
-                            const gchar* value, gboolean overwrite) {
-	gchar* var;
-
-	for (var = *envp; var != NULL; var = *(envp++)) {
-		if (strstr(var, variable) == var)
-			break;
-	}
-
-	if (var != NULL && overwrite) {
-		g_free(var);
-		var = g_strdup_printf("%s=%s", variable, value);
-	} else {
-		gint length = g_strv_length(envp);
-		envp = g_renew(gchar*, envp, length + 2);
-		envp[length] = g_strdup_printf("%s=%s", variable, value);
-		envp[length + 1] = NULL;
-	}
-
-	return envp;
-}
-
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-#else
-const gchar* g_environ_getenv(gchar** envp, const gchar* variable) {
-	return g_environ_getenv_ov(envp, variable);
-}
-
-gchar** g_environ_setenv(gchar** envp, const gchar* variable,
-                         const gchar* value, gboolean overwrite) {
-	return g_environ_setenv_ov(envp, variable, value, overwrite);
-}
-#endif
 
 static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
                          gsize* buf_len) {
@@ -119,26 +72,8 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 	wsh_add_line(res, line, &res->std_error, &res->std_error_len);
 }
 
-static gboolean wsh_kill_proccess(gpointer user_data) {
-	g_assert(user_data != NULL);
-	struct kill_data* kdata = (struct kill_data*)user_data;
-
-	if (kill(kdata->pid, SIGKILL)) {
-		wsh_log_error(WSH_ERR_COMMAND_FAILED_TO_DIE, strerror(errno));
-		return FALSE;
-	}
-
-	gchar* mesg = g_strdup_printf("Timeout reached. Killed %d", kdata->pid);
-	wsh_log_error(WSH_ERR_COMMAND_TIMEOUT, mesg);
-	kdata->res->error_message = mesg;
-
-	kdata->res->exit_status =
-	    -1; /* Signal wsh_check_exit_status that there was a failure */
-	return FALSE;
-}
-
 // All this should do is log the status code and add it to our data struct
-static gboolean wsh_check_exit_status(GPid pid, gint status,
+static gboolean check_exit_status(GPid pid, gint status,
                                       struct cmd_data* data) {
 	g_assert(data != NULL);
 
@@ -147,12 +82,9 @@ static gboolean wsh_check_exit_status(GPid pid, gint status,
 	g_assert(res != NULL);
 	g_assert(req != NULL);
 
-	// res->exit_status is set to -1 if killed
-	if (res->exit_status != -1) {
-		res->exit_status = WEXITSTATUS(status);
-		wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd,
-		                          res->exit_status);
-	}
+	res->exit_status = WEXITSTATUS(status);
+	wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd,
+							  res->exit_status);
 
 	g_spawn_close_pid(pid);
 
@@ -164,7 +96,7 @@ static gboolean wsh_check_exit_status(GPid pid, gint status,
 	return !data->cmd_exited;
 }
 
-static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond,
+static gboolean check_stream(GIOChannel* out, GIOCondition cond,
                                  struct cmd_data* data, gboolean std_err) {
 	g_assert(data != NULL);
 
@@ -210,6 +142,7 @@ static gboolean wsh_check_stream(GIOChannel* out, GIOCondition cond,
 
 check_stream_err:
 	g_free(buf);
+	buf = NULL;
 
 	if (data->cmd_exited && data->out_closed && data->err_closed && data->in_closed)
 		g_main_loop_quit(data->loop);
@@ -219,17 +152,17 @@ check_stream_err:
 	return !data->out_closed;
 }
 
-gboolean wsh_check_stdout(GIOChannel* out, GIOCondition cond,
+static gboolean check_stdout(GIOChannel* out, GIOCondition cond,
                           struct cmd_data* user_data) {
-	return wsh_check_stream(out, cond, user_data, FALSE);
+	return check_stream(out, cond, user_data, FALSE);
 }
 
-gboolean wsh_check_stderr(GIOChannel* out, GIOCondition cond,
+static gboolean check_stderr(GIOChannel* out, GIOCondition cond,
                           struct cmd_data* user_data) {
-	return wsh_check_stream(out, cond, user_data, TRUE);
+	return check_stream(out, cond, user_data, TRUE);
 }
 
-gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
+static gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
                          struct cmd_data* data) {
 	g_assert(data != NULL);
 
@@ -271,35 +204,93 @@ write_stdin_err:
 	return FALSE;
 }
 
+static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** err) {
+	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
+	const char* username = req->username;
+	const char* cmd_string = req->cmd_string;
+
+	g_assert(cmd_string != NULL);
+	g_assert(*err == NULL);
+	// Construct cmd to escalate privs assuming use of sudo
+	// XXX: su support
+	if (username == NULL || strlen(username) == 0) {
+		username = "root";
+	}
+
+	gchar* timeout = g_strdup_printf("%zu", req->timeout);
+	gchar* ret = g_strconcat(SUDO_CMD, username, " /usr/libexec/wsh-killer ", timeout,
+	                   " ", shell, " -c '", cmd_string, "'", NULL);
+
+	g_free(shell);
+	shell = NULL;
+
+	g_free(timeout);
+	timeout = NULL;
+	return ret;
+}
+
+static gchar* get_shell(const gchar* username, GError** err) {
+	struct passwd *result, pwd;
+	gchar *buf = NULL;
+	gsize buf_len = 0;
+	const gchar* user = username;
+
+	if (user == NULL || strlen(user) == 0) {
+		user = "root";
+	}
+
+	if ((buf_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == SIZE_MAX) {
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
+		return NULL;
+	}
+
+	buf = g_slice_alloc0(buf_len);
+
+	if (getpwnam_r(user, &pwd, buf, buf_len, &result)) {
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
+		return NULL;
+	}
+
+	if (result == NULL) {
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid user", user);
+		return NULL;
+	}
+
+	gchar* ret = g_strdup(pwd.pw_shell);
+
+	g_slice_free1(buf_len, buf);
+	buf = NULL;
+
+	return ret;
+}
+
 // retval should be g_free'd
-gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req) {
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	g_assert(req != NULL);
 
 	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
 		return NULL;
 
-	// If not sudo, don't actually construct the command
-	if (! req->sudo)
-		return g_strdup(req->cmd_string);
+	gchar* shell_str = get_shell(req->username, err);
+	if (shell_str == NULL)
+		return NULL;
 
-	// Construct cmd to escalate privs assuming use of sudo
-	// Should probably get away from relying explicitly on sudo, but it's good
-	// enough for now
+	// If not sudo, we still need to enable the wsh killer
+	if (! req->sudo) {
+		gchar* timeout_str = g_strdup_printf("%zu", req->timeout);
 
-	if (req->username != NULL && strlen(req->username) != 0) {
-		gboolean clean = FALSE;
-		for (gint i = 0; i < strlen(req->username); i++) {
-			if (g_ascii_isalnum((req->username)[i])) {
-				clean = TRUE;
-				break;
-			}
-		}
+		gchar* ret = g_strconcat("/usr/libexec/wsh-killer ", timeout_str, " ",
+		                         shell_str, " -c '", req->cmd_string, "'", NULL);
 
-		if (clean)
-			return g_strconcat(SUDO_CMD, req->username, " ", req->cmd_string, NULL);
+		g_free(shell_str);
+		shell_str = NULL;
+
+		g_free(timeout_str);
+		timeout_str = NULL;
+		return ret;
 	}
 
-	return g_strconcat(SUDO_CMD, "root", " ", req->cmd_string, NULL);
+	return sudo_constructor(req, shell_str, err);
 }
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
@@ -317,28 +308,8 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gint ret = EXIT_SUCCESS;
 	GPid pid;
 
-	gint flags = G_SPAWN_DO_NOT_REAP_CHILD;
-	gchar* cmd = wsh_construct_sudo_cmd(req);
-
-// sorry Russ...
-#if GLIB_CHECK_VERSION ( 2, 34, 0 )
-	flags |= G_SPAWN_SEARCH_PATH_FROM_ENVP;
-#else
-	flags |= G_SPAWN_SEARCH_PATH;
-#endif
-
-	/* Older versions of glib do not include G_SPAWN_SEARCH_PATH_FROM_ENVP
-	 * flag. To get around this, we detect what version of glib we're running,
-	 * copy the user-defined path into the current path, run the command and restore the
-	 * old path.
-	 */
-	if (glib_check_version(2, 34, 0)) {
-		const gchar* new_path;
-		old_path = g_strdup(g_getenv("PATH"));
-
-		if ((new_path = g_environ_getenv(req->env, "PATH")) != NULL)
-			g_setenv(new_path, "PATH", TRUE);
-	}
+	gint flags = G_SPAWN_DO_NOT_REAP_CHILD|G_SPAWN_SEARCH_PATH;
+	gchar* cmd = wsh_construct_sudo_cmd(req, &(res->err));
 
 	if (req->sudo) {
 		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", "/usr/libexec/wsh-askpass",
@@ -389,7 +360,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 
 	// Watch child process
 	GSource* watch_src = g_child_watch_source_new(pid);
-	g_source_set_callback(watch_src, (GSourceFunc)wsh_check_exit_status, &user_data,
+	g_source_set_callback(watch_src, (GSourceFunc)check_exit_status, &user_data,
 	                      NULL);
 	g_source_attach(watch_src, context);
 	user_data.cmd_watch = watch_src;
@@ -402,14 +373,14 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 
 	// Add IO channels
 	GSource* stdout_src = g_io_create_watch(out, G_IO_IN | G_IO_HUP | G_IO_NVAL);
-	g_source_set_callback(stdout_src, (GSourceFunc)wsh_check_stdout, &user_data,
+	g_source_set_callback(stdout_src, (GSourceFunc)check_stdout, &user_data,
 	                      NULL);
 	g_source_attach(stdout_src, context);
 	user_data.out_watch = stdout_src;
 	g_source_unref(stdout_src);
 
 	GSource* stderr_src = g_io_create_watch(err, G_IO_IN | G_IO_HUP | G_IO_NVAL);
-	g_source_set_callback(stderr_src, (GSourceFunc)wsh_check_stderr, &user_data,
+	g_source_set_callback(stderr_src, (GSourceFunc)check_stderr, &user_data,
 	                      NULL);
 	g_source_attach(stderr_src, context);
 	user_data.err_watch = stderr_src;
@@ -422,21 +393,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	user_data.in_watch = stdin_src;
 	g_source_unref(stdin_src);
 
-	// Add timeout if present
-	if (req->timeout != 0) {
-		struct kill_data kdata = {
-			.pid = pid,
-			.res = res,
-		};
-
-		GSource* timeout_src = g_timeout_source_new_seconds(req->timeout);
-		g_source_set_callback(timeout_src, (GSourceFunc)wsh_kill_proccess, &kdata,
-		                      NULL);
-		g_source_attach(timeout_src, context);
-		g_source_unref(timeout_src);
-		user_data.timeout_watch = timeout_src;
-	}
-
 	g_io_channel_unref(out);
 	g_io_channel_unref(err);
 
@@ -448,19 +404,24 @@ run_cmd_error:
 	g_main_loop_unref(loop);
 
 	g_free(log_cmd);
+	log_cmd = NULL;
 
 run_cmd_error_no_log_cmd:
 	// Free results of g_shell_parse_argv()
-	if (argcv != NULL)
+	if (argcv != NULL) {
 		g_strfreev(argcv);
+		argcv = NULL;
+	}
 
 	// Restoring old path
 	if (glib_check_version(2, 34, 0)) {
 		g_setenv("PATH", old_path, TRUE);
 		g_free(old_path);
+		old_path = NULL;
 	}
 
 	g_free(cmd);
+	cmd = NULL;
 
 	if (res->err != NULL) {
 		wsh_log_error(WSH_ERR_COMMAND_FAILED, res->err->message);

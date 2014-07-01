@@ -30,11 +30,6 @@
 #cmakedefine HAVE_MEMSET_S
 #cmakedefine HAVE_TERM_H
 
-/* libssh crap */
-#cmakedefine HAVE_SSH_CHANNEL_POLL_TIMEOUT
-#cmakedefine HAVE_SSH_USERAUTH_NONE
-#cmakedefine HAVE_SSH_GET_PUBLICKEY
-
 /* curses */
 #cmakedefine CURSES_LIBRARIES
 #cmakedefine CURSES_HAVE_CURSES_H

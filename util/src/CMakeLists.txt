@@ -6,10 +6,12 @@ endif( NOT HAVE_MEMSET_S )
 add_executable( wsh-add-hostkeys wsh_add_hostkeys.c )
 add_executable( wsh-askpass memset_s.c wsh_askpass.c )
 add_executable( wscp wscp.c )
+add_executable( wsh-killer wsh_killer.c )
 
 install( TARGETS wsh-add-hostkeys RUNTIME DESTINATION bin )
 install( TARGETS wsh-askpass RUNTIME DESTINATION libexec )
 install( TARGETS wscp RUNTIME DESTINATION bin )
+install( TARGETS wsh-killer RUNTIME DESTINATION libexec )
 
 include_directories(
 	${WSH_INCLUDE_DIRS}

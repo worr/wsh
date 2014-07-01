@@ -18,18 +18,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef __POLL_H
-#define __POLL_H
+/** @cond */
+#ifdef BUILD_TESTS
 
-struct pollfd {
-	int   fd;
-	short events;
-	short revents;
+struct test_cmd_data {
+	GMainLoop* loop;
+	wsh_cmd_req_t* req;
+	wsh_cmd_res_t* res;
+	gboolean cmd_exited;
+	gboolean out_closed;
+	gboolean err_closed;
 };
 
-#define POLLIN 1;
-
-int poll(struct pollfd *fds, long nfds, int timeout);
-void set_poll_ret(int ret);
 #endif
+/** @endcond */
 

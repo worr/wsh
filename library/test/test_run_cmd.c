@@ -80,13 +80,13 @@ static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "/bin/sh -c 'exit 0'";
+	req->cmd_string = "exit 0";
 	gint ret = wsh_run_cmd(res, req);
 	g_assert(ret == 0);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 
-	req->cmd_string = "/bin/sh -c 'exit 1'";
+	req->cmd_string = "exit 1";
 	g_assert(wsh_run_cmd(res, req) == 0);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 1);
@@ -97,7 +97,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "/bin/sh -c 'echo foo'";
+	req->cmd_string = "echo foo";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -107,7 +107,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	res->std_output = NULL;
 	res->std_output_len = 0;
 
-	req->cmd_string = "/bin/sh -c 'exit 0'";
+	req->cmd_string = "exit 0";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -119,7 +119,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "/bin/sh -c 'echo foo 1>&2'";
+	req->cmd_string = "echo foo 1>&2";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -128,7 +128,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	res->std_error = NULL;
 	res->std_error_len = 0;
 
-	req->cmd_string = "/bin/sh -c 'exit 0'";
+	req->cmd_string = "exit 0";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -142,12 +142,12 @@ static void test_run_err(struct test_wsh_run_cmd_data* fixture,
 
 	// Not going to test every error - just going to test that the functions
 	// that produce GError's handle them appropriately
-	req->cmd_string = "/bin/sh -c 'echo fail";
+	req->cmd_string = "echo fail'";
 	wsh_run_cmd(res, req);
 	g_assert_error(res->err, G_SHELL_ERROR, G_SHELL_ERROR_BAD_QUOTING);
 
 	res->err = NULL;
-	req->cmd_string = "/bin/sh -c 'exit -0'";
+	req->cmd_string = "exit 0";
 	req->cwd = "/foobarbaz";
 	wsh_run_cmd(res, req);
 	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_CHDIR);
@@ -160,25 +160,25 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 
 	req->cmd_string = "/bin/ls";
 	gchar* res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "/usr/libexec/wsh-killer 0 /bin/ls");
+	g_assert_cmpstr(res, ==, "/usr/libexec/wsh-killer 0 /bin/bash -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->sudo = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root /usr/libexec/wsh-killer 0 /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /usr/libexec/wsh-killer 0 /bin/bash -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "worr";
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u worr /usr/libexec/wsh-killer 0 /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u worr /usr/libexec/wsh-killer 0 /bin/zsh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "";
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root /usr/libexec/wsh-killer 0 /bin/ls");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root /usr/libexec/wsh-killer 0 /bin/bash -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 

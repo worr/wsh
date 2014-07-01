@@ -204,7 +204,7 @@ write_stdin_err:
 	return FALSE;
 }
 
-static char* sudo_constructor(const wsh_cmd_req_t* req, GError** err) {
+static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** err) {
 	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
 	const char* username = req->username;
 	const char* cmd_string = req->cmd_string;
@@ -217,9 +217,28 @@ static char* sudo_constructor(const wsh_cmd_req_t* req, GError** err) {
 		username = "root";
 	}
 
+	gchar* timeout = g_strdup_printf("%zu", req->timeout);
+	gchar* ret = g_strconcat(SUDO_CMD, username, " /usr/libexec/wsh-killer ", timeout,
+	                   " ", shell, " -c '", cmd_string, "'", NULL);
+
+	g_free(shell);
+	shell = NULL;
+
+	g_free(timeout);
+	timeout = NULL;
+	return ret;
+}
+
+static gchar* get_shell(const gchar* username, GError** err) {
 	struct passwd *result, pwd;
 	gchar *buf = NULL;
 	gsize buf_len = 0;
+	const gchar* user = username;
+
+	if (user == NULL || strlen(user) == 0) {
+		user = "root";
+	}
+
 	if ((buf_len = sysconf(_SC_GETPW_R_SIZE_MAX)) == SIZE_MAX) {
 		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
 		return NULL;
@@ -227,24 +246,21 @@ static char* sudo_constructor(const wsh_cmd_req_t* req, GError** err) {
 
 	buf = g_slice_alloc0(buf_len);
 
-	if (getpwnam_r(username, &pwd, buf, buf_len, &result)) {
+	if (getpwnam_r(user, &pwd, buf, buf_len, &result)) {
 		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s", strerror(errno));
 		return NULL;
 	}
 
 	if (result == NULL) {
-		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid username", username);
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid user", user);
 		return NULL;
 	}
+
+	gchar* ret = g_strdup(pwd.pw_shell);
 
 	g_slice_free1(buf_len, buf);
 	buf = NULL;
 
-	gchar* timeout = g_strdup_printf("%zu", req->timeout);
-	gchar* ret = g_strconcat(SUDO_CMD, username, " /usr/libexec/wsh-killer ", timeout,
-	                   " " , cmd_string, NULL);
-	g_free(timeout);
-	timeout = NULL;
 	return ret;
 }
 
@@ -255,18 +271,26 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	if (req->cmd_string == NULL || strlen(req->cmd_string) == 0)
 		return NULL;
 
+	gchar* shell_str = get_shell(req->username, err);
+	if (shell_str == NULL)
+		return NULL;
+
 	// If not sudo, we still need to enable the wsh killer
 	if (! req->sudo) {
 		gchar* timeout_str = g_strdup_printf("%zu", req->timeout);
 
 		gchar* ret = g_strconcat("/usr/libexec/wsh-killer ", timeout_str, " ",
-		                         req->cmd_string, NULL);
-		free(timeout_str);
+		                         shell_str, " -c '", req->cmd_string, "'", NULL);
+
+		g_free(shell_str);
+		shell_str = NULL;
+
+		g_free(timeout_str);
 		timeout_str = NULL;
 		return ret;
 	}
 
-	return sudo_constructor(req, err);
+	return sudo_constructor(req, shell_str, err);
 }
 
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {

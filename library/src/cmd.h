@@ -78,7 +78,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
  * @brief Helper for building a sudo command with wsh-killer capabilities
  *
  * @param[in,out] req The command request that we're modifying
- * @param[out] res The command result to store errors in
+ * @param[out] err Errors returned by the host
  *
  * @returns the final command to be executed or NULL if invalid
  */

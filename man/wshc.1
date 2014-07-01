@@ -51,8 +51,8 @@ Kills commands after
 .Ar timeout
 seconds.
 .Ar timeout
-can be 0 for no timeout (dangerous), -1 for default (300 seconds) or any
-positive number.
+can be 0 for no timeout (dangerous) or any positive number. If unspecified,
+the timeout is 300 seconds.
 .sp
 .Em WARNING
 Commands run without timeout may run until
@@ -109,9 +109,11 @@ on the remote host using a binary protocol over
 .
 The results will be sent back to
 .Nm
-and output to the user. They're collated based on the output and
-the exit code of the command. Normally stdout is suppressed so that it's
-easier to see errors with commands.
+and output to the user. If there are fewer than 20 hosts or
+.Fl c
+is specified, the output will be
+collected and collated after all hosts have completed or errored. Otherwise,
+it will be output as it returns by host.
 .Sh EXIT STATUS
 .Ex -std
 .Sh EXAMPLES

@@ -124,8 +124,8 @@ static gboolean valid_arguments(gchar** mesg) {
 		return FALSE;
 	}
 
-	if (timeout < -1) {
-		*mesg = g_strdup("-T | --timeout must be a positive value, 0 for none or -1 for default\n");
+	if (timeout < 0) {
+		*mesg = g_strdup("-T | --timeout must be a positive value or 0 for none\n");
 		return FALSE;
 	}
 

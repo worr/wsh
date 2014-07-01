@@ -33,7 +33,7 @@ All releases are tagged commits on the master branch.
 
 ## How do I send a patch?
 
-1. Fork me, baby
+1. Fork it
 2. Create a feature or a bugfix branch
 3. dev dev dev
 4. Write a unit test

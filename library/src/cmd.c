@@ -173,7 +173,7 @@ static gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
 	g_assert(res != NULL);
 	g_assert(res->err == NULL);
 
-	gsize wrote;
+	gsize wrote = 0;
 
 	if (req->sudo) {
 		g_io_channel_write_chars(in, req->password, strlen(req->password), &wrote,

@@ -87,9 +87,9 @@ endif( WITH_RANGE )
 
 # Deal with linker crap
 if( NOT LIB_INSTALL_DIR )
-	set( libdir "${CMAKE_INSTALL_PREFIX}lib${LIB_SUFFIX}" )
+	set( libdir "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" )
 else( NOT LIB_INSTALL_DIR )
-	set( libdir "${CMAKE_INSTALL_PREFIX}${LIB_INSTALL_DIR}" )
+	set( libdir "${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}" )
 endif( NOT LIB_INSTALL_DIR )
 
 set( CMAKE_INSTALL_RPATH "${libdir}" )

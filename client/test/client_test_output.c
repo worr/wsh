@@ -264,7 +264,7 @@ static void hostname_output(void) {
 	gchar* expected_err =
 	    "\x1b[94mlocalhost: stderr ****\n\x1b[39m\x1b[91mlocalhost: testing\n\x1b[39m\x1b[91mlocalhost: 1\n\x1b[39m\x1b[91mlocalhost: 2\n\x1b[39m\x1b[91mlocalhost: 3\n\x1b[39m";
 	gchar* expected_out =
-	    "\x1b[94mlocalhost: stdout ****\n\x1b[39m\x1b[92mlocalhost: other\n\x1b[39m\x1b[92mlocalhost: test\n\x1b[39m\n\x1b[94mlocalhost: exit code: 0\n\n\x1b[39m";
+	    "\x1b[94mlocalhost: stdout ****\n\x1b[39m\x1b[97mlocalhost: other\n\x1b[39m\x1b[97mlocalhost: test\n\x1b[39m\n\x1b[94mlocalhost: exit code: 0\n\n\x1b[39m";
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestHostnameOutput/subprocess", 0, 0);

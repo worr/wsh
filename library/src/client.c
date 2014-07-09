@@ -285,9 +285,9 @@ void wsh_client_print_success(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	if (wsh_client_get_dark_bg())
-		color_print("\x1b[92m", stdout, format, args);
+		color_print("\x1b[97m", stdout, format, args);
 	else
-		color_print("\x1b[32m", stdout, format, args);
+		color_print("\x1b[37m", stdout, format, args);
 	va_end(args);
 }
 

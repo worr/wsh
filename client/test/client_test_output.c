@@ -256,7 +256,6 @@ static void hostname_output_subprocess(void) {
 
 	gint ret = wshc_write_output(out, "localhost", &res);
 	exit(ret);
-
 }
 #endif
 
@@ -264,7 +263,7 @@ static void hostname_output(void) {
 	gchar* expected_err =
 	    "\x1b[94mlocalhost: stderr ****\n\x1b[39m\x1b[91mlocalhost: testing\n\x1b[39m\x1b[91mlocalhost: 1\n\x1b[39m\x1b[91mlocalhost: 2\n\x1b[39m\x1b[91mlocalhost: 3\n\x1b[39m";
 	gchar* expected_out =
-	    "\x1b[94mlocalhost: stdout ****\n\x1b[39m\x1b[97mlocalhost: other\n\x1b[39m\x1b[97mlocalhost: test\n\x1b[39m\n\x1b[94mlocalhost: exit code: 0\n\n\x1b[39m";
+	    "\x1b[94mlocalhost: stdout ****\n\x1b[39m\x1b[39mlocalhost: other\n\x1b[39m\x1b[39mlocalhost: test\n\x1b[39m\n\x1b[94mlocalhost: exit code: 0\n\n\x1b[39m";
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestHostnameOutput/subprocess", 0, 0);
@@ -409,6 +408,32 @@ static void failed_host_output(void) {
 	g_free(expected_err);
 }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void verbose_output_subprocess(void) {
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->verbose = TRUE;
+	wshc_verbose_print(out, "testing");
+}
+#endif
+
+static void verbose_output(void) {
+	const gchar* expected_out = "INFO: testing";
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestVerboseOutput/subprocess", 0, 0);
+#else
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->verbose = TRUE;
+	if (g_test_trap_fork(0, 0)) {
+		wshc_verbose_print("testing");
+	}
+#endif
+
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stderr(expected_out);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -446,10 +471,13 @@ int main(int argc, char** argv) {
 	                hostname_output_piped_subprocess);
 	g_test_add_func("/Client/TestWriteFailedHosts/subprocess",
 	                failed_host_output_subprocess);
+	g_test_add_func("/Client/TestVerboseOutput/subprocess",
+	                verbose_output_subprocess);
 #endif
 
 	g_test_add_func("/Client/TestAddFailedHost", add_failed_host);
 	g_test_add_func("/Client/TestWriteFailedHosts", failed_host_output);
+	g_test_add_func("/Client/TestVerboseOutput", verbose_output);
 
 	return g_test_run();
 }

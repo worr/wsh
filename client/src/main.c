@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2013-4 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,7 @@ static gint threads = 0;
 static gint timeout = 300;
 static gchar* script = NULL;
 static gboolean version = FALSE;
+static gboolean verbose = FALSE;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -70,6 +71,7 @@ static GOptionEntry entries[] = {
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 300 seconds)", NULL },
 	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "Script to execute on remote host", NULL },
 	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
+	{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Execute verbosely", NULL },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -124,6 +126,7 @@ static gboolean valid_arguments(gchar** mesg) {
 		return FALSE;
 	}
 
+	timeout = timeout == -1 ? 300 : timeout;
 	if (timeout < 0) {
 		*mesg = g_strdup("-T | --timeout must be a positive value or 0 for none\n");
 		return FALSE;
@@ -158,7 +161,7 @@ int main(int argc, char** argv) {
 
 	if (version) {
 		g_print("wshc %s\n", APPLICATION_VERSION);
-		g_print("Copyright (C) 2013 William Orr\n");
+		g_print("Copyright (C) 2013-4 William Orr\n");
 		return EXIT_SUCCESS;
 	}
 
@@ -210,6 +213,14 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
+	/* Declare our output metadata structure
+	 * We do this here that way we can output range information
+	 */
+	wshc_output_info_t* out_info = NULL;
+	wshc_init_output(&out_info);
+
+	out_info->verbose = verbose;
+
 	// Done with checking options, expand hosts
 	if (file_arg) {
 		if (wsh_exp_filename(&hosts, &num_hosts, file_arg, &err)) {
@@ -231,6 +242,7 @@ int main(int argc, char** argv) {
 
 #ifdef WITH_RANGE
 	if (range) {
+		wshc_verbose_print(out_info, "Querying range...this may take some time");
 		if (wsh_exp_range(&hosts, &num_hosts, range, &err)) {
 			g_printerr("%s\n", err->message);
 			g_error_free(err);
@@ -276,9 +288,6 @@ int main(int argc, char** argv) {
 	cmd_info.password = password;
 	cmd_info.port = port;
 	cmd_info.script = script;
-
-	wshc_output_info_t* out_info = NULL;
-	wshc_init_output(&out_info);
 
 	if (num_hosts < 20) // 20 will be our magic number for hosts
 		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;

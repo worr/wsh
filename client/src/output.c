@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2013-4 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #include "client.h"
 
 #include <errno.h>
+#include <glib/gprintf.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -366,6 +367,18 @@ void wshc_write_failed_hosts(wshc_output_info_t* out) {
 		if (out->stderr_tty)
 			wsh_client_print_header(stderr, "The following hosts failed:\n");
 		g_hash_table_foreach(out->failed_hosts, (GHFunc)print_host, NULL);
+	}
+}
+
+void wshc_verbose_print(wshc_output_info_t* out, const gchar* format, ...) {
+	if (out->verbose) {
+		va_list args;
+		va_start(args, format);
+		g_mutex_lock(out->mut);
+		g_printerr("INFO: ");
+		g_vfprintf(stderr, format, args);
+		g_mutex_unlock(out->mut);
+		va_end(args);
 	}
 }
 

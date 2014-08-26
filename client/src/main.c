@@ -59,6 +59,7 @@ static gchar* range = NULL;
 // Output variables
 static gboolean hostname_output = FALSE;
 static gboolean collate_output = FALSE;
+static gboolean errors_only = FALSE;
 
 static void* passwd_mem;
 
@@ -83,6 +84,7 @@ static GOptionEntry entries[] = {
 	// Output options
 	{ "print-hostnames", 'H', 0, G_OPTION_ARG_NONE, &hostname_output, "Display output immediately, prefixed with hostname", NULL },
 	{ "print-collated", 'c', 0, G_OPTION_ARG_NONE, &collate_output, "Display output at the end, collated into matching chunks", NULL },
+	{ "errors-only", 0, 0, G_OPTION_ARG_NONE, &errors_only, "Display only hosts that had a non-zero exit code", NULL },
 	{ NULL }
 };
 
@@ -220,6 +222,7 @@ int main(int argc, char** argv) {
 	wshc_init_output(&out_info);
 
 	out_info->verbose = verbose;
+	out_info->errors_only = errors_only;
 
 	// Done with checking options, expand hosts
 	if (file_arg) {

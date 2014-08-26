@@ -15,6 +15,7 @@
 .Op Fl s | -script Ar script
 .Op Fl c | -print-collated
 .Op Fl H | -print-hostnames
+.Op Fl -errors-only
 .Op Fl V | -version
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
@@ -90,6 +91,10 @@ Print out results immediately, prefixing with hostname:
 .It Fl c | -print-collated
 Collates the output after all hosts have finished, prints in blocks
 of hosts whose stdout, stderr and exit code match. This is the default.
+.It Fl -errors-only
+Only print output when a command has exited with a non-zero status, or if
+.Nm
+could not connect to the host at all.
 .El
 .Ss Executing commands
 .Pp

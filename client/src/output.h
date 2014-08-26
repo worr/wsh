@@ -46,6 +46,7 @@ typedef struct {
 	gboolean stdout_tty;		/**< is stdout a tty? */
 	gboolean stderr_tty;		/**< is stderr a tty? */
 	gboolean verbose;			/**< are we enabling verbose output? */
+	gboolean errors_only;		/**< only output hosts with non-zero error codes */
 } wshc_output_info_t;
 
 /** Final output data

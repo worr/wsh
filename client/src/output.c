@@ -156,6 +156,10 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
 		return EXIT_SUCCESS;
 	}
 
+	/* If we only want to capture errors, exit quickly on success */
+	if (out->errors_only && !res->exit_status)
+		return EXIT_SUCCESS;
+
 	switch (out->type) {
 		case WSHC_OUTPUT_TYPE_COLLATED:
 			return write_output_mem(out, hostname, res);

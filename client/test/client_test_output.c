@@ -434,6 +434,120 @@ static void verbose_output(void) {
 	g_test_trap_assert_stderr(expected_out);
 }
 
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void errors_only_subprocess(void) {
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->errors_only = TRUE;
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 0,
+		.std_error_len = 4,
+		.std_output_len = 2,
+	};
+
+	wshc_write_output(out, "testhost", &res);
+
+	out->type = WSHC_OUTPUT_TYPE_COLLATED;
+
+	wshc_write_output(out, "testhost", &res);
+}
+#endif
+
+static void errors_only(void) {
+	const gchar* expected_out = "";
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestErrorsOnlyEmpty/subprocess", 0, 0);
+#else
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->errors_only = TRUE;
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+	gchar* a_err[] = { "testing", "1", "2", "3", NULL };
+	gchar* a_out[] = { "other", "test", NULL };
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 0,
+		.std_error_len = 4,
+		.std_output_len = 2,
+	};
+
+	wshc_write_output(out, "testhost", &res);
+
+	out->type = WSHC_OUTPUT_TYPE_COLLATED;
+
+	wshc_write_output(out, "testhost", &res);
+#endif
+
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout(expected_out);
+}
+
+#if GLIB_CHECK_VERSION(2, 38, 0)
+static void errors_only_nonnull_subprocess(void) {
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->errors_only = TRUE;
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+	gchar* a_err[] = { "testing", NULL };
+	gchar* a_out[] = { "other", NULL };
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 1,
+		.std_error_len = 1,
+		.std_output_len = 1,
+	};
+
+	wshc_write_output(out, "testhost", &res);
+
+	out->type = WSHC_OUTPUT_TYPE_COLLATED;
+
+	wshc_write_output(out, "testhost", &res);
+}
+#endif
+
+static void errors_only_nonnull(void) {
+	const gchar* expected_out = "*other*";
+	const gchar* expected_err = "*testing*";
+#if GLIB_CHECK_VERSION(2, 38, 0)
+	g_test_trap_subprocess("/Client/TestErrorsOnly/subprocess", 0, 0);
+#else
+	wshc_output_info_t* out;
+	wshc_init_output(&out);
+	out->errors_only = TRUE;
+	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
+	gchar* a_err[] = { "testing", NULL };
+	gchar* a_out[] = { "other", NULL };
+
+	wsh_cmd_res_t res = {
+		.std_error = a_err,
+		.std_output = a_out,
+		.exit_status = 1,
+		.std_error_len = 1,
+		.std_output_len = 1,
+	};
+
+	wshc_write_output(out, "testhost", &res);
+
+	out->type = WSHC_OUTPUT_TYPE_COLLATED;
+
+	wshc_write_output(out, "testhost", &res);
+#endif
+
+	g_test_trap_assert_passed();
+	g_test_trap_assert_stdout(expected_out);
+	g_test_trap_assert_stderr(expected_err);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -473,11 +587,17 @@ int main(int argc, char** argv) {
 	                failed_host_output_subprocess);
 	g_test_add_func("/Client/TestVerboseOutput/subprocess",
 	                verbose_output_subprocess);
+	g_test_add_func("/Client/TestErrorsOnlyEmpty/subprocess",
+					errors_only_subprocess);
+	g_test_add_func("/Client/TestErrorsOnly/subprocess",
+					errors_only_nonnull_subprocess);
 #endif
 
 	g_test_add_func("/Client/TestAddFailedHost", add_failed_host);
 	g_test_add_func("/Client/TestWriteFailedHosts", failed_host_output);
 	g_test_add_func("/Client/TestVerboseOutput", verbose_output);
+	g_test_add_func("/Client/TestErrorsOnlyEmpty", errors_only);
+	g_test_add_func("/Client/TestErrorsOnly", errors_only_nonnull);
 
 	return g_test_run();
 }

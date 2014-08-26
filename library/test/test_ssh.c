@@ -42,7 +42,6 @@ static gchar* req_cmd = "ls";
 static gchar* req_stdin[3] = { "yes", "no", NULL };
 static const gsize req_stdin_len = 2;
 static gchar* req_env[4] = { "PATH=/usr/bin", "USER=will", "MAILTO=will@worrbase.com", NULL };
-static const gsize req_env_len = 3;
 static gchar* req_cwd = "/tmp";
 static const guint64 req_timeout = 5;
 

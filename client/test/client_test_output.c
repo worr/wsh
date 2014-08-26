@@ -418,7 +418,7 @@ static void verbose_output_subprocess(void) {
 #endif
 
 static void verbose_output(void) {
-	const gchar* expected_out = "INFO: testing";
+	const gchar* expected_out = "\x1b[39mverbose: testing";
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestVerboseOutput/subprocess", 0, 0);
 #else

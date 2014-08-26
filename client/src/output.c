@@ -372,10 +372,15 @@ void wshc_write_failed_hosts(wshc_output_info_t* out) {
 
 void wshc_verbose_print(wshc_output_info_t* out, const gchar* format, ...) {
 	if (out->verbose) {
+		gboolean colors = wsh_client_has_colors();
+
 		va_list args;
 		va_start(args, format);
 		g_mutex_lock(out->mut);
-		g_printerr("INFO: ");
+		if (colors)
+			g_printerr("\x1b[39m");
+
+		g_printerr("verbose: ");
 		g_vfprintf(stderr, format, args);
 		g_mutex_unlock(out->mut);
 		va_end(args);

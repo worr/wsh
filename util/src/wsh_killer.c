@@ -77,8 +77,7 @@ int main(int argc, char **argv) {
 
 	struct sigaction oldsa;
 	struct sigaction sa = {
-		.sa_handler = NULL,
-		.sa_sigaction = alarm_handler,
+		.sa_sigaction = alarm_handler
 	};
 
 	const char *cmd = argv[2];

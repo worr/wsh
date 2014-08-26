@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2013-4 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #include "client.h"
 
 #include <errno.h>
+#include <glib/gprintf.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,6 +156,10 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
 		return EXIT_SUCCESS;
 	}
 
+	/* If we only want to capture errors, exit quickly on success */
+	if (out->errors_only && !res->exit_status)
+		return EXIT_SUCCESS;
+
 	switch (out->type) {
 		case WSHC_OUTPUT_TYPE_COLLATED:
 			return write_output_mem(out, hostname, res);
@@ -175,20 +180,14 @@ static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
 		if (! out->error[i])
 			return FALSE;
 
-		gsize out_err_len = strlen(out->error[i]);
-		gsize cur_err_len = strlen(*cur);
-
-		if (out_err_len != cur_err_len)
-			return FALSE;
-
-		if (strncmp(out->error[i], *cur, MIN(out_err_len, cur_err_len) + 1))
+		if (strncmp(out->error[i], *cur, 2048))
 			return FALSE;
 
 		i++;
 	}
 
-	// Ensure that length is the same
-	if (col->error[i] != NULL || out->error[i] != NULL)
+	// out->error longer than col->error
+	if (out->error[i] != NULL)
 		return FALSE;
 
 	i = 0;
@@ -196,19 +195,13 @@ static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
 		if (! out->output[i])
 			return FALSE;
 
-		gsize out_out_len = strlen(out->output[i]);
-		gsize cur_out_len = strlen(*cur);
-
-		if (out_out_len != cur_out_len)
-			return FALSE;
-
-		if (strncmp(out->output[i], *cur, MIN(out_out_len, cur_out_len) + 1))
+		if (strncmp(out->output[i], *cur, 2048))
 			return FALSE;
 
 		i++;
 	}
 
-	if (col->output[i] != NULL || out->output[i] != NULL)
+	if (out->output[i] != NULL)
 		return FALSE;
 
 	return TRUE;
@@ -378,6 +371,23 @@ void wshc_write_failed_hosts(wshc_output_info_t* out) {
 		if (out->stderr_tty)
 			wsh_client_print_header(stderr, "The following hosts failed:\n");
 		g_hash_table_foreach(out->failed_hosts, (GHFunc)print_host, NULL);
+	}
+}
+
+void wshc_verbose_print(wshc_output_info_t* out, const gchar* format, ...) {
+	if (out->verbose) {
+		gboolean colors = wsh_client_has_colors();
+
+		va_list args;
+		va_start(args, format);
+		g_mutex_lock(out->mut);
+		if (colors)
+			g_printerr("\x1b[39m");
+
+		g_printerr("verbose: ");
+		g_vfprintf(stderr, format, args);
+		g_mutex_unlock(out->mut);
+		va_end(args);
 	}
 }
 

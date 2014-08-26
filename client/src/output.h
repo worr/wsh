@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2013-4 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,8 @@ typedef struct {
 	enum wshc_output_type_enum type;	/**< method to display output */
 	gboolean stdout_tty;		/**< is stdout a tty? */
 	gboolean stderr_tty;		/**< is stderr a tty? */
+	gboolean verbose;			/**< are we enabling verbose output? */
+	gboolean errors_only;		/**< only output hosts with non-zero error codes */
 } wshc_output_info_t;
 
 /** Final output data
@@ -115,5 +117,14 @@ void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
  * @param[in] out Our output metadata
  */
 void wshc_write_failed_hosts(wshc_output_info_t* out);
+
+/**
+ * @brief Print verbose output
+ *
+ * @param[in] out Output metadata struct
+ * @param[in] format printf-style format string
+ */
+void wshc_verbose_print(wshc_output_info_t* out, const gchar* format, ...);
+
 #endif
 

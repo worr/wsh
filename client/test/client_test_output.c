@@ -261,9 +261,9 @@ static void hostname_output_subprocess(void) {
 
 static void hostname_output(void) {
 	gchar* expected_err =
-	    "\x1b[94mlocalhost: stderr ****\n\x1b[39m\x1b[91mlocalhost: testing\n\x1b[39m\x1b[91mlocalhost: 1\n\x1b[39m\x1b[91mlocalhost: 2\n\x1b[39m\x1b[91mlocalhost: 3\n\x1b[39m";
+	    "*localhost: stderr ****\n*localhost: testing\n*localhost: 1\n*localhost: 2\n*localhost: 3\n*";
 	gchar* expected_out =
-	    "\x1b[94mlocalhost: stdout ****\n\x1b[39m\x1b[39mlocalhost: other\n\x1b[39m\x1b[39mlocalhost: test\n\x1b[39m\n\x1b[94mlocalhost: exit code: 0\n\n\x1b[39m";
+	    "*localhost: stdout ****\n*localhost: other\n*localhost: test\n*localhost: exit code: 0\n\n*";
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestHostnameOutput/subprocess", 0, 0);
@@ -385,7 +385,7 @@ static void failed_host_output(void) {
 	gchar* host = "test host";
 	gchar* message = "testing";
 	gchar* expected_err =
-		g_strdup_printf("\x1b[94mThe following hosts failed:\n\x1b[39m\x1b[91m%s: %s\n\x1b[39m",
+		g_strdup_printf("*The following hosts failed:\n*%s: %s\n*",
                   host, message);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
@@ -418,7 +418,7 @@ static void verbose_output_subprocess(void) {
 #endif
 
 static void verbose_output(void) {
-	const gchar* expected_out = "\x1b[39mverbose: testing";
+	const gchar* expected_out = "*verbose: testing";
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestVerboseOutput/subprocess", 0, 0);
 #else

@@ -423,13 +423,8 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
 	return ret;
 
 wsh_ssh_recv_cmd_res_error:
-	if (buf != NULL)
-		g_slice_free1(buf_u.size, buf);
-
-	if (*res != NULL) {
-		g_free(*res);
-		*res = NULL;
-	}
+	g_slice_free1(buf_u.size, buf);
+	wsh_free_unpacked_response(res);
 
 	wsh_ssh_disconnect(session);
 

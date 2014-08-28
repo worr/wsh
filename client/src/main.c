@@ -384,6 +384,7 @@ int main(int argc, char** argv) {
 	wshc_collate_output(out_info, &output, &output_len);
 	if (output) g_print("%s", output);
 	wshc_write_failed_hosts(out_info);
+	wshc_cleanup_output(&out_info);
 
 	return ret;
 }

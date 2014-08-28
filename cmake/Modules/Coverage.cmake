@@ -81,7 +81,6 @@ if( COVERAGE )
 	)
 
 	file( GLOB_RECURSE lcov_files ${CMAKE_CURRENT_SOURCE_DIR}/*.html ${CMAKE_CURRENT_SOURCE_DIR}/*.css ${CMAKE_CURRENT_SOURCE_DIR}/*.png )
-	message( ${lcov_files} )
 	add_custom_target( coverage_clean
 		COMMAND rm ${lcov_files}
 	)

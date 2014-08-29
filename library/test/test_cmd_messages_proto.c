@@ -256,7 +256,6 @@ static void test_unpacking_corrupted_request(void) {
 	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandRequest/subprocess",
 	                       0, 0);
 	g_test_trap_assert_passed();
-	g_test_trap_assert_stdout("data too short after length-prefix of *\n");
 #else
 	CommandRequest* req = NULL;
 
@@ -265,7 +264,6 @@ static void test_unpacking_corrupted_request(void) {
 		exit(0);
 	}
 
-	g_test_trap_assert_stdout("data too short after length-prefix of *\n");
 	g_assert(req == NULL);
 #endif
 }
@@ -285,7 +283,6 @@ static void test_unpacking_corrupted_response(void) {
 	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptCommandReply/subprocess",
 	                       0, 0);
 	g_test_trap_assert_passed();
-	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 #else
 	CommandReply* reply = NULL;
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
@@ -293,7 +290,6 @@ static void test_unpacking_corrupted_response(void) {
 		exit(0);
 	}
 
-	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 	g_assert(reply == NULL);
 #endif
 }

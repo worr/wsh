@@ -29,6 +29,7 @@
 #include "cmd.h"
 #include "log.h"
 #include "ssh.h"
+#include "pack.h"
 
 void wshc_try_ssh(wshc_host_info_t* host_info,
                   const wshc_cmd_info_t* cmd_info) {
@@ -144,6 +145,7 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 	wsh_log_client_cmd_status(cmd_info->req->cmd_string, cmd_info->req->username,
 	                          host_info->hostname, cmd_info->req->cwd, (*host_info->res)->exit_status);
 	wshc_write_output(cmd_info->out, host_info->hostname, *host_info->res);
+	wsh_free_unpacked_response(host_info->res);
 
 	wsh_ssh_disconnect(&session);
 }

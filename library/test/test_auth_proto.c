@@ -83,7 +83,6 @@ static void test_unpacking_corrupted(void) {
 	g_test_trap_subprocess("/Library/Protocol/UnpackCorruptedAuthInfo/subprocess",
 	                       0, 0);
 	g_test_trap_assert_passed();
-	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 #else
 	AuthInfo* ai = NULL;
 	if (g_test_trap_fork(0, G_TEST_TRAP_SILENCE_STDOUT)) {
@@ -91,7 +90,6 @@ static void test_unpacking_corrupted(void) {
 		exit(0);
 	}
 
-	g_test_trap_assert_stdout("unsupported tag * at offset *\n");
 	g_assert(ai == NULL);
 #endif
 }

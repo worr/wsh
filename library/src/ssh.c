@@ -203,8 +203,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) &&
 	        (method & SSH_AUTH_METHOD_INTERACTIVE)) {
 		g_assert(session->password != NULL);
-		ret = ssh_userauth_kbdint(session->session, NULL, NULL);
 		do {
+			ret = ssh_userauth_kbdint(session->session, NULL, NULL);
 			switch (ret) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_ERR,
@@ -226,7 +226,6 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 				goto wsh_ssh_authenticate_failure;
 			}
 
-			ret = ssh_userauth_kbdint(session->session, NULL, NULL);
 		} while (ret == SSH_AUTH_INFO || ret == SSH_AUTH_AGAIN);
 	} else {
 		kbdint_denied = TRUE;
@@ -235,8 +234,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	if ((session->auth_type == WSH_SSH_AUTH_PASSWORD) &&
 	        (method & SSH_AUTH_METHOD_PASSWORD)) {
 		g_assert(session->password != NULL);
-		ret = ssh_userauth_password(session->session, NULL, session->password);
 		do {
+			ret = ssh_userauth_password(session->session, NULL, session->password);
 			switch (ret) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_ERR,

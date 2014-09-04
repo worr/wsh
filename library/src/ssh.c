@@ -87,7 +87,7 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 		conn_ret = ssh_connect(session->session);
 		if (conn_ret == SSH_ERROR) {
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CONNECT_ERR,
-			                   "Cannot connect to host %s: %s", session->hostname,
+			                   "Cannot connect to host: %s",
 			                   ssh_get_error(session->session));
 			ssh_free(session->session);
 			session->session = NULL;
@@ -111,7 +111,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 	ssh_key key = NULL;
 	if (ssh_get_publickey(session->session, &key)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
-		                   "%s: error getting hostkey: %s", session->hostname,
+		                   "error getting hostkey: %s",
 		                   ssh_get_error(session->session));
 		wsh_ssh_disconnect(session);
 		ssh_key_free(key);
@@ -143,8 +143,8 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 			break;
 		case SSH_SERVER_ERROR:
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_READ_ERR,
-			                   "%s: Error getting host key: %s",
-			                   session->hostname, ssh_get_error(session->session));
+			                   "Error getting host key: %s",
+			                   ssh_get_error(session->session));
 			wsh_ssh_disconnect(session);
 			ret = WSH_SSH_HOST_KEY_ERROR;
 			break;
@@ -158,8 +158,8 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 
 	if (ssh_write_knownhost(session->session)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_WRITE_ERR,
-		                   "%s: Error writing known hosts file: %s",
-		                   session->hostname, ssh_get_error(session->session));
+		                   "Error writing known hosts file: %s",
+		                   ssh_get_error(session->session));
 		wsh_ssh_disconnect(session);
 		return WSH_SSH_HOST_KEY_ERROR;
 	}
@@ -184,8 +184,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			switch (ret = ssh_userauth_autopubkey(session->session, NULL)) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_ERR,
-					                   "%s: Error authenticating with pubkey: %s",
-					                   session->hostname, ssh_get_error(session->session));
+					                   "Error authenticating with pubkey: %s",
+					                   ssh_get_error(session->session));
 					goto wsh_ssh_authenticate_failure;
 				case SSH_AUTH_DENIED:
 					pubkey_denied = TRUE;
@@ -208,8 +208,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			switch (ret) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_AUTH_ERR,
-					                   "%s: Error initiating kbd interactive mode: %s",
-					                   session->hostname, ssh_get_error(session->session));
+					                   "Error initiating kbd interactive mode: %s",
+					                   ssh_get_error(session->session));
 					goto wsh_ssh_authenticate_failure;
 				case SSH_AUTH_DENIED:
 					kbdint_denied = TRUE;
@@ -221,8 +221,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 
 			if (ssh_userauth_kbdint_setanswer(session->session, 0, session->password)) {
 				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KBDINT_SET_ANSWER_ERR,
-				                   "%s: Error setting kbd interactive answer: %s",
-				                   session->hostname, ssh_get_error(session->session));
+				                   "Error setting kbd interactive answer: %s",
+				                   ssh_get_error(session->session));
 				goto wsh_ssh_authenticate_failure;
 			}
 
@@ -239,8 +239,8 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 			switch (ret) {
 				case SSH_AUTH_ERROR:
 					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PASSWORD_AUTH_ERR,
-					                   "%s: Error authenticating with password: %s",
-					                   session->hostname, ssh_get_error(session->session));
+					                   "Error authenticating with password: %s",
+					                   ssh_get_error(session->session));
 					goto wsh_ssh_authenticate_failure;
 				case SSH_AUTH_DENIED:
 					password_denied = TRUE;
@@ -276,7 +276,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 
 	if ((session->channel = ssh_channel_new(session->session)) == NULL) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR,
-		                   "%s: Error opening ssh channel: %s", session->hostname,
+		                   "Error opening ssh channel: %s",
 		                   ssh_get_error(session->session));
 		ret = WSH_SSH_CHANNEL_CREATION_ERR;
 		goto wsh_ssh_exec_wshd_error;
@@ -285,7 +285,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 
 	if (ssh_channel_open_session(session->channel)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_CHANNEL_CREATION_ERR,
-		                   "%s: Error opening ssh channel: %s", session->hostname,
+		                   "Error opening ssh channel: %s",
 		                   ssh_get_error(session->session));
 		ret = WSH_SSH_CHANNEL_CREATION_ERR;
 		goto wsh_ssh_exec_wshd_error;
@@ -293,7 +293,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 
 	if (ssh_channel_request_exec(session->channel, "wshd")) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
-		                   "%s: Error exec'ing a shell: %s", session->hostname,
+		                   "Error exec'ing a shell: %s",
 		                   ssh_get_error(session->session));
 		ret = WSH_SSH_EXEC_WSHD_ERR;
 		goto wsh_ssh_exec_wshd_error;
@@ -301,7 +301,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 
 	if (ssh_channel_poll_timeout(session->channel, 100, TRUE)) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_EXEC_WSHD_ERR,
-		                   "%s: Can't execute wshd", session->hostname);
+		                   "Can't execute wshd");
 		ret = WSH_SSH_EXEC_WSHD_ERR;
 		goto wsh_ssh_exec_wshd_error;
 	}
@@ -330,7 +330,7 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req,
 	if (buf == NULL || buf_len == 0) {
 		ret = WSH_SSH_PACK_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PACK_ERR,
-		                   "%s: Error packing command", session->hostname);
+		                   "Error packing command");
 		goto wsh_ssh_send_cmd_error;
 	}
 
@@ -338,24 +338,24 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req,
 	if (ssh_channel_write(session->channel, &buf_u.buf, 4) != 4) {
 		ret = WSH_SSH_WRITE_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
-		                   "%s: Error writing out command over ssh: %s",
-		                   session->hostname, ssh_get_error(session->session));
+		                   "Error writing out command over ssh: %s",
+		                   ssh_get_error(session->session));
 		goto wsh_ssh_send_cmd_error;
 	}
 
 	if (ssh_channel_write(session->channel, buf, buf_len) != buf_len) {
 		ret = WSH_SSH_WRITE_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
-		                   "%s: Error writing out command over ssh: %s",
-		                   session->hostname, ssh_get_error(session->session));
+		                   "Error writing out command over ssh: %s",
+		                   ssh_get_error(session->session));
 		goto wsh_ssh_send_cmd_error;
 	}
 
 	if (ssh_channel_send_eof(session->channel)) {
 		ret = WSH_SSH_WRITE_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_WRITE_ERR,
-		                   "%s: Error writing out command over ssh: %s",
-		                   session->hostname, ssh_get_error(session->session));
+		                   "Error writing out command over ssh: %s",
+		                   ssh_get_error(session->session));
 		goto wsh_ssh_send_cmd_error;
 	}
 
@@ -387,7 +387,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
 	if (ssh_channel_read(session->channel, buf_u.buf, 4, FALSE) != 4) {
 		ret = WSH_SSH_READ_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_READ_ERR,
-		                   "%s: Couldn't read size bytes: %s", session->hostname,
+		                   "Couldn't read size bytes: %s",
 		                   ssh_get_error(session->session));
 		goto wsh_ssh_recv_cmd_res_error;
 	}
@@ -413,7 +413,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
 	if (buf == NULL) {
 		ret = WSH_SSH_PACK_ERR;
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PACK_ERR,
-		                   "%s: Error packing command resonse", session->hostname);
+		                   "Error packing command resonse");
 		goto wsh_ssh_recv_cmd_res_error;
 	}
 

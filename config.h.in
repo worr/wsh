@@ -39,5 +39,7 @@
 
 #define APPLICATION_VERSION "${APPLICATION_VERSION}"
 
+#define LIBEXEC_PATH "${LIBEXEC_PATH}"
+
 #endif
 

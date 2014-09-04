@@ -22,6 +22,8 @@ option( BUILD_UTILS  "Build wsh utilities" ON )
 option( BUILD_TESTS  "Build wsh unit tests" OFF )
 option( WITH_RANGE   "Use libcrange as an host expansion lib" OFF )
 
+set( LIBEXEC_PATH "${CMAKE_INSTALL_PREFIX}/libexec" CACHE STRING "Location for helper programs" )
+
 set( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 
 include( CheckCCompilerFlag )

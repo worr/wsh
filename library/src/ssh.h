@@ -43,27 +43,28 @@ typedef enum {
 
 /** Possible error conditions for WSH_SSH_ERROR */
 typedef enum {
-	WSH_SSH_KNOWN_HOSTS_WRITE_ERR,		/**< Error writing out host keys */
-	WSH_SSH_HOST_KEY_CHANGED_ERR,		/**< Remote host key change */
-	WSH_SSH_KNOWN_HOSTS_READ_ERR,		/**< Cannot read known hosts file */
-	WSH_SSH_CONNECT_ERR,				/**< Error connecting to host */
-	WSH_SSH_PUBKEY_AUTH_ERR,			/**< Cannot auth with pubkey */
-	WSH_SSH_PUBKEY_AUTH_DENIED,			/**< Pubkey denied */
-	WSH_SSH_PASSWORD_AUTH_ERR,			/**< Cannot auth with password */
-	WSH_SSH_PASSWORD_AUTH_DENIED,		/**< Password denied */
-	WSH_SSH_KBDINT_AUTH_ERR,			/**< Error with keyboard-interactive auth */
-	WSH_SSH_KBDINT_AUTH_DENIED,			/**< Password denied */
-	WSH_SSH_KBDINT_SET_ANSWER_ERR,		/**< Error setting an answer to keyboard-interactive auth */
-	WSH_SSH_CHANNEL_CREATION_ERR,		/**< Error creating ssh channel after auth */
-	WSH_SSH_EXEC_WSHD_ERR,				/**< Error executing wshd */
-	WSH_SSH_PACK_ERR,					/**< Error packing a wsh_cmd_req_t or wsh_cmd_res_t */
-	WSH_SSH_WRITE_ERR,					/**< Error writing to channel */
-	WSH_SSH_READ_ERR,					/**< Error reading from channel */
-	WSH_SSH_PTY_ERR,					/**< Error request a PTY */
-	WSH_SSH_STAT_ERR,					/**< Error stating file or directory */
-	WSH_SSH_DIR_ERR,					/**< Can't push dir */
-	WSH_SSH_FILE_ERR,					/**< Can't push file */
-	WSH_SSH_AUTH_OTHER,					/**< Generic auth error */
+	WSH_SSH_KNOWN_HOSTS_WRITE_ERR,      /**< Error writing out host keys */
+	WSH_SSH_HOST_KEY_CHANGED_ERR,       /**< Remote host key change */
+	WSH_SSH_KNOWN_HOSTS_READ_ERR,       /**< Cannot read known hosts file */
+	WSH_SSH_CONNECT_ERR,                /**< Error connecting to host */
+	WSH_SSH_PUBKEY_AUTH_ERR,            /**< Cannot auth with pubkey */
+	WSH_SSH_PUBKEY_AUTH_DENIED,         /**< Pubkey denied */
+	WSH_SSH_PASSWORD_AUTH_ERR,          /**< Cannot auth with password */
+	WSH_SSH_PASSWORD_AUTH_DENIED,       /**< Password denied */
+	WSH_SSH_KBDINT_AUTH_ERR,            /**< Error with keyboard-interactive auth */
+	WSH_SSH_KBDINT_AUTH_DENIED,         /**< Password denied */
+	WSH_SSH_KBDINT_SET_ANSWER_ERR,      /**< Error setting an answer to keyboard-interactive auth */
+	WSH_SSH_CHANNEL_CREATION_ERR,       /**< Error creating ssh channel after auth */
+	WSH_SSH_EXEC_WSHD_ERR,              /**< Error executing wshd */
+	WSH_SSH_PACK_ERR,                   /**< Error packing a wsh_cmd_req_t or wsh_cmd_res_t */
+	WSH_SSH_WRITE_ERR,                  /**< Error writing to channel */
+	WSH_SSH_READ_ERR,                   /**< Error reading from channel */
+	WSH_SSH_PTY_ERR,                    /**< Error request a PTY */
+	WSH_SSH_STAT_ERR,                   /**< Error stating file or directory */
+	WSH_SSH_DIR_ERR,                    /**< Can't push dir */
+	WSH_SSH_FILE_ERR,                   /**< Can't push file */
+	WSH_SSH_AUTH_OTHER,                 /**< Generic auth error */
+	WSH_SSH_HOST_KEY_UNKNOWN,			/**< Unknown host key */
 } wsh_ssh_err_enum;
 
 /** Represents an ssh session */

@@ -119,7 +119,13 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 	}
 	ssh_key_free(key);
 
-	// Let's add the hostkey if it didn't change or anything
+	/* Here we do a few things:
+	 *
+	 * - don't continue if the host key is bad nless forced
+	 * - continue if we know the host key
+	 * - if not known, stop and optionally add host-key
+	 * - if error, report
+	 */
 	switch (state) {
 		case SSH_SERVER_KNOWN_CHANGED:
 		case SSH_SERVER_FOUND_OTHER:
@@ -138,8 +144,14 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 			return 0;
 		case SSH_SERVER_NOT_KNOWN:
 		case SSH_SERVER_FILE_NOT_FOUND:
-			if (add_hostkey)
+			if (add_hostkey) {
 				ret = wsh_add_host_key(session, err);
+			} else {
+				*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_UNKNOWN,
+				                   "Unknown host key");
+				wsh_ssh_disconnect(session);
+				ret = WSH_SSH_NEED_ADD_HOST_KEY;
+			}
 			break;
 		case SSH_SERVER_ERROR:
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_KNOWN_HOSTS_READ_ERR,

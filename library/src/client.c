@@ -298,3 +298,11 @@ void wsh_client_print_header(FILE* file, const char* format, ...) {
 	va_end(args);
 }
 
+void wsh_client_clear_colors(void) {
+	gboolean colors = wsh_client_has_colors();
+	if (colors && isatty(fileno(stderr)))
+		g_fprintf(stderr, "%s", "\x1b[39m");
+	if (colors && isatty(fileno(stdout)))
+		g_fprintf(stdout, "%s", "\x1b[39m");
+}
+

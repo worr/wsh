@@ -107,5 +107,10 @@ void wsh_client_print_success(const char* format, ...);
  */
 void wsh_client_print_header(FILE* file, const char* format, ...);
 
+/**
+ * @brief Clear colors from stdout and stderr
+ */
+void wsh_client_clear_colors(void);
+
 #endif
 

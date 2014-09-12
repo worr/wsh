@@ -144,6 +144,19 @@ static void test_wsh_unpack_response(void) {
 	wsh_free_unpacked_response(&res);
 }
 
+// Regress
+static void free_response(void) {
+	wsh_cmd_res_t* res = NULL;
+	wsh_free_unpacked_response(&res);
+	wsh_free_unpacked_response(NULL);
+}
+
+static void free_request(void) {
+	wsh_cmd_req_t* req = NULL;
+	wsh_free_unpacked_request(&req);
+	wsh_free_unpacked_request(NULL);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -151,6 +164,9 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Packing/UnpackRequest", test_wsh_unpack_request);
 	g_test_add_func("/Library/Packing/PackResponse", test_wsh_pack_response);
 	g_test_add_func("/Library/Packing/UnpackResponse", test_wsh_unpack_response);
+
+	g_test_add_func("/Regress/Library/Packing/FreeResponse", free_response);
+	g_test_add_func("/Regress/Library/Packing/FreeRequest", free_request);
 
 	return g_test_run();
 }

@@ -55,6 +55,7 @@ struct f_collate {
 };
 
 static void free_output(wshc_host_output_t* out) {
+	if (! out) return;
 	if (out->error) g_strfreev(out->error);
 	if (out->output) g_strfreev(out->output);
 	g_slice_free(wshc_host_output_t, out);

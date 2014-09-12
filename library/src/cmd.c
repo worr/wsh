@@ -218,7 +218,7 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** 
 	}
 
 	gchar* timeout = g_strdup_printf("%zu", req->timeout);
-	gchar* ret = g_strconcat(SUDO_CMD, username, " /usr/libexec/wsh-killer ", timeout,
+	gchar* ret = g_strconcat(SUDO_CMD, username, " "LIBEXEC_PATH"/wsh-killer ", timeout,
 	                   " ", shell, " -c '", cmd_string, "'", NULL);
 
 	g_free(shell);
@@ -279,7 +279,7 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	if (! req->sudo) {
 		gchar* timeout_str = g_strdup_printf("%zu", req->timeout);
 
-		gchar* ret = g_strconcat("/usr/libexec/wsh-killer ", timeout_str, " ",
+		gchar* ret = g_strconcat(LIBEXEC_PATH"/wsh-killer ", timeout_str, " ",
 		                         shell_str, " -c '", req->cmd_string, "'", NULL);
 
 		g_free(shell_str);
@@ -312,7 +312,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gchar* cmd = wsh_construct_sudo_cmd(req, &(res->err));
 
 	if (req->sudo) {
-		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", "/usr/libexec/wsh-askpass",
+		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", LIBEXEC_PATH"wsh-askpass",
 		                       TRUE)) {
 			ret = EXIT_FAILURE;
 			goto run_cmd_error_no_log_cmd;

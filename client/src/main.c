@@ -117,6 +117,11 @@ static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {
 	g_free(req->host);
 }
 
+static void cleanup(int sig, siginfo_t* sigi, void* ctx) {
+	wsh_client_clear_colors();
+	exit(sig);
+}
+
 static gboolean valid_arguments(gchar** mesg) {
 	if ((hosts_arg && (file_arg || range)) || (file_arg && range)) {
 		*mesg = g_strdup("Use one of -h, -r or -f\n");
@@ -312,6 +317,16 @@ int main(int argc, char** argv) {
 	memset(&req, 0, sizeof(req));
 	build_wsh_cmd_req(&req, sudo_password, cmd_string);
 	cmd_info.req = &req;
+
+	struct sigaction sa = {
+		.sa_sigaction = cleanup,
+	};
+	(void) sigemptyset(&sa.sa_mask);
+
+	(void) sigaction(SIGINT, &sa, NULL);
+	(void) sigaction(SIGHUP, &sa, NULL);
+	(void) sigaction(SIGQUIT, &sa, NULL);
+	(void) sigaction(SIGTERM, &sa, NULL);
 
 	wsh_log_client_cmd(req.cmd_string, req.username, hosts, req.cwd);
 	if (threads == 0) {

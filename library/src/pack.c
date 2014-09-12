@@ -99,6 +99,7 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf,
 }
 
 void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
+	if (! req || ! *req) return;
 	g_free((*req)->username);
 	g_free((*req)->password);
 	g_free((*req)->cmd_string);
@@ -152,6 +153,7 @@ void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf,
 }
 
 void wsh_free_unpacked_response(wsh_cmd_res_t** res) {
+	if (!res || ! *res) return;
 	g_strfreev((*res)->std_output);
 	g_strfreev((*res)->std_error);
 	g_free((*res)->error_message);

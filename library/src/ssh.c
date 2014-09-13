@@ -42,7 +42,7 @@ static ssh_pcap_file pfile;
 
 gint wsh_ssh_init(void) {
 	gint ret;
-	if ((ret = ssh_threads_set_callbacks(ssh_threads_get_noop())))
+	if ((ret = ssh_threads_set_callbacks(ssh_threads_get_pthread())))
 		return ret;
 
 #ifdef DEBUG

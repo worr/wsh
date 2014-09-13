@@ -312,7 +312,7 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	gchar* cmd = wsh_construct_sudo_cmd(req, &(res->err));
 
 	if (req->sudo) {
-		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", LIBEXEC_PATH"wsh-askpass",
+		if (! g_environ_setenv(req->env, "SUDO_ASKPASS", LIBEXEC_PATH"/wsh-askpass",
 		                       TRUE)) {
 			ret = EXIT_FAILURE;
 			goto run_cmd_error_no_log_cmd;

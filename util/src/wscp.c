@@ -153,6 +153,12 @@ gint main(gint argc, gchar** argv) {
 	wsh_init_logger(WSH_LOGGER_CLIENT);
 	wsh_ssh_init();
 
+	if (wsh_client_init_fds(&err)) {
+		g_printerr(err->message);
+		g_error_free(err);
+		return EXIT_FAILURE;
+	}
+
 	context = g_option_context_new("[FILENAMES...] - scp file to multiple machines at once");
 	g_option_context_add_main_entries(context, entries, NULL);
 	if (! g_option_context_parse(context, &argc, &argv, &err)) {

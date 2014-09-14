@@ -30,6 +30,14 @@
 /** Maximum password length that wshc will accept */
 extern const gsize WSH_MAX_PASSWORD_LEN;
 
+/** GQuark for client errors */
+GQuark WSH_CLIENT_ERROR;
+
+/** Client errors */
+typedef enum {
+	WSH_CLIENT_RLIMIT_ERR,         /**< Error grabbing or setting an rlimit */
+} wsh_client_error_enum;
+
 /**
  * @brief mmaps and locks a page of memory for use
  *
@@ -111,6 +119,15 @@ void wsh_client_print_header(FILE* file, const char* format, ...);
  * @brief Clear colors from stdout and stderr
  */
 void wsh_client_clear_colors(void);
+
+/**
+ * @brief initialize file descriptors for a client
+ *
+ * @param[out] err GError describing what went wrong
+ *
+ * @returns 0 on success, non-zero on error
+ */
+gint wsh_client_init_fds(GError **err);
 
 #endif
 

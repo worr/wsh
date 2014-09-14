@@ -26,6 +26,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "client.h"
 #include "cmd.h"
 #include "log.h"
 #include "output.h"
@@ -41,6 +42,11 @@ int main(int argc, char** argv, char** env) {
 	wsh_cmd_res_t* res = g_slice_new0(wsh_cmd_res_t);
 
 	wsh_init_logger(WSH_LOGGER_SERVER);
+
+	if (wsh_client_init_fds(&err)) {
+		wsh_log_message(err->message);
+		return EXIT_FAILURE;
+	}
 
 	do {
 		if (errno == EINTR)

@@ -360,3 +360,7 @@ gint ssh_get_fd() {
 	return 0;
 }
 
+gint ssh_threads_get_pthread() {
+	return 0;
+}
+

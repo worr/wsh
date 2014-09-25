@@ -103,7 +103,6 @@ static gboolean check_stream(GIOChannel* out, GIOCondition cond,
 	wsh_cmd_res_t* res = data->res;
 	wsh_cmd_req_t* req = data->req;
 	g_assert(res != NULL);
-	g_assert(res-> err == NULL);
 	g_assert(req != NULL);
 
 	GIOStatus stat = 0;

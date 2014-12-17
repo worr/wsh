@@ -191,7 +191,7 @@ gint main(gint argc, gchar** argv) {
 		username = g_strdup(g_get_user_name());
 
 	if (ask_password) {
-		if ((ret = wsh_client_lock_password_pages(passwd_mem))) {
+		if ((ret = wsh_client_lock_password_pages(&passwd_mem))) {
 			g_printerr("%s\n", strerror(ret));
 			return ret;
 		}

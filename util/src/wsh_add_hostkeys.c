@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "client.h"
 #include "expansion.h"
 #include "ssh.h"
 
@@ -119,6 +120,12 @@ gint main(gint argc, gchar** argv) {
 		g_free(username);
 		g_printerr("Error: Missing a list of hosts\n\n");
 		g_printerr("%s", g_option_context_get_help(context, TRUE, NULL));
+		return EXIT_FAILURE;
+	}
+
+	if (wsh_client_init_fds(&err)) {
+		g_printerr(err->message);
+		g_error_free(err);
 		return EXIT_FAILURE;
 	}
 

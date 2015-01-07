@@ -328,6 +328,12 @@ int main(int argc, char** argv) {
 	(void) sigaction(SIGQUIT, &sa, NULL);
 	(void) sigaction(SIGTERM, &sa, NULL);
 
+	if (wsh_client_init_fds(&err)) {
+		g_printerr(err->message);
+		g_error_free(err);
+		return EXIT_FAILURE;
+	}
+
 	wsh_log_client_cmd(req.cmd_string, req.username, hosts, req.cwd);
 	if (threads == 0) {
 		for (gint i = 0; i < num_hosts; i++) {

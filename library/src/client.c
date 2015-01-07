@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
@@ -304,5 +305,34 @@ void wsh_client_clear_colors(void) {
 		g_fprintf(stderr, "%s", "\x1b[39m");
 	if (colors && isatty(fileno(stdout)))
 		g_fprintf(stdout, "%s", "\x1b[39m");
+}
+
+// A wsh client will need lots of fds
+gint wsh_client_init_fds(GError **err) {
+	g_assert(err != NULL);
+	g_assert(*err == NULL);
+
+	struct rlimit rlp;
+
+	if (getrlimit(RLIMIT_NOFILE, &rlp)) {
+		g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+		    "%s", strerror(errno));
+		return 1;
+	}
+
+	// Raise rlimits to max allowed for user
+	rlp.rlim_cur = rlp.rlim_max;
+	if (setrlimit(RLIMIT_NOFILE, &rlp)) {
+		g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+		    "%s", strerror(errno));
+		return 2;
+	}
+
+	// Close all other file handles
+	for (int fd = 3; fd < rlp.rlim_max; fd++) {
+		(void) close(fd);
+	}
+
+	return 0;
 }
 

@@ -286,7 +286,7 @@ static void hostname_output(void) {
 
 	if (g_test_trap_fork(0,
 	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
-		g_setenv("TERM", "linux"); // guarantee dark bg
+		g_setenv("TERM", "linux", TRUE); // guarantee dark bg
 		gint ret = wshc_write_output(out, "localhost", &res);
 		exit(ret);
 	}
@@ -426,7 +426,7 @@ static void verbose_output(void) {
 	wshc_init_output(&out);
 	out->verbose = TRUE;
 	if (g_test_trap_fork(0, 0)) {
-		wshc_verbose_print("testing");
+		wshc_verbose_print(out, "testing");
 	}
 #endif
 

@@ -300,7 +300,6 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
 
 	gchar** argcv = NULL;
-	gchar* old_path = "";
 	GMainLoop* loop;
 	GIOChannel* in, * out, * err;
 	gint argcp;
@@ -410,13 +409,6 @@ run_cmd_error_no_log_cmd:
 	if (argcv != NULL) {
 		g_strfreev(argcv);
 		argcv = NULL;
-	}
-
-	// Restoring old path
-	if (glib_check_version(2, 34, 0)) {
-		g_setenv("PATH", old_path, TRUE);
-		g_free(old_path);
-		old_path = NULL;
 	}
 
 	g_free(cmd);

@@ -154,7 +154,7 @@ gint main(gint argc, gchar** argv) {
 	wsh_ssh_init();
 
 	if (wsh_client_init_fds(&err)) {
-		g_printerr(err->message);
+		g_printerr("%s", err->message);
 		g_error_free(err);
 		return EXIT_FAILURE;
 	}

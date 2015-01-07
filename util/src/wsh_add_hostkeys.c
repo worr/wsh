@@ -124,7 +124,7 @@ gint main(gint argc, gchar** argv) {
 	}
 
 	if (wsh_client_init_fds(&err)) {
-		g_printerr(err->message);
+		g_printerr("%s\n", err->message);
 		g_error_free(err);
 		return EXIT_FAILURE;
 	}

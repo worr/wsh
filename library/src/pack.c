@@ -64,6 +64,8 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf,
 	CommandRequest* cmd_req;
 
 	cmd_req = command_request__unpack(NULL, buf_len, buf);
+	if (!cmd_req)
+		return;
 
 	if (cmd_req->auth->username)
 		(*req)->username = g_strndup(cmd_req->auth->username,
@@ -133,6 +135,8 @@ void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf,
 	CommandReply* cmd_res;
 
 	cmd_res = command_reply__unpack(NULL, buf_len, buf);
+	if (!cmd_res)
+		return;
 
 	(*res)->std_output_len = cmd_res->n_stdout;
 	(*res)->std_output = g_new0(gchar*, (*res)->std_output_len + 1);

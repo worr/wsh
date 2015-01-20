@@ -61,8 +61,11 @@ Commands run without timeout may run until
 .Xr wshd 1
 is killed
 .It Fl s | -script Ar script
-Sends and executes a script, named
-.Ar script .
+Sends the specified file
+.Ar script
+which will be executable on the remote host(s).
+.Ar script
+can be used as the command or as an argument.
 .It Fl V | -version
 Prints the version of
 .Nm

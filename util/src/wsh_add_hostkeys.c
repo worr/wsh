@@ -97,13 +97,14 @@ gint main(gint argc, gchar** argv) {
 	gint ret = EXIT_SUCCESS;
 	gchar** hosts = NULL;
 	gsize num_hosts = 0;
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-#else
-
-	g_thread_init(NULL);
-#endif
 
 	wsh_ssh_init();
+
+	if (wsh_client_init(&err)) {
+		g_printerr("%s", err->message);
+		g_error_free(err);
+		return EXIT_FAILURE;
+	}
 
 	context = g_option_context_new("host1,host2... - automatically add hostkeys to your hostkey file");
 	g_option_context_add_main_entries(context, entries, NULL);

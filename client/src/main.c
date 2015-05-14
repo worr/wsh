@@ -70,7 +70,7 @@ static GOptionEntry entries[] = {
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
 	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 300 seconds)", NULL },
-	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "Script to execute on remote host", NULL },
+	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "File to transfer to remote host", NULL },
 	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
 	{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Execute verbosely", NULL },
 
@@ -150,10 +150,6 @@ int main(int argc, char** argv) {
 	gchar* password = NULL;
 	gchar* sudo_password = NULL;
 	gchar** hosts = NULL;
-
-#if ! GLIB_CHECK_VERSION( 2, 32, 0 )
-	g_thread_init(NULL);
-#endif
 
 	wsh_init_logger(WSH_LOGGER_CLIENT);
 	wsh_ssh_init();
@@ -328,7 +324,7 @@ int main(int argc, char** argv) {
 	(void) sigaction(SIGQUIT, &sa, NULL);
 	(void) sigaction(SIGTERM, &sa, NULL);
 
-	if (wsh_client_init_fds(&err)) {
+	if (wsh_client_init(&err)) {
 		g_printerr("%s\n", err->message);
 		g_error_free(err);
 		return EXIT_FAILURE;

@@ -146,14 +146,10 @@ gint main(gint argc, gchar** argv) {
 	gsize num_hosts = 0;
 	gchar* password = NULL;
 
-#if ! GLIB_CHECK_VERSION( 2, 32, 0 )
-	g_thread_init(NULL);
-#endif
-
 	wsh_init_logger(WSH_LOGGER_CLIENT);
 	wsh_ssh_init();
 
-	if (wsh_client_init_fds(&err)) {
+	if (wsh_client_init(&err)) {
 		g_printerr("%s", err->message);
 		g_error_free(err);
 		return EXIT_FAILURE;

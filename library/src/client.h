@@ -129,5 +129,14 @@ void wsh_client_clear_colors(void);
  */
 gint wsh_client_init_fds(GError **err);
 
+/**
+ * @ brief initialize internal data structures for client comm
+ *
+ * @param[out] err GError describing what went wrong
+ *
+ * @returns 0 on success, non-zero on error
+ */
+gint wsh_client_init(GError **err);
+
 #endif
 

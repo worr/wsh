@@ -71,6 +71,8 @@ const gsize WSH_MAX_PASSWORD_LEN = 1024;
 static enum wsh_client_bg_t _wsh_client_bg_dark = bg_undecided;
 static enum wsh_client_colors_t _wsh_client_colors = colors_undecided;
 static volatile sig_atomic_t signos[NSIG];
+static GMutex client_mtx;
+static int initialized;
 
 gint wsh_client_lock_password_pages(void** passwd_mem) {
 	do {
@@ -236,20 +238,30 @@ gboolean wsh_client_has_colors(void) {
 	if (_wsh_client_colors != colors_undecided)
 		return (gboolean)_wsh_client_colors;
 
+	g_mutex_lock(&client_mtx);
+
+	// if we were blocked, we were probably waiting on deciding if we had
+	// colors so check again
+	if (_wsh_client_colors != colors_undecided)
+		goto out;
+
 	// Use error here so we don't output a message on failure
 	gint err = 0;
 	if (setupterm(NULL, fileno(stdout), &err) == ERR) {
 		_wsh_client_colors = colors_unavail;
-		return _wsh_client_colors;
+		goto out;
 	}
 
 	if (has_colors()) {
 		_wsh_client_colors = colors_avail;
-		return _wsh_client_colors;
+		goto out;
 	}
 
 	_wsh_client_colors = colors_unavail;
-	return _wsh_client_colors;
+
+out:
+	g_mutex_unlock(&client_mtx);
+	return (gboolean)_wsh_client_colors;
 }
 #else
 gboolean wsh_client_has_colors(void) {
@@ -334,5 +346,25 @@ gint wsh_client_init_fds(GError **err) {
 	}
 
 	return 0;
+}
+
+// It turns out that ncurses isn't thread-safe
+gint wsh_client_init(GError **err) {
+	int ret = -1;
+
+	if (initialized)
+		return 0;
+
+	if ((ret = wsh_client_init_fds(err)))
+		return ret;
+
+#if ! GLIB_CHECK_VERSION( 2, 32, 0 )
+	g_thread_init(NULL);
+#endif
+
+	g_mutex_init(&client_mtx);
+
+	initialized = 1;
+	return ret;
 }
 

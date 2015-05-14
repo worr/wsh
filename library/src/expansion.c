@@ -67,17 +67,24 @@ gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
 
 gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,
                            const gchar* filename, GError** err) {
-	gchar* file_contents;
+	gchar* file_contents = NULL;
+	gint ret = EXIT_FAILURE;
 
+	*num_hosts = 0;
 	if (! g_file_get_contents(filename, &file_contents, NULL, err))
-		return EXIT_FAILURE;
+		goto bad;
 
 	*hosts = g_strsplit(file_contents, "\n", 0);
-	*num_hosts = g_strv_length(*hosts) - 1;
-	g_free(file_contents);
-	cleanup_hostnames(*hosts, *num_hosts);
+	if (!**hosts || ! g_strcmp0(**hosts, ""))
+		goto bad;
 
-	return EXIT_SUCCESS;
+	*num_hosts = g_strv_length(*hosts) - 1;
+	cleanup_hostnames(*hosts, *num_hosts);
+	ret = EXIT_SUCCESS;
+
+bad:
+	g_free(file_contents);
+	return ret;
 }
 
 gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts,

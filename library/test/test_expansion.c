@@ -24,6 +24,17 @@
 
 #include "expansion.h"
 
+// https://github.com/worr/wsh/issues/93
+static void wsh_exp_bad_num_hosts(void) {
+	gchar** hosts = NULL;
+	gsize num_hosts = 4;
+	GError* err = NULL;
+
+	wsh_exp_flat_filename(&hosts, &num_hosts,
+	                      "../../library/test/empty", &err);
+	g_assert(num_hosts == 0);
+}
+
 static void wsh_exp_flat_filename_success(void) {
 	gchar** hosts = NULL;
 	gsize num_hosts = 0;
@@ -161,6 +172,8 @@ int main(int argc, char** argv) {
 	                wsh_exp_exec_filename_no_file);
 
 	g_test_add_func("/Library/Expansion/FileSuccess", wsh_exp_filename_success);
+
+	g_test_add_func("/Library/Expansion/BadNumHosts", wsh_exp_bad_num_hosts);
 
 #ifdef WITH_RANGE
 	g_test_add_func("/Library/Expansion/RangeSuccess", wsh_exp_range_success);

@@ -19,11 +19,11 @@ env:
     -
 
 addons:
-	apt:
-		packages:
-		- cmake
-		- protobuf-c-compiler
-		- libprotobuf-c0-dev
-		- libssh-4
-		- libssh-dev
-		- doxygen
+    apt:
+        packages:
+        - cmake
+        - protobuf-c-compiler
+        - libprotobuf-c0-dev
+        - libssh-4
+        - libssh-dev
+        - doxygen

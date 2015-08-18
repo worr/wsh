@@ -1,11 +1,8 @@
 language: c
+sudo: false
 compiler:
    - clang
    - gcc
-
-before_install:
-   - sudo apt-get update
-   - sudo apt-get install protobuf-c-compiler libprotobuf-c0-dev libprotobuf-c0 libssh-4 libssh-dev doxygen
 
 script:
    - mkdir -p build/doc
@@ -20,3 +17,13 @@ env:
     - CFLAGS="-O3"
     - CFLAGS="-O2"
     -
+
+addons:
+	apt:
+		packages:
+		- cmake
+		- protobuf-c-compiler
+		- libprotobuf-c0-dev
+		- libssh-4
+		- libssh-dev
+		- doxygen

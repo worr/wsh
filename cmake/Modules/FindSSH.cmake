@@ -6,7 +6,7 @@ find_path( LIBSSH_INCLUDE_DIR libssh/libssh.h )
 
 find_library( LIBSSH_LIBRARY
 		NAMES ssh
-		PATHS /usr/local/lib /usr/local/lib64 /usr/pkg/lib /opt/lib /usr/lib64 /usr/lib /lib /lib64
+		PATHS /usr/local/lib /usr/local/lib64 /usr/pkg/lib /opt/lib /usr/lib64 /usr/lib /lib /lib64 /opt/pkg/lib
 )
 
 find_path( LIBSSH_INCLUDE_DIR libssh/libssh.h )

@@ -68,6 +68,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       /usr/lib64
       /usr/lib
       /usr/local/include
+      /opt/pkg/include
+      /usr/pkg/include
     PATH_SUFFIXES
       glib-2.0/include
     )
@@ -83,6 +85,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       /sw/include
       /usr/include
       /usr/local/include
+      /opt/pkg/include
+      /usr/pkg/include
     PATH_SUFFIXES
       glib-2.0
     )
@@ -101,6 +105,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       /sw/lib
       /usr/lib
       /usr/local/lib
+      /opt/pkg/lib
+      /usr/pkg/lib
     )
     IF ( _glib2_include_DIR AND _glib2_link_DIR )
         SET ( _glib2_FOUND TRUE )
@@ -118,6 +124,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
       /sw/lib
       /usr/lib
       /usr/local/lib
+      /opt/pkg/lib
+      /usr/pkg/lib
     )
 
     IF ( _gthread2_link_DIR )
@@ -148,6 +156,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
         /sw/include
         /usr/include
         /usr/local/include
+        /opt/pkg/include
+        /usr/pkg/include
       )
 
       FIND_LIBRARY(LIBINTL_LIBRARY
@@ -160,6 +170,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
         /sw/lib
         /usr/local/lib
         /usr/lib
+        /opt/pkg/lib
+        /usr/pkg/lib
       )
 
       IF (LIBINTL_LIBRARY AND LIBINTL_INCLUDE_DIR)
@@ -181,6 +193,8 @@ ELSE (GLIB2_LIBRARIES AND GLIB2_INCLUDE_DIRS )
         /sw/include
         /usr/local/include
         /usr/include
+        /opt/pkg/include
+        /usr/pkg/include
       PATH_SUFFIXES
         glib-2.0
       )

@@ -34,9 +34,9 @@
 #------------------------------------------------------------------------------
 
 if(PROTOBUF_LIBRARIES AND PROTOBUF_INCLUDE_DIR)
-	set(PROTOBUF_FOUND TRUE)
+    set(PROTOBUF_FOUND TRUE)
 else(PROTOBUF_LIBRARIES AND PROTOBUF_INCLUDE_DIR)
-	set(PROTOBUF_FOUND TRUE)
+    set(PROTOBUF_FOUND TRUE)
 
 # search for header
 
@@ -44,6 +44,9 @@ find_path(PROTOBUF_INCLUDE_DIR
           NAMES "google/protobuf-c/protobuf-c.h"
           PATHS "/usr/local"
                 "/usr"
+                "/opt"
+                "/opt/pkg"
+                "/usr/pkg"
                 ENV PROTOBUF_ROOTDIR
           PATH_SUFFIXES "include")
 
@@ -59,6 +62,9 @@ if (PROTOBUF_INCLUDE_DIR)
                  NAMES protobuf-c
                  PATHS /usr/local
                        /usr
+                       /opt
+                       /opt/pkg
+                       /usr/pkg
                  ENV PROTOBUF_ROOTDIR
                  PATH_SUFFIXES lib)
 

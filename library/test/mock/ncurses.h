@@ -23,10 +23,11 @@
 #define __MOCK_NCURSES_H
 
 #include <stdbool.h>
+#include <term.h>
 
 #define ERR -1
 
-int setupterm(char* term, int filedes, int* err);
+int setupterm(NCURSES_CONST char* term, int filedes, int* err);
 bool has_colors(void);
 
 void set_setupterm_ret(int ret);

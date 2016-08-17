@@ -69,6 +69,8 @@ endif( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 # Global deps
 # https://raw.github.com/stevedekorte/io/master/modules/FindGLIB2.cmake
 find_package( GLIB2 REQUIRED )
+string( REPLACE ";" " " GLIB2_LDFLAGS_STRIPPED "${GLIB2_LDFLAGS}" )
+set( GLIB2_LDFLAGS "${GLIB2_LDFLAGS_STRIPPED}" )
 
 # https://github.com/Pronghorn/pronghorn/blob/master/FindPROTOBUF-C.cmake
 find_package( PROTOBUF-C REQUIRED )
@@ -124,8 +126,8 @@ configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 # We need to set these per target
 set( ORIG_CFLAGS ${CMAKE_C_FLAGS} )
 set( CMAKE_C_FLAGS "${ORIG_CFLAGS} ${WSH_LIB_COMPILER_FLAGS}" )
-set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${WSH_EXE_LINKER_FLAGS}" )
-set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${WSH_LIB_LINKER_FLAGS}" )
+set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GLIB2_LDFLAGS} ${WSH_EXE_LINKER_FLAGS}" )
+set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${GLIB2_LDFLAGS} ${WSH_LIB_LINKER_FLAGS}" )
 
 add_subdirectory( library/src )
 

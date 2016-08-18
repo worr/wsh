@@ -28,12 +28,6 @@ if( CLANG OR GCC )
 
 	add_definitions( -Wall -pedantic )
 
-	check_c_compiler_flag( -Wno-pointer-sign HAVE_WNO_POINTER_SIGN )
-	if( HAVE_WNO_POINTER_SIGN )
-		add_definitions( -Wno-pointer-sign )
-		add_definitions( -Werror )
-	endif( HAVE_WNO_POINTER_SIGN )
-
 	check_c_compiler_flag( -fPIC HAVE_FPIC )
 	if( HAVE_FPIC )
 		set( WSH_LIB_COMPILER_FLAGS "${WSH_LIB_COMPILER_FLAGS} -fPIC" )

@@ -25,7 +25,11 @@
 static int setupterm_ret;
 static bool has_colors_ret;
 
-int setupterm(char* term, int filedes, int* err) {
+#ifndef NCURSES_CONST
+#define NCURSES_CONST
+#endif
+
+int setupterm(NCURSES_CONST char* term, int filedes, int* err) {
 	return setupterm_ret;
 }
 

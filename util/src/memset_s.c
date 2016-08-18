@@ -32,14 +32,14 @@ int memset_s(void* v, size_t smax, int c, size_t n) {
 	volatile unsigned char *p = v;
 	while (smax-- && n--) *p++ = c;
 
-    /* break lto eliding memset_s */
-    __asm__ __volatile__("" : : "r"(v) : "memory");
+	/* break lto eliding memset_s */
+	__asm__ __volatile__("" : : "r"(v) : "memory");
 
 	return 0;
 }
 #else
 int memset_s(void* v, size_smax, int c, size_t n) {
-    return explicit_bzero(v, n);
+	return explicit_bzero(v, n);
 }
 #endif
 

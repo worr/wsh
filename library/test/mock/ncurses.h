@@ -48,7 +48,11 @@
 #define ERR -1
 #endif
 
-int setupterm(char* term, int filedes, int* err);
+#ifndef NCURSES_CONST
+#define NCURSES_CONST
+#endif
+
+int setupterm(NCURSES_CONST char* term, int filedes, int* err);
 bool has_colors(void);
 
 void set_setupterm_ret(int ret);

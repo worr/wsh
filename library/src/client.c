@@ -37,15 +37,19 @@
 
 #ifdef CURSES_HAVE_NCURSES_H
 #include <ncurses.h>
+#define HAVE_CURSES
 #endif
 #ifdef CURSES_HAVE_NCURSES_NCURSES_H
 #include <ncurses/ncurses.h>
+#define HAVE_CURSES
 #endif
 #ifdef CURSES_HAVE_NCURSES_CURSES_H
 #include <ncurses/curses.h>
+#define HAVE_CURSES
 #endif
 #ifdef CURSES_HAVE_CURSES_H
 #include <curses.h>
+#define HAVE_CURSES
 #endif
 #ifdef HAVE_TERM_H
 #include <term.h>

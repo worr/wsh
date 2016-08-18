@@ -29,6 +29,7 @@
 #cmakedefine HAVE_UNISTD_H
 #cmakedefine HAVE_MEMSET_S
 #cmakedefine HAVE_TERM_H
+#cmakedefine HAVE_EXPLICIT_BZERO
 
 /* curses */
 #cmakedefine CURSES_LIBRARIES

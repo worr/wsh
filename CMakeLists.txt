@@ -117,6 +117,7 @@ endif( IS_DIRECTORY /usr/pkg/lib )
 if( HAVE_C11 )
 	check_function_exists( memset_s HAVE_MEMSET_S )
 endif( HAVE_C11 )
+check_function_exists( explicit_bzero HAVE_EXPLICIT_BZERO )
 
 set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} )
 set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} ${LIBSSH_THREADS_LIBRARY} )

@@ -80,17 +80,16 @@ static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "exit 0";
-	req->use_shell = TRUE;
+	req->cmd_string = "true";
 	gint ret = wsh_run_cmd(res, req);
 	g_assert(ret == 0);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 
-	req->cmd_string = "exit 1";
+	req->cmd_string = "false";
 	g_assert(wsh_run_cmd(res, req) == 0);
 	g_assert_no_error(res->err);
-	g_assert(res->exit_status == 1);
+	g_assert(res->exit_status != 0);
 }
 
 static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,

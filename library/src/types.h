@@ -44,6 +44,7 @@ typedef struct {
 	guint64 timeout;	/**< Maximum time to let a command run. 0 for none */
 	gint in_fd;			/**< Internal use only */
 	gboolean sudo;		/**< Whether or not to use sudo */
+	gboolean sudo_direct;	/**< Whether or not to use sudo with a shell or direct execution */
 } wsh_cmd_req_t;
 
 /** Result from running a command

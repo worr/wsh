@@ -213,18 +213,19 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** 
 	g_assert(*err == NULL);
 	// Construct cmd to escalate privs assuming use of sudo
 	// XXX: su support
-	if (username == NULL || strlen(username) == 0 || strncmp(username, "root-noshell", 13) == 0) {
+	if (username == NULL || strlen(username) == 0) {
 		username = "root";
 	}
 
 	gchar* timeout = g_strdup_printf("%zu", req->timeout);
-	if (strncmp(username, "root-noshell", 13) == 0) {
-		gchar* ret = g_strconcat(SUDO_DIRECT_CMD, "root "LIBEXEC_PATH"/wsh-killer ",
+        gchar* ret;
+	if (req->sudo_direct) {
+		ret = g_strconcat(SUDO_DIRECT_CMD, "root "LIBEXEC_PATH"/wsh-killer ",
 		timeout, " '", cmd_string, "'", NULL);
 	} else {
-		gchar* ret = g_strconcat(SUDO_CMD, username, " "LIBEXEC_PATH"/wsh-killer ",
-		timeout, " ", shell, " -c '", cmd_string, "'", NULL);
-        }
+		ret = g_strconcat(SUDO_CMD, username, " "LIBEXEC_PATH"/wsh-killer ", timeout,
+		" ", shell, " -c '", cmd_string, "'", NULL);
+	}
 
 	g_free(shell);
 	shell = NULL;
@@ -240,7 +241,7 @@ static gchar* get_shell(const gchar* username, GError** err) {
 	gsize buf_len = 0;
 	const gchar* user = username;
 
-	if (user == NULL || strlen(user) == 0 || strncmp(username, "root-noshell", 13) == 0) {
+	if (user == NULL || strlen(user) == 0) {
 		user = "root";
 	}
 

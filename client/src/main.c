@@ -50,6 +50,7 @@ static gint timeout = 300;
 static gchar* script = NULL;
 static gboolean version = FALSE;
 static gboolean verbose = FALSE;
+static gboolean sudo_direct = FALSE;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -73,6 +74,7 @@ static GOptionEntry entries[] = {
 	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "File to transfer to remote host", NULL },
 	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
 	{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Execute verbosely", NULL },
+	{ "sudo-direct", 'D', 0, G_OPTION_ARG_NONE, &sudo_direct, "Execute directly instead of in a shell", NULL },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -107,6 +109,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->cwd = "";
 	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
+        req->sudo_direct = sudo_direct;
 }
 
 static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {

@@ -184,12 +184,6 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 	g_assert_no_error(err);
 	g_free(res);
 
-	req->username = "root-noshell";
-	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -A -u root "LIBEXEC_PATH"/wsh-killer 0 '/bin/ls'");
-	g_assert_no_error(err);
-	g_free(res);
-
 	req->username = " ";
 	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, NULL);

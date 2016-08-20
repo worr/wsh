@@ -50,6 +50,7 @@ struct cmd_data {
 extern const guint MAX_CMD_ARGS;
 
 /** Our sudo command prefix */
+extern const gchar* SUDO_SHELL_CMD;
 extern const gchar* SUDO_CMD;
 
 /** GQuark for error reporting */

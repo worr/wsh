@@ -52,8 +52,8 @@ void wsh_pack_request(guint8** buf, guint32* buf_len,
 	for (gsize i = 0; cmd_req.env != NULL && cmd_req.env[i] != NULL; i++)
 		cmd_req.n_env++;
 
-        if (req->sudo_direct != 0)
-		cmd_req.sudo_direct = TRUE;
+	cmd_req.use_shell = req->use_shell;
+
 	*buf_len = command_request__get_packed_size(&cmd_req);
 	*buf = g_slice_alloc0(*buf_len);
 
@@ -99,7 +99,7 @@ void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf,
 
 	(*req)->host = g_strndup(cmd_req->host, strlen(cmd_req->host));
 
-	(*req)->sudo_direct = cmd_req->sudo_direct;
+	(*req)->use_shell = cmd_req->use_shell;
 
 	command_request__free_unpacked(cmd_req, NULL);
 }

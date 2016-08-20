@@ -475,6 +475,7 @@ static void send_cmd_write_failure(void) {
 	req->timeout = req_timeout;
 	req->username = req_username;
 	req->password = req_password;
+	req->use_shell = TRUE;
 
 	GError* err = NULL;
 
@@ -515,6 +516,7 @@ static void send_cmd_write_success(void) {
 	req->timeout = req_timeout;
 	req->username = req_username;
 	req->password = req_password;
+	req->use_shell = TRUE;
 
 	GError* err = NULL;
 

@@ -49,8 +49,10 @@ struct cmd_data {
 /** Maximum number of args a command can have */
 extern const guint MAX_CMD_ARGS;
 
-/** Our sudo command prefix */
+/** Sudo command prefix, w/ shell */
 extern const gchar* SUDO_SHELL_CMD;
+
+/** Sudo command prefix, no shell */
 extern const gchar* SUDO_CMD;
 
 /** GQuark for error reporting */

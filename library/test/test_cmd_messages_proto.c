@@ -31,7 +31,7 @@ static gchar* req_stdin[2] = { "yes", "no" };
 static gchar* req_env[3] = { "PATH=/usr/bin", "USER=will", "MAILTO=will@worrbase.com" };
 static gchar* req_cwd = "/tmp";
 static guint64 req_timeout = 5;
-static guint64 req_sudo_direct = 0;
+static gboolean req_use_shell = TRUE;
 
 static const gsize simple_req_len = 6;
 static const guint8 simple_req[] = { 0x0a, 0x02, 0x6c, 0x73, 0x3a, 0x00 };
@@ -161,7 +161,7 @@ static void test_packing_complex_cmd_request(void) {
 	req.cwd = req_cwd;
 	req.has_timeout = TRUE;
 	req.timeout = req_timeout;
-	req.sudo_direct = req_sudo_direct;
+	req.use_shell = req_use_shell;
 
 	len = command_request__get_packed_size(&req);
 	g_assert(len == complex_req_len);
@@ -188,7 +188,7 @@ static void test_unpacking_complex_cmd_request(void) {
 	g_assert_cmpstr(req->cwd, ==, req_cwd);
 	g_assert(req->has_timeout);
 	g_assert(req->timeout == req_timeout);
-	g_assert(req->sudo_direct == req_sudo_direct);
+	g_assert(req->use_shell == req_use_shell);
 
 	for (gsize i = 0; i < req->n_stdin; i++) {
 		g_assert_cmpstr(req->stdin[i], ==, req_stdin[i]);

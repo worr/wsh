@@ -81,6 +81,7 @@ static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_res_t* res = fixture->res;
 
 	req->cmd_string = "exit 0";
+	req->use_shell = TRUE;
 	gint ret = wsh_run_cmd(res, req);
 	g_assert(ret == 0);
 	g_assert_no_error(res->err);
@@ -108,6 +109,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	res->std_output_len = 0;
 
 	req->cmd_string = "exit 0";
+	req->use_shell = TRUE;
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -120,6 +122,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_res_t* res = fixture->res;
 
 	req->cmd_string = "echo foo 1>&2";
+	req->use_shell = TRUE;
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -148,6 +151,7 @@ static void test_run_err(struct test_wsh_run_cmd_data* fixture,
 
 	res->err = NULL;
 	req->cmd_string = "exit 0";
+	req->use_shell = TRUE;
 	req->cwd = "/foobarbaz";
 	wsh_run_cmd(res, req);
 	g_assert_error(res->err, G_SPAWN_ERROR, G_SPAWN_ERROR_CHDIR);
@@ -159,12 +163,14 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 	GError* err = NULL;
 
 	req->cmd_string = "/bin/ls";
+	req->use_shell = TRUE;
 	gchar* res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, LIBEXEC_PATH"/wsh-killer 0 /bin/bash -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->sudo = TRUE;
+	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/bash -c '/bin/ls'");
 	g_assert_no_error(err);
@@ -172,6 +178,7 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 
 	/* TODO: needs tlc to be less system-dependent. Implement user mocking
 	req->username = "worr";
+	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "sudo -sA -u worr "LIBEXEC_PATH"/wsh-killer 0 /bin/zsh -c '/bin/ls'");
 	g_assert_no_error(err);
@@ -179,6 +186,7 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 	*/
 
 	req->username = "";
+	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
 	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/bash -c '/bin/ls'");
 	g_assert_no_error(err);

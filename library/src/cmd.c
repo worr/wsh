@@ -39,7 +39,8 @@ extern int memset_s(void* v, size_t smax, int c, size_t n);
 #include "log.h"
 
 const guint MAX_CMD_ARGS = 255;
-const gchar* SUDO_CMD = "sudo -sA -u ";
+const gchar* SUDO_SHELL_CMD = "sudo -sA -u ";
+const gchar* SUDO_CMD = "sudo -A -u ";
 
 static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
                          gsize* buf_len) {
@@ -217,8 +218,14 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** 
 	}
 
 	gchar* timeout = g_strdup_printf("%zu", req->timeout);
-	gchar* ret = g_strconcat(SUDO_CMD, username, " "LIBEXEC_PATH"/wsh-killer ", timeout,
-	                   " ", shell, " -c '", cmd_string, "'", NULL);
+        gchar* ret = NULL;
+	if (req->use_shell) {
+		ret = g_strconcat(SUDO_SHELL_CMD, username, " "LIBEXEC_PATH"/wsh-killer ", timeout,
+		" ", shell, " -c '", cmd_string, "'", NULL);
+	} else {
+		ret = g_strconcat(SUDO_CMD, username, " "LIBEXEC_PATH"/wsh-killer ",
+		timeout, " ''", cmd_string, "''", NULL);
+	}
 
 	g_free(shell);
 	shell = NULL;
@@ -278,8 +285,14 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	if (! req->sudo) {
 		gchar* timeout_str = g_strdup_printf("%zu", req->timeout);
 
-		gchar* ret = g_strconcat(LIBEXEC_PATH"/wsh-killer ", timeout_str, " ",
+		gchar* ret = NULL;
+		if (req->use_shell) {
+			ret = g_strconcat(LIBEXEC_PATH"/wsh-killer ", timeout_str, " ",
 		                         shell_str, " -c '", req->cmd_string, "'", NULL);
+		} else {
+			ret = g_strconcat(LIBEXEC_PATH"/wsh-killer ", timeout_str, " ",
+		                         " ''", req->cmd_string, "''", NULL);
+		}
 
 		g_free(shell_str);
 		shell_str = NULL;

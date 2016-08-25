@@ -475,6 +475,7 @@ static void send_cmd_write_failure(void) {
 	req->timeout = req_timeout;
 	req->username = req_username;
 	req->password = req_password;
+	req->use_shell = TRUE;
 
 	GError* err = NULL;
 
@@ -515,6 +516,7 @@ static void send_cmd_write_success(void) {
 	req->timeout = req_timeout;
 	req->username = req_username;
 	req->password = req_password;
+	req->use_shell = TRUE;
 
 	GError* err = NULL;
 
@@ -522,7 +524,7 @@ static void send_cmd_write_success(void) {
 	wsh_ssh_exec_wshd(session, &err);
 
 	reset_ssh_channel_write_first(TRUE);
-	set_ssh_channel_write_ret(89);
+	set_ssh_channel_write_ret(91);
 	gint ret = wsh_ssh_send_cmd(session, req, &err);
 
 	g_assert(ret == 0);

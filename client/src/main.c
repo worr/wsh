@@ -70,7 +70,7 @@ static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "SSH username", NULL },
 	{ "password", 'p', 0, G_OPTION_ARG_NONE, &ask_password, "Prompt for SSH password", NULL },
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
-	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
+	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: determined by # of cpus)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 300 seconds)", NULL },
 	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "File to transfer to remote host", NULL },
 	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
@@ -349,8 +349,14 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
+#ifdef HAVE_G_GET_NUM_PROCESSORS
+	threads = g_get_num_processors();
+#else
+	threads = 12;
+#endif
+
 	wsh_log_client_cmd(req.cmd_string, req.username, hosts, req.cwd);
-	if (threads == 0) {
+	if (num_hosts == 1 || threads == 0) {
 		for (gint i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 

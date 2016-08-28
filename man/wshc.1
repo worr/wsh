@@ -49,7 +49,9 @@ Spawn off
 .Ar threads
 number of threads. If this flag is not given, then
 .Nm
-will execute sequentially.
+will determine the correct number of threads to run based on the number
+if CPUs your machine has. If you use a version of glib2 that is < 2.34,
+then 12 threads will be used by default.
 .It Fl T | -timeout Ar timeout
 Kills commands after
 .Ar timeout

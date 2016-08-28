@@ -129,14 +129,19 @@ static void cleanup(int sig, siginfo_t* sigi, void* ctx) {
 
 static gboolean valid_arguments(gchar** mesg) {
 	GError *err = NULL;
+#ifdef WITH_RANGE
+	const gchar *msg = "Use one of -h, -r or -f\n";
+#else
+	const gchar *msg = "Use one of -h or -f\n";
+#endif
 
 	if ((hosts_arg && (file_arg || range)) || (file_arg && range)) {
-		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		*mesg = g_strdup(msg);
 		return FALSE;
 	}
 
 	if (!(hosts_arg || file_arg || range)) {
-		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		*mesg = g_strdup(msg);
 		return FALSE;
 	}
 

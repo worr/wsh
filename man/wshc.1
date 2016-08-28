@@ -19,6 +19,7 @@
 .Op Fl -errors-only
 .Op Fl V | -version
 .Op Fl v | -verbose
+.Op Fl -ssh-opt Ar sshopt
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
 .Ar command
@@ -75,6 +76,12 @@ Prints the version of
 and exits
 .It Fl v | -verbose
 Execute verbosely
+.It Fl -ssh-opt Ar sshopt
+Pass an
+.Xr ssh_config 5
+style configuration option to
+.Nm .
+These must be in the format of "opt=val".
 .El
 .Ss Host selection arguments
 .Bl -tag -width u

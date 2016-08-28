@@ -373,6 +373,11 @@ int main(int argc, char** argv) {
 		wshc_host_info_t host_info[num_hosts + 1];
 		wsh_cmd_res_t* res[num_hosts + 1];
 
+		// Set the max idle thread time to 10s longer than the specified timeout
+		// This will harvest dead threads
+		if (timeout)
+			g_thread_pool_set_max_idle_time(timeout + 10);
+
 		for (gsize i = 0; i < num_hosts; i++) {
 			res[i] = NULL;
 

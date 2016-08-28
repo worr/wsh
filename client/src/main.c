@@ -51,6 +51,7 @@ static gchar* script = NULL;
 static gboolean version = FALSE;
 static gboolean verbose = FALSE;
 static gboolean use_shell = TRUE;
+static gchar **ssh_opts = NULL;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -75,6 +76,7 @@ static GOptionEntry entries[] = {
 	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
 	{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Execute verbosely", NULL },
 	{ "no-shell", 'N', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &use_shell, "Execute without spawning a shell", NULL },
+	{ "ssh-opt", 0, 0, G_OPTION_ARG_STRING_ARRAY, &ssh_opts, "Config directives to pass to ssh (ssh_config(5))" },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -126,6 +128,8 @@ static void cleanup(int sig, siginfo_t* sigi, void* ctx) {
 }
 
 static gboolean valid_arguments(gchar** mesg) {
+	GError *err = NULL;
+
 	if ((hosts_arg && (file_arg || range)) || (file_arg && range)) {
 		*mesg = g_strdup("Use one of -h, -r or -f\n");
 		return FALSE;
@@ -139,6 +143,12 @@ static gboolean valid_arguments(gchar** mesg) {
 	timeout = timeout == -1 ? 300 : timeout;
 	if (timeout < 0) {
 		*mesg = g_strdup("-T | --timeout must be a positive value or 0 for none\n");
+		return FALSE;
+	}
+
+	if (wsh_ssh_check_args(ssh_opts, &err)) {
+		*mesg = g_strdup(err->message);
+		g_error_free(err);
 		return FALSE;
 	}
 
@@ -291,6 +301,7 @@ int main(int argc, char** argv) {
 
 	wshc_cmd_info_t cmd_info;
 	memset(&cmd_info, 0, sizeof(cmd_info));
+	cmd_info.ssh_opts = (const gchar **)ssh_opts;
 	cmd_info.username = username;
 	cmd_info.password = password;
 	cmd_info.port = port;
@@ -396,6 +407,9 @@ int main(int argc, char** argv) {
 		g_free(sudo_username);
 		sudo_username = NULL;
 	}
+
+	g_strfreev(ssh_opts);
+	ssh_opts = NULL;
 
 	free_wsh_cmd_req_fields(&req);
 

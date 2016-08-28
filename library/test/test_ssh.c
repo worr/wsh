@@ -616,6 +616,45 @@ static void scp_init_success(void) {
 	g_slice_free(wsh_ssh_session_t, session);
 }
 
+static void ssh_args(void) {
+	GError *err = NULL;
+	gchar *valid_args[] = {
+		"connecttimeout=5",
+		"KexAlgorithms=ssh",
+		"LogLevel=foo",
+		"hostkeyalgorithms=bar",
+		"compression =zlib",
+		"GSSAPIDelegateCredentials=asdf",
+		NULL
+	};
+
+	g_assert(! wsh_ssh_check_args(valid_args, &err));
+	g_assert_no_error(err);
+
+
+	gchar *invalid_args[] = {
+		"connecttimeout",
+		NULL,
+	};
+
+	g_assert(wsh_ssh_check_args(invalid_args, &err));
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_OPT_INVALID);
+
+	gchar *notsupp_args[] = {
+		"foo=5",
+		NULL
+	};
+
+	g_assert(wsh_ssh_check_args(notsupp_args, &err));
+	g_assert_error(err, WSH_SSH_ERROR, WSH_SSH_OPT_NOT_SUPPORTED);
+
+	gchar *no_args[] = {
+		NULL
+	};
+
+	g_assert(! wsh_ssh_check_args(no_args, &err));
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -675,6 +714,8 @@ int main(int argc, char** argv) {
 	                scp_init_fails);
 	g_test_add_func("/Library/SSH/SFTPInitSuccess",
 	                scp_init_success);
+
+	g_test_add_func("/Library/SSH/CheckArgs", ssh_args);
 
 	return g_test_run();
 }

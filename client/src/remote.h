@@ -30,6 +30,7 @@
 
 /** metadata about commands */
 typedef struct {
+	const gchar** ssh_opts;		/**< SSH options to apply */
 	const gchar* username;		/**< Username to connect with */
 	const gchar* password;		/**< Password to auth with */
 	const gchar* script;		/**< Script to execute */

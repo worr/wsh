@@ -89,6 +89,9 @@ if( WITH_RANGE )
 	endif( LIBCRANGE_LIBRARY )
 endif( WITH_RANGE )
 
+set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} ${GLIB2_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR} )
+set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} ${LIBSSH_THREADS_LIBRARY} ${GLIB2_LIBRARIES} ${PROTOBUF_LIBRARIES} )
+
 # Deal with linker crap
 if( NOT LIB_INSTALL_DIR )
 	set( libdir "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" )
@@ -118,9 +121,7 @@ if( HAVE_C11 )
 	check_function_exists( memset_s HAVE_MEMSET_S )
 endif( HAVE_C11 )
 check_function_exists( explicit_bzero HAVE_EXPLICIT_BZERO )
-
-set( CMAKE_REQUIRED_INCLUDES ${LIBSSH_INCLUDE_DIR} )
-set( CMAKE_REQUIRED_LIBRARIES ${LIBSSH_LIBRARY} ${LIBSSH_THREADS_LIBRARY} )
+check_function_exists( g_get_num_processors HAVE_G_GETNUM_PROCESSORS )
 
 configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 

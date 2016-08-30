@@ -40,10 +40,86 @@ const gint WSH_SSH_HOST_KEY_ERROR = 2;
 static ssh_pcap_file pfile;
 #endif
 
+
+static GHashTable *ssh_opt_table = NULL;
+
+gint wsh_ssh_check_args(gchar **opts, GError **err) {
+	g_assert(ssh_opt_table);
+
+	if (! opts || ! *opts)
+		return 0;
+
+	WSH_SSH_ERROR = g_quark_from_static_string("wsh_ssh_error");
+
+	for (gchar *opt = opts[0]; opt; opt = *(opts++)) {
+		gchar *offset = g_utf8_strchr(opt, -1, '=');
+		if (! offset) {
+			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_OPT_INVALID,
+							   "ssh option improperly formatted: %s\n"
+							   "separate option and value with =",
+							   opt);
+			return -1;
+		}
+
+		gssize len = g_utf8_pointer_to_offset(opt, offset);
+		char *newopt = g_utf8_strdown(opt, len);
+		g_strstrip(newopt);
+		if (! g_hash_table_contains(ssh_opt_table, newopt)) {
+			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_OPT_NOT_SUPPORTED,
+							   "ssh option is not supported by libssh: %s",
+							   newopt);
+			g_free(newopt);
+			return -1;
+		}
+
+		g_free(newopt);
+	}
+
+	return 0;
+}
+
+void wsh_ssh_apply_args(wsh_ssh_session_t *session, const gchar **opts) {
+	g_assert(ssh_opt_table);
+
+	if (! opts || ! *opts)
+		return;
+
+	for (const gchar *opt = opts[0]; opt; opt = *(opts++)) {
+		gchar **opt_parts = g_strsplit(opt, "=", 2);
+		char *newopt = g_utf8_strdown(opt_parts[0], strlen(opt_parts[0]));
+		g_strstrip(newopt);
+		g_strstrip(opt_parts[1]);
+
+		gpointer constant = g_hash_table_lookup(ssh_opt_table, newopt);
+		ssh_options_set(session->session, (long)constant, opt_parts[1]);
+
+		g_free(newopt);
+		g_strfreev(opt_parts);
+	}
+
+	return;
+}
+
 gint wsh_ssh_init(void) {
 	gint ret;
 	if ((ret = ssh_threads_set_callbacks(ssh_threads_get_pthread())))
 		return ret;
+
+	ssh_opt_table = g_hash_table_new(g_str_hash, g_str_equal);
+	(void) g_hash_table_insert(ssh_opt_table, "connecttimeout",
+		(gpointer)SSH_OPTIONS_TIMEOUT);
+	(void) g_hash_table_insert(ssh_opt_table, "loglevel",
+		(gpointer)SSH_OPTIONS_LOG_VERBOSITY_STR);
+	(void) g_hash_table_insert(ssh_opt_table, "hostkeyalgorithms",
+		(gpointer)SSH_OPTIONS_HOSTKEYS);
+	(void) g_hash_table_insert(ssh_opt_table, "compression",
+		(gpointer)SSH_OPTIONS_COMPRESSION);
+	(void) g_hash_table_insert(ssh_opt_table, "stricthostkeychecking",
+		(gpointer)SSH_OPTIONS_STRICTHOSTKEYCHECK);
+	(void) g_hash_table_insert(ssh_opt_table, "kexalgorithms",
+		(gpointer)SSH_OPTIONS_KEY_EXCHANGE);
+	(void) g_hash_table_insert(ssh_opt_table, "gssapidelegatecredentials",
+		(gpointer)SSH_OPTIONS_GSSAPI_DELEGATE_CREDENTIALS);
 
 #ifdef DEBUG
 	pfile = ssh_pcap_file_new();
@@ -58,6 +134,15 @@ gint wsh_ssh_init(void) {
 
 gint wsh_ssh_cleanup(void) {
 	return ssh_finalize();
+}
+
+static void set_options(wsh_ssh_session_t* session) {
+	ssh_options_set(session->session, SSH_OPTIONS_HOST, session->hostname);
+	ssh_options_set(session->session, SSH_OPTIONS_PORT, &(session->port));
+	ssh_options_set(session->session, SSH_OPTIONS_USER, session->username);
+	ssh_options_parse_config(session->session, NULL);
+
+	//wsh_ssh_apply_args(session, session->ssh_opts);
 }
 
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
@@ -76,10 +161,7 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	}
 #endif
 
-	ssh_options_set(session->session, SSH_OPTIONS_HOST, session->hostname);
-	ssh_options_set(session->session, SSH_OPTIONS_PORT, &(session->port));
-	ssh_options_set(session->session, SSH_OPTIONS_USER, session->username);
-	ssh_options_parse_config(session->session, NULL);
+	set_options(session);
 
 	// Try and connect
 	gint conn_ret;

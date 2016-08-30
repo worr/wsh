@@ -13,11 +13,13 @@
 .Op Fl t | -threads Ar threads
 .Op Fl T | -timeout Ar timeout
 .Op Fl s | -script Ar script
+.Op Fl N | -no-shell
 .Op Fl c | -print-collated
 .Op Fl H | -print-hostnames
 .Op Fl -errors-only
 .Op Fl V | -version
 .Op Fl v | -verbose
+.Op Fl -ssh-opt Ar sshopt
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
 .Ar command
@@ -47,7 +49,9 @@ Spawn off
 .Ar threads
 number of threads. If this flag is not given, then
 .Nm
-will execute sequentially.
+will determine the correct number of threads to run based on the number
+if CPUs your machine has. If you use a version of glib2 that is < 2.34,
+then 12 threads will be used by default.
 .It Fl T | -timeout Ar timeout
 Kills commands after
 .Ar timeout
@@ -66,12 +70,20 @@ Sends the specified file
 which will be executable on the remote host(s).
 .Ar script
 can be used as the command or as an argument.
+.It Fl N | -no-shell
+Execute without spawning a shell first. Useful for use with restricted sudo access.
 .It Fl V | -version
 Prints the version of
 .Nm
 and exits
 .It Fl v | -verbose
 Execute verbosely
+.It Fl -ssh-opt Ar sshopt
+Pass an
+.Xr ssh_config 5
+style configuration option to
+.Nm .
+These must be in the format of "opt=val".
 .El
 .Ss Host selection arguments
 .Bl -tag -width u

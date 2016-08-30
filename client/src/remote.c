@@ -43,6 +43,7 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 		.password = cmd_info->password,
 		.port = cmd_info->port,
 		.session = NULL,
+		.ssh_opts = cmd_info->ssh_opts,
 	};
 
 	if (session.password == NULL) {

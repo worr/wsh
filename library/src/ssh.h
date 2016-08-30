@@ -65,12 +65,15 @@ typedef enum {
 	WSH_SSH_FILE_ERR,                   /**< Can't push file */
 	WSH_SSH_AUTH_OTHER,                 /**< Generic auth error */
 	WSH_SSH_HOST_KEY_UNKNOWN,			/**< Unknown host key */
+	WSH_SSH_OPT_NOT_SUPPORTED,			/**< libssh does not support a provided option */
+	WSH_SSH_OPT_INVALID,				/**< Invalid option specifier */
 } wsh_ssh_err_enum;
 
 /** Represents an ssh session */
 typedef struct {
 	ssh_session session;			/**< libssh session struct */
 	ssh_channel channel;			/**< libssh channel struct */
+	const gchar** ssh_opts;			/**< sshopts to apply to session */
 	const gchar* hostname;			/**< Hostname of remote machine */
 	const gchar* username;			/**< Username used for auth */
 	const gchar* password;			/**< Password (if any) used in auth */
@@ -221,6 +224,24 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file,
 gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout,
                                   gboolean is_stderr);
 #endif
+
+/**
+ * @brief Check ssh options for support and accuracy
+ *
+ * @param[in] opts String array of options, NULL-terminated. format: opt=val
+ * @param[out] err GError describing error condition
+ *
+ * @returns 0 on success, anything else on failure
+ */
+gint wsh_ssh_check_args(gchar **opts, GError **err);
+
+/**
+ * @brief Apply already checked ssh options
+ *
+ * @param[in] session a wsh_ssh_session_t describing current state of session
+ * @param[in] opts String array of options, NULL-terminated. format: opt=val
+ */
+void wsh_ssh_apply_args(wsh_ssh_session_t *session, const gchar **opts);
 
 #endif
 

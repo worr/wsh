@@ -33,12 +33,12 @@ static gchar* req_cwd = "/tmp";
 static guint64 req_timeout = 5;
 static gboolean req_use_shell = TRUE;
 
-static const gsize simple_req_len = 8;
+static const gsize simple_req_len = 6;
 static const guint8 simple_req[] = { 0x0a, 0x02, 0x6c, 0x73, 0x3a, 0x00, 0x58, 0x00 };
 
-static const gsize auth_req_len = 22;
+static const gsize auth_req_len = 20;
 static const guint8 auth_req[]
-    = { 0x0a, 0x02, 0x6c, 0x73, 0x12, 0x0c, 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x12, 0x04, 0x74, 0x65, 0x73, 0x74, 0x3a, 0x00, 0x58, 0x00 };
+    = { 0x0a, 0x02, 0x6c, 0x73, 0x12, 0x0c, 0x0a, 0x04, 0x77, 0x69, 0x6c, 0x6c, 0x12, 0x04, 0x74, 0x65, 0x73, 0x74, 0x3a, 0x00 };
 
 static const gsize complex_req_len = 77;
 static const guint8 complex_req[]
@@ -161,6 +161,7 @@ static void test_packing_complex_cmd_request(void) {
 	req.cwd = req_cwd;
 	req.has_timeout = TRUE;
 	req.timeout = req_timeout;
+	req.has_use_shell = TRUE;
 	req.use_shell = req_use_shell;
 
 	len = command_request__get_packed_size(&req);

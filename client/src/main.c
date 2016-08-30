@@ -51,6 +51,7 @@ static gchar* script = NULL;
 static gboolean version = FALSE;
 static gboolean verbose = FALSE;
 static gboolean use_shell = TRUE;
+static gchar **ssh_opts = NULL;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -69,12 +70,13 @@ static GOptionEntry entries[] = {
 	{ "username", 'u', 0, G_OPTION_ARG_STRING, &username, "SSH username", NULL },
 	{ "password", 'p', 0, G_OPTION_ARG_NONE, &ask_password, "Prompt for SSH password", NULL },
 	{ "sudo-username", 'U', 0, G_OPTION_ARG_STRING, &sudo_username, "sudo username", NULL },
-	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: 0)", NULL },
+	{ "threads", 't', 0, G_OPTION_ARG_INT, &threads, "Number of threads to use (default: determined by # of cpus)", NULL },
 	{ "timeout", 'T', 0, G_OPTION_ARG_INT, &timeout, "Timeout before killing command (default: 300 seconds)", NULL },
 	{ "script", 's', 0, G_OPTION_ARG_FILENAME, &script, "File to transfer to remote host", NULL },
 	{ "version", 'V', 0, G_OPTION_ARG_NONE, &version, "Print the version number", NULL },
 	{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Execute verbosely", NULL },
 	{ "no-shell", 'N', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &use_shell, "Execute without spawning a shell", NULL },
+	{ "ssh-opt", 0, 0, G_OPTION_ARG_STRING_ARRAY, &ssh_opts, "Config directives to pass to ssh (ssh_config(5))" },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -126,19 +128,32 @@ static void cleanup(int sig, siginfo_t* sigi, void* ctx) {
 }
 
 static gboolean valid_arguments(gchar** mesg) {
+	GError *err = NULL;
+#ifdef WITH_RANGE
+	const gchar *msg = "Use one of -h, -r or -f\n";
+#else
+	const gchar *msg = "Use one of -h or -f\n";
+#endif
+
 	if ((hosts_arg && (file_arg || range)) || (file_arg && range)) {
-		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		*mesg = g_strdup(msg);
 		return FALSE;
 	}
 
 	if (!(hosts_arg || file_arg || range)) {
-		*mesg = g_strdup("Use one of -h, -r or -f\n");
+		*mesg = g_strdup(msg);
 		return FALSE;
 	}
 
 	timeout = timeout == -1 ? 300 : timeout;
 	if (timeout < 0) {
 		*mesg = g_strdup("-T | --timeout must be a positive value or 0 for none\n");
+		return FALSE;
+	}
+
+	if (wsh_ssh_check_args(ssh_opts, &err)) {
+		*mesg = g_strdup(err->message);
+		g_error_free(err);
 		return FALSE;
 	}
 
@@ -291,6 +306,7 @@ int main(int argc, char** argv) {
 
 	wshc_cmd_info_t cmd_info;
 	memset(&cmd_info, 0, sizeof(cmd_info));
+	cmd_info.ssh_opts = (const gchar **)ssh_opts;
 	cmd_info.username = username;
 	cmd_info.password = password;
 	cmd_info.port = port;
@@ -333,8 +349,14 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
+#ifdef HAVE_G_GET_NUM_PROCESSORS
+	threads = g_get_num_processors();
+#else
+	threads = 12;
+#endif
+
 	wsh_log_client_cmd(req.cmd_string, req.username, hosts, req.cwd);
-	if (threads == 0) {
+	if (num_hosts == 1 || threads == 0) {
 		for (gint i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 
@@ -356,6 +378,11 @@ int main(int argc, char** argv) {
 
 		wshc_host_info_t host_info[num_hosts + 1];
 		wsh_cmd_res_t* res[num_hosts + 1];
+
+		// Set the max idle thread time to 10s longer than the specified timeout
+		// This will harvest dead threads
+		if (timeout)
+			g_thread_pool_set_max_idle_time(timeout + 10);
 
 		for (gsize i = 0; i < num_hosts; i++) {
 			res[i] = NULL;
@@ -396,6 +423,9 @@ int main(int argc, char** argv) {
 		g_free(sudo_username);
 		sudo_username = NULL;
 	}
+
+	g_strfreev(ssh_opts);
+	ssh_opts = NULL;
 
 	free_wsh_cmd_req_fields(&req);
 

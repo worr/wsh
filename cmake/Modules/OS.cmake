@@ -1,6 +1,7 @@
 if( CMAKE_SYSTEM_NAME MATCHES "Linux" )
 	set( LINUX TRUE )
 	add_definitions( -D_POSIX_C_SOURCE=200809L -D_SVID_SOURCE )
+	add_definitions( -D_DEFAULT_SOURCE )
 endif( CMAKE_SYSTEM_NAME MATCHES "Linux" )
 
 if( CMAKE_SYSTEM_NAME MATCHES "FreeBSD" )

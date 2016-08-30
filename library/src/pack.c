@@ -52,6 +52,8 @@ void wsh_pack_request(guint8** buf, guint32* buf_len,
 	for (gsize i = 0; cmd_req.env != NULL && cmd_req.env[i] != NULL; i++)
 		cmd_req.n_env++;
 
+	if (req->use_shell)
+		cmd_req.has_use_shell = TRUE;
 	cmd_req.use_shell = req->use_shell;
 
 	*buf_len = command_request__get_packed_size(&cmd_req);

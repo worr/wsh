@@ -82,13 +82,13 @@ static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "exit 0";
+	req->cmd_string = "/bin/ls";
 	gint ret = wsh_run_cmd(res, req);
 	g_assert(ret == 0);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 
-	req->cmd_string = "exit 1";
+	req->cmd_string = "/bin/ls this definitely will fail";
 	g_assert(wsh_run_cmd(res, req) == 0);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status != 0);
@@ -99,7 +99,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "echo foo";
+	req->cmd_string = "/bin/echo foo";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -109,7 +109,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	res->std_output = NULL;
 	res->std_output_len = 0;
 
-	req->cmd_string = "exit 0";
+	req->cmd_string = "/bin/echo foo 1>&2";
 	req->use_shell = TRUE;
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
@@ -122,7 +122,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "echo foo 1>&2";
+	req->cmd_string = "/bin/echo foo 1>&2";
 	req->use_shell = TRUE;
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
@@ -132,7 +132,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	res->std_error = NULL;
 	res->std_error_len = 0;
 
-	req->cmd_string = "exit 0";
+	req->cmd_string = "/bin/echo foo";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);

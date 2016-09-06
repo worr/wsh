@@ -40,7 +40,11 @@
 
 #define APPLICATION_VERSION "${APPLICATION_VERSION}"
 
+#ifdef UNIT_TESTING
+#define LIBEXEC_PATH "${CMAKE_BINARY_DIR}/bin"
+#else
 #define LIBEXEC_PATH "${LIBEXEC_PATH}"
+#endif
 
 #endif
 

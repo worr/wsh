@@ -1,5 +1,9 @@
 # wsh
 
+[![Travis](https://img.shields.io/travis/worr/wsh.svg?maxAge=2592000)]()
+[![Coverity Scan](https://img.shields.io/coverity/scan/10090.svg?maxAge=2592000)]()
+[![Gratipay User](https://img.shields.io/gratipay/user/worr.svg?maxAge=2592000)]()
+
 wsh is a shell-like program made for devops and sysadmins that need to 
 administer several machines at once. With `wsh`, you can ssh into multiple 
 machines and run one-off commands very simply

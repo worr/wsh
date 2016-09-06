@@ -1,6 +1,7 @@
 # wsh
 
 [![Travis](https://img.shields.io/travis/worr/wsh.svg?maxAge=2592000)](https://travis-ci.org/worr/wsh)
+[![Coveralls](https://img.shields.io/coveralls/worr/wsh.svg?maxAge=2592000)](https://coveralls.io/github/worr/wsh)
 [![Coverity Scan](https://img.shields.io/coverity/scan/10090.svg?maxAge=2592000)](https://scan.coverity.com/projects/worr-wsh)
 [![Gratipay User](https://img.shields.io/gratipay/user/worr.svg?maxAge=2592000)](https://gratipay.com/~worr/)
 

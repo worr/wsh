@@ -15,7 +15,7 @@ script:
    - cat doxylog && [ ! -s doxylog ]
 
 after_success:
-   - ./coveralls.sh
+   - ../coveralls.sh
 
 env:
     - CFLAGS="-O3"

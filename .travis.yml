@@ -5,14 +5,20 @@ compiler:
    - clang
    - gcc
 
+before_install:
+   - pip install --user cpp-coveralls
+
 script:
    - mkdir -p build/doc
    - cd build
-   - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DBUILD_CLIENT=ON -DBUILD_SERVER=ON ..
+   - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DBUILD_CLIENT=ON -DBUILD_SERVER=ON -DCOVERAGE=On ..
    - make
    - ctest -V
    - make doc
    - cat doxylog && [ ! -s doxylog ]
+
+after_success:
+   - coveralls --exclude tests --gcov-options '\-lp'
 
 env:
     - CFLAGS="-O3"

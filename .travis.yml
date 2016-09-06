@@ -18,7 +18,7 @@ script:
    - cat doxylog && [ ! -s doxylog ]
 
 after_success:
-   - coveralls --exclude tests --gcov-options '\-lp'
+   - coveralls --exclude server/test --exclude library/test --exclude util --exclude client/test --exclude build --gcov-options '\-lp'
 
 env:
     - CFLAGS="-O3"

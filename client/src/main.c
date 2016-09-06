@@ -52,6 +52,7 @@ static gboolean version = FALSE;
 static gboolean verbose = FALSE;
 static gboolean use_shell = TRUE;
 static gchar **ssh_opts = NULL;
+static gchar *cwd = NULL;
 
 // Host selection variables
 static gchar* hosts_arg = NULL;
@@ -77,6 +78,7 @@ static GOptionEntry entries[] = {
 	{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Execute verbosely", NULL },
 	{ "no-shell", 'N', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &use_shell, "Execute without spawning a shell", NULL },
 	{ "ssh-opt", 0, 0, G_OPTION_ARG_STRING_ARRAY, &ssh_opts, "Config directives to pass to ssh (ssh_config(5))" },
+	{ "chdir", 'd', 0, G_OPTION_ARG_STRING, &cwd, "chdir to this directory after ssh" },
 
 	// Host selection options
 	{ "hosts", 'h', 0, G_OPTION_ARG_STRING, &hosts_arg, "Comma separated list of hosts to ssh into", NULL },
@@ -108,7 +110,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->std_input = NULL;
 	req->std_input_len = 0;
 	req->timeout = timeout;
-	req->cwd = "";
+	req->cwd = cwd ? cwd : "";
 	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
         req->use_shell = use_shell;

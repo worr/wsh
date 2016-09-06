@@ -34,3 +34,4 @@ addons:
         - libssh-4
         - libssh-dev
         - doxygen
+        - lcov

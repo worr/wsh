@@ -5,9 +5,6 @@ compiler:
    - clang
    - gcc
 
-before_install:
-   - pip install --user cpp-coveralls
-
 script:
    - mkdir -p build/doc
    - cd build
@@ -18,7 +15,7 @@ script:
    - cat doxylog && [ ! -s doxylog ]
 
 after_success:
-   - coveralls --exclude server/test --exclude library/test --exclude util --exclude client/test --exclude build --gcov-options '\-lp'
+   - ./coveralls.sh
 
 env:
     - CFLAGS="-O3"

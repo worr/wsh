@@ -16,6 +16,8 @@ include_directories(
 	${CMAKE_SOURCE_DIR}
 )
 
+add_definitions( -Wno-macro-redefined )
+add_definitions( -DLIBEXEC_PATH=${CMAKE_BINARY_DIR}/bin/wsh-killer )
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
 set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )

@@ -328,19 +328,21 @@ gint wsh_client_init_fds(GError **err) {
 	g_assert(err != NULL);
 	g_assert(*err == NULL);
 
+	WSH_CLIENT_ERROR = g_quark_from_static_string("wsh_client_error");
+
 	struct rlimit rlp;
 
 	if (getrlimit(RLIMIT_NOFILE, &rlp)) {
-		g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
-		    "%s", strerror(errno));
+		*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+		                   "getrlimit: %s", strerror(errno));
 		return 1;
 	}
 
 	// Raise rlimits to max allowed for user
 	rlp.rlim_cur = rlp.rlim_max;
 	if (setrlimit(RLIMIT_NOFILE, &rlp)) {
-		g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
-		    "%s", strerror(errno));
+		*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+		                   "setrlimit: %s", strerror(errno));
 		return 2;
 	}
 

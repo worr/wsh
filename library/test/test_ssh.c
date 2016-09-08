@@ -654,6 +654,20 @@ static void ssh_args(void) {
 	g_assert(! wsh_ssh_check_args(no_args, &err));
 }
 
+static void ssh_alloc_fail(void) {
+	set_ssh_new_res(0);
+
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+	session->password = password;
+	session->port = port;
+	GError* err = NULL;
+	gint ret = wsh_ssh_host(session, &err);
+
+	g_assert(ret == -1);
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -715,6 +729,8 @@ int main(int argc, char** argv) {
 	                scp_init_success);
 
 	g_test_add_func("/Library/SSH/CheckArgs", ssh_args);
+
+	g_test_add_func("/Library/SSH/SSHAllocFailure", ssh_alloc_fail);
 
 	return g_test_run();
 }

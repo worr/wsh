@@ -153,7 +153,7 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	WSH_SSH_ERROR = g_quark_from_static_string("wsh_ssh_error");
 	gint ret = 0;
 	session->session = ssh_new();
-	if (session == NULL) return -1;
+	if (session->session == NULL) return -1;
 
 #ifdef DEBUG
 	if (ssh_set_pcap_file(session->session, pfile)) {

@@ -159,7 +159,7 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
 	gchar* buf = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 3);
 	if (setvbuf(stdin, buf, _IOLBF, BUFSIZ)) {
 		save_errno = errno;
-		target = NULL;
+		*target = 0;
 		goto restore_sigs;
 	}
 
@@ -170,7 +170,7 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
 
 	if (!fgets(target, target_len, stdin)) {
 		save_errno = errno;
-		target = NULL;
+		*target = 0;
 		goto restore_sigs;
 	}
 
@@ -187,7 +187,7 @@ restore_sigs:
 	(void) sigaction(SIGTTOU, &savettou, NULL);
 
 	if (tcsetattr(fileno(stdin), TCSANOW, &old_flags)) {
-		target = NULL;
+		*target = 0;
 		return errno;
 	}
 
@@ -196,7 +196,7 @@ restore_sigs:
 		if (signos[i]) kill(getpid(), i);
 	}
 
-	if (!target)
+	if (!*target)
 		return save_errno;
 
 	g_strchomp(target);

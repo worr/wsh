@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
 			return ret;
 		}
 
-		if (! password) return EXIT_FAILURE;
+		if (! *password) return EXIT_FAILURE;
 	}
 
 	if (sudo_username) {
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
 			return ret;
 		}
 
-		if (! sudo_password) return EXIT_FAILURE;
+		if (! *sudo_password) return EXIT_FAILURE;
 	}
 
 	if ((ask_password || sudo_username) &&

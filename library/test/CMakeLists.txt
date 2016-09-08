@@ -32,6 +32,9 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/getpwent.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/ncurses.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/setvbuf.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/tcsetattr.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/fgets.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c
 )
 

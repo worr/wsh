@@ -59,6 +59,10 @@
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
 
+#ifndef HAVE_CLOSEFROM
+extern int closefrom(int fd);
+#endif
+
 enum wsh_client_bg_t {
 	bg_undecided=-1,
 	bg_light,
@@ -339,17 +343,14 @@ gint wsh_client_init_fds(GError **err) {
 	}
 
 	// Raise rlimits to max allowed for user
-	rlp.rlim_cur = rlp.rlim_max;
+	rlp.rlim_cur = rlp.rlim_max - 1;
 	if (setrlimit(RLIMIT_NOFILE, &rlp)) {
 		*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
 		                   "setrlimit: %s", strerror(errno));
 		return 2;
 	}
 
-	// Close all other file handles
-	for (int fd = 3; fd < rlp.rlim_max; fd++) {
-		(void) close(fd);
-	}
+	(void) closefrom(STDERR_FILENO + 1);
 
 	return 0;
 }

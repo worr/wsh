@@ -122,6 +122,7 @@ if( HAVE_C11 )
 endif( HAVE_C11 )
 check_function_exists( explicit_bzero HAVE_EXPLICIT_BZERO )
 check_function_exists( g_get_num_processors HAVE_G_GETNUM_PROCESSORS )
+check_function_exists( closefrom HAVE_CLOSEFROM )
 
 configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 

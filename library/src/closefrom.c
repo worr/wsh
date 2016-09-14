@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2016 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,34 +18,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#include "config.h"
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
-#cmakedefine BUILD_TESTS
+int closefrom(int fd) {
+	int ret = 0;
+	struct rlimit rlp;
 
-#cmakedefine WITH_RANGE
+	if (getrlimit(RLIMIT_NOFILE, &rlp)) {
+		return 1;
+	}
 
-#cmakedefine HAVE_TERMIOS_H
-#cmakedefine HAVE_UNISTD_H
-#cmakedefine HAVE_MEMSET_S
-#cmakedefine HAVE_TERM_H
-#cmakedefine HAVE_EXPLICIT_BZERO
-#cmakedefine HAVE_CLOSEFROM
+	// Close all other file handles
+	for (int fd = 3; fd < rlp.rlim_cur; fd++) {
+		if ((ret = close(fd))) {
+			return ret;
+		}
+	}
 
-/* curses */
-#cmakedefine CURSES_LIBRARIES
-#cmakedefine CURSES_HAVE_CURSES_H
-#cmakedefine CURSES_HAVE_NCURSES_H
-#cmakedefine CURSES_HAVE_NCURSES_NCURSES_H
-#cmakedefine CURSES_HAVE_NCURSES_CURSES_H
-
-#define APPLICATION_VERSION "${APPLICATION_VERSION}"
-
-#ifdef UNIT_TESTING
-#define LIBEXEC_PATH "${CMAKE_BINARY_DIR}/bin"
-#else
-#define LIBEXEC_PATH "${LIBEXEC_PATH}"
-#endif
-
-#endif
-
+	return ret;
+}

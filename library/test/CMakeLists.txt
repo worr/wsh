@@ -42,6 +42,10 @@ if( NOT HAVE_MEMSET_S )
 	set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/memset_s.c ${SOURCES} )
 endif( NOT HAVE_MEMSET_S )
 
+if( NOT HAVE_CLOSEFROM )
+	set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/closefrom.c ${SOURCES} )
+endif( NOT HAVE_CLOSEFROM )
+
 if ( WITH_RANGE )
 	set( SOURCES ${SOURCES} ${CMAKE_SOURCE_DIR}/library/src/range_expansion.c )
 	set( TEST_EXECUTABLES ${TEST_EXECUTABLES} test_range_expansion )

@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifndef HAVE_EXPLICIT_BZERO
 int memset_s(void* v, size_t smax, int c, size_t n) {
 	if (v == NULL) return EINVAL;
 	if (smax > SIZE_MAX) return EINVAL;
@@ -31,6 +32,16 @@ int memset_s(void* v, size_t smax, int c, size_t n) {
 	volatile unsigned char *p = v;
 	while (smax-- && n--) *p++ = c;
 
+	/* break lto eliding memset_s */
+	__asm__ __volatile__("" : : "r"(v) : "memory");
+
 	return 0;
 }
+#else
+#include <string.h>
+int memset_s(void* v, size_t smax, int c, size_t n) {
+	explicit_bzero(v, n);
+	return 0;
+}
+#endif
 

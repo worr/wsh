@@ -38,8 +38,10 @@ int memset_s(void* v, size_t smax, int c, size_t n) {
 	return 0;
 }
 #else
-int memset_s(void* v, size_smax, int c, size_t n) {
-	return explicit_bzero(v, n);
+#include <string.h>
+int memset_s(void* v, size_t smax, int c, size_t n) {
+	explicit_bzero(v, n);
+	return 0;
 }
 #endif
 

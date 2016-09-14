@@ -20,3 +20,5 @@ doc
 *.css
 *.png
 config.h
+cscope.out
+doxylog

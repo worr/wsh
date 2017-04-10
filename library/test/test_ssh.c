@@ -523,7 +523,7 @@ static void send_cmd_write_success(void) {
 	wsh_ssh_exec_wshd(session, &err);
 
 	reset_ssh_channel_write_first(TRUE);
-	set_ssh_channel_write_ret(91);
+	set_ssh_channel_write_ret(89);
 	gint ret = wsh_ssh_send_cmd(session, req, &err);
 
 	g_assert(ret == 0);
@@ -730,11 +730,8 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/SSH/CheckArgs", ssh_args);
 
-<<<<<<< HEAD
-=======
 	g_test_add_func("/Library/SSH/SSHAllocFailure", ssh_alloc_fail);
 
->>>>>>> upstream/master
 	return g_test_run();
 }
 

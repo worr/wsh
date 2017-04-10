@@ -351,14 +351,16 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
+	if (threads == 0) {
 #ifdef HAVE_G_GET_NUM_PROCESSORS
-	threads = g_get_num_processors();
+		threads = g_get_num_processors();
 #else
-	threads = 12;
+		threads = 12;
 #endif
+	}
 
 	wsh_log_client_cmd(req.cmd_string, req.username, hosts, req.cwd);
-	if (num_hosts == 1 || threads == 0) {
+	if (num_hosts == 1 || threads < 2) {
 		for (gint i = 0; i < num_hosts; i++) {
 			wsh_cmd_res_t* res = NULL;
 

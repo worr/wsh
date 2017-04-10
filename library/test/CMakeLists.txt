@@ -16,6 +16,8 @@ include_directories(
 	${CMAKE_SOURCE_DIR}
 )
 
+add_definitions( -DUNIT_TESTING )
+
 set( PROTO_GEN_DIR ${CMAKE_BINARY_DIR}/gen )
 set( WSH_PROTOC_SOURCES ${PROTO_GEN_DIR}/cmd-messages.pb-c.c ${PROTO_GEN_DIR}/auth.pb-c.c )
 set_source_files_properties( ${WSH_PROTOC_SOURCES} PROPERTIES GENERATED TRUE )
@@ -28,13 +30,21 @@ set( SOURCES
 	${CMAKE_SOURCE_DIR}/library/src/expansion.c
 	${CMAKE_SOURCE_DIR}/library/src/client.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/syslog.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/getpwent.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/ncurses.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/setvbuf.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/tcsetattr.c
+	${CMAKE_SOURCE_DIR}/library/test/mock/fgets.c
 	${CMAKE_SOURCE_DIR}/library/test/mock/libssh/libssh.c
 )
 
 if( NOT HAVE_MEMSET_S )
 	set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/memset_s.c ${SOURCES} )
 endif( NOT HAVE_MEMSET_S )
+
+if( NOT HAVE_CLOSEFROM )
+	set( SOURCES ${CMAKE_SOURCE_DIR}/library/src/closefrom.c ${SOURCES} )
+endif( NOT HAVE_CLOSEFROM )
 
 if ( WITH_RANGE )
 	set( SOURCES ${SOURCES} ${CMAKE_SOURCE_DIR}/library/src/range_expansion.c )

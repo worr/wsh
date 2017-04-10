@@ -20,6 +20,7 @@
 .Op Fl V | -version
 .Op Fl v | -verbose
 .Op Fl -ssh-opt Ar sshopt
+.Op Fl d | -chdir Ar directory
 .Fl h | -hosts | f | -file | r | -range Ar hosts
 .Op Fl -
 .Ar command
@@ -84,6 +85,13 @@ Pass an
 style configuration option to
 .Nm .
 These must be in the format of "opt=val".
+<<<<<<< HEAD
+=======
+.It Fl d | -chdir Ar directory
+Change to
+.Ar directory
+before executing any commands.
+>>>>>>> upstream/master
 .El
 .Ss Host selection arguments
 .Bl -tag -width u

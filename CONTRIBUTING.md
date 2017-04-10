@@ -51,7 +51,7 @@ All releases are tagged commits on the master branch.
 I like patches - they're less work for me, but there's a difference between an
 acceptable patch and shit.
 
-* Write some unit tests. Test success, failure, everything
+* Write some unit tests. Test success, failure, everything. I measure coverage with coveralls, so if total coverage decreases, then I won't merge
 * If tests fail, I will not merge your patch until you fix it
 * If you dump something that should be in the lib in the server or client, I'll tell you to rework your patch
 * Undocumented features - edit the manpages/docs

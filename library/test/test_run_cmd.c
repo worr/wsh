@@ -29,6 +29,8 @@
 #include "cmd_internal.h"
 #include "log.h"
 
+#include "getpwent.h"
+
 extern char** environ;
 
 struct test_wsh_run_cmd_data {
@@ -80,15 +82,15 @@ static void test_run_exit_code(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "true";
+	req->cmd_string = "/bin/ls";
 	gint ret = wsh_run_cmd(res, req);
-	g_assert(ret == 0);
 	g_assert_no_error(res->err);
+	g_assert(ret == 0);
 	g_assert(res->exit_status == 0);
 
-	req->cmd_string = "false";
-	g_assert(wsh_run_cmd(res, req) == 0);
+	req->cmd_string = "/bin/ls this definitely will fail";
 	g_assert_no_error(res->err);
+	g_assert(wsh_run_cmd(res, req) == 0);
 	g_assert(res->exit_status != 0);
 }
 
@@ -97,7 +99,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "echo foo";
+	req->cmd_string = "/bin/echo foo";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -107,7 +109,7 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	res->std_output = NULL;
 	res->std_output_len = 0;
 
-	req->cmd_string = "exit 0";
+	req->cmd_string = "/bin/echo foo 1>&2";
 	req->use_shell = TRUE;
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
@@ -120,7 +122,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	wsh_cmd_req_t* req = fixture->req;
 	wsh_cmd_res_t* res = fixture->res;
 
-	req->cmd_string = "echo foo 1>&2";
+	req->cmd_string = "/bin/echo foo 1>&2";
 	req->use_shell = TRUE;
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
@@ -130,7 +132,7 @@ static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,
 	res->std_error = NULL;
 	res->std_error_len = 0;
 
-	req->cmd_string = "exit 0";
+	req->cmd_string = "/bin/echo foo";
 	wsh_run_cmd(res, req);
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
@@ -164,30 +166,28 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 	req->cmd_string = "/bin/ls";
 	req->use_shell = TRUE;
 	gchar* res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, LIBEXEC_PATH"/wsh-killer 0 /bin/bash -c '/bin/ls'");
+	g_assert_cmpstr(res, ==, LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->sudo = TRUE;
 	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/bash -c '/bin/ls'");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
-	/* TODO: needs tlc to be less system-dependent. Implement user mocking
 	req->username = "worr";
 	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u worr "LIBEXEC_PATH"/wsh-killer 0 /bin/zsh -c '/bin/ls'");
+	g_assert_cmpstr(res, ==, "sudo -sA -u worr "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
-	*/
 
 	req->username = "";
 	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/bash -c '/bin/ls'");
+	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 

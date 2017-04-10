@@ -21,6 +21,9 @@
 #include "config.h"
 #include "client.h"
 #include "ncurses.h"
+#include "setvbuf.h"
+#include "tcsetattr.h"
+#include "fgets.h"
 
 #include <glib.h>
 #include <stdbool.h>
@@ -89,6 +92,33 @@ static void has_colors_has_colors_fail(void) {
 	g_assert(!wsh_client_has_colors());
 }
 
+static void my_getpass(void) {
+	setvbuf_ret = EOF;
+
+	gchar target[4096] = { 0 };
+
+	gint ret = wsh_client_getpass(target, sizeof(target), "", target);
+	g_assert(ret == EOF);
+	g_assert(*target == 0);
+
+	setvbuf_ret = 0;
+	tcsetattr_ret = 1;
+	ret = wsh_client_getpass(target, sizeof(target), "", target);
+	g_assert(ret == 1);
+	g_assert(*target == 0);
+
+	tcsetattr_ret = 0;
+	fgets_ret = NULL;
+	ret = wsh_client_getpass(target, sizeof(target), "", target);
+	g_assert(ret == 1);
+	g_assert(*target == 0);
+
+	fgets_ret = "foo\n";
+	ret = wsh_client_getpass(target, sizeof(target), "", target);
+	g_assert(ret == 0);
+	g_assert_cmpstr(target, ==, "foo");
+}
+
 int main(int argc, char** argv) {
 	g_test_init(&argc, &argv, NULL);
 
@@ -96,6 +126,7 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Library/Client/TestHasColorsSuccess", has_colors_success);
 	g_test_add_func("/Library/Client/TestHasColorsSetupTermFail", has_colors_setupterm_fail);
 	g_test_add_func("/Library/Client/TestHasColorsHasColorsFail", has_colors_has_colors_fail);
+	g_test_add_func("/Library/Client/TestGetPass", my_getpass);
 
 	return g_test_run();
 }

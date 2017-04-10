@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 William Orr <will@worrbase.com>
+/* Copyright (c) 2016 William Orr <will@worrbase.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -6,10 +6,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,29 +19,27 @@
  * SOFTWARE.
  */
 #include "config.h"
-#include <errno.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include "getpwent.h"
 
-#ifndef HAVE_EXPLICIT_BZERO
-int memset_s(void* v, size_t smax, int c, size_t n) {
-	if (v == NULL) return EINVAL;
-	if (smax > SIZE_MAX) return EINVAL;
-	if (n > smax) return EINVAL;
-
-	volatile unsigned char *p = v;
-	while (smax-- && n--) *p++ = c;
-
-	/* break lto eliding memset_s */
-	__asm__ __volatile__("" : : "r"(v) : "memory");
-
-	return 0;
-}
-#else
+#include <ctype.h>
+#include <pwd.h>
 #include <string.h>
-int memset_s(void* v, size_t smax, int c, size_t n) {
-	explicit_bzero(v, n);
+#include <sys/types.h>
+
+
+int getpwnam_r(const char *name, struct passwd *pwd, char *buffer,
+               size_t bufsize, struct passwd **result) {
+
+	if (! isalnum(*name))
+		return 1;
+
+	if (strlen(name))
+		pwd->pw_name = (char *)name;
+	else
+		pwd->pw_name = (char *)"root";
+	pwd->pw_shell = (char *)"/bin/sh";
+	*result = pwd;
+
 	return 0;
 }
-#endif
 

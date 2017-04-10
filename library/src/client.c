@@ -59,6 +59,10 @@
 extern int memset_s(void* v, size_t smax, int c, size_t n);
 #endif
 
+#ifndef HAVE_CLOSEFROM
+extern int closefrom(int fd);
+#endif
+
 enum wsh_client_bg_t {
 	bg_undecided=-1,
 	bg_light,
@@ -159,7 +163,7 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
 	gchar* buf = ((gchar*)passwd_mem) + (WSH_MAX_PASSWORD_LEN * 3);
 	if (setvbuf(stdin, buf, _IOLBF, BUFSIZ)) {
 		save_errno = errno;
-		target = NULL;
+		*target = 0;
 		goto restore_sigs;
 	}
 
@@ -170,7 +174,7 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
 
 	if (!fgets(target, target_len, stdin)) {
 		save_errno = errno;
-		target = NULL;
+		*target = 0;
 		goto restore_sigs;
 	}
 
@@ -187,7 +191,7 @@ restore_sigs:
 	(void) sigaction(SIGTTOU, &savettou, NULL);
 
 	if (tcsetattr(fileno(stdin), TCSANOW, &old_flags)) {
-		target = NULL;
+		*target = 0;
 		return errno;
 	}
 
@@ -196,7 +200,7 @@ restore_sigs:
 		if (signos[i]) kill(getpid(), i);
 	}
 
-	if (!target)
+	if (!*target)
 		return save_errno;
 
 	g_strchomp(target);
@@ -328,26 +332,25 @@ gint wsh_client_init_fds(GError **err) {
 	g_assert(err != NULL);
 	g_assert(*err == NULL);
 
+	WSH_CLIENT_ERROR = g_quark_from_static_string("wsh_client_error");
+
 	struct rlimit rlp;
 
 	if (getrlimit(RLIMIT_NOFILE, &rlp)) {
-		g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
-		    "%s", strerror(errno));
+		*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+		                   "getrlimit: %s", strerror(errno));
 		return 1;
 	}
 
 	// Raise rlimits to max allowed for user
-	rlp.rlim_cur = rlp.rlim_max;
+	rlp.rlim_cur = rlp.rlim_max - 1;
 	if (setrlimit(RLIMIT_NOFILE, &rlp)) {
-		g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
-		    "%s", strerror(errno));
+		*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+		                   "setrlimit: %s", strerror(errno));
 		return 2;
 	}
 
-	// Close all other file handles
-	for (int fd = 3; fd < rlp.rlim_max; fd++) {
-		(void) close(fd);
-	}
+	(void) closefrom(STDERR_FILENO + 1);
 
 	return 0;
 }

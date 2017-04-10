@@ -8,6 +8,10 @@ if( NOT HAVE_MEMSET_S )
 	set( WSH_SOURCES memset_s.c ${WSH_SOURCES} )
 endif( NOT HAVE_MEMSET_S )
 
+if( NOT HAVE_CLOSEFROM )
+	set( WSH_SOURCES closefrom.c ${WSH_SOURCES} )
+endif( NOT HAVE_CLOSEFROM )
+
 if( LIBCRANGE_LIBRARY )
 	set( WSH_SOURCES ${WSH_SOURCES} range_expansion.c )
 endif( LIBCRANGE_LIBRARY )

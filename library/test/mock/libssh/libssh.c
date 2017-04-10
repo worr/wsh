@@ -51,6 +51,7 @@ gint ssh_scp_push_file_ret;
 gint ssh_scp_push_directory_ret;
 gint ssh_scp_write_ret;
 gint ssh_channel_poll_timeout_ret;
+gint ssh_new_ret = 1;
 
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
@@ -120,7 +121,13 @@ const char* ssh_get_error() {
 	return NULL;
 }
 
+void set_ssh_new_res(gint ret) {
+	ssh_new_ret = ret;
+}
+
 ssh_session ssh_new() {
+	if (! ssh_new_ret)
+		return NULL;
 	return g_malloc0(sizeof(ssh_session));
 }
 

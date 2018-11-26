@@ -19,8 +19,10 @@
  * SOFTWARE.
  */
 #include "config.h"
+#include <fcntl.h>
 #include <glib.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "expansion.h"
 
@@ -95,6 +97,48 @@ static void wsh_exp_exec_filename_no_file(void) {
 	g_assert(ret == EXIT_FAILURE);
 }
 
+static void mock_stdin(char* filename) {
+	int filfd = open(filename, O_RDONLY);
+	g_assert(filfd != -1);
+	int fd = dup2(filfd, STDIN_FILENO);
+	g_assert(fd != -1);
+}
+
+static void wsh_exp_stdin_empty(void) {
+	gchar** hosts = NULL;
+	gsize num_hosts = 0;
+	GError* err = NULL;
+	gint ret = 0;
+
+	mock_stdin("../../../library/test/empty");
+
+	ret = wsh_exp_stdin(&hosts, &num_hosts, &err);
+
+	g_assert(num_hosts == 0);
+	close(STDIN_FILENO);
+}
+
+static void wsh_exp_stdin_success(void) {
+	gchar** hosts = NULL;
+	gsize num_hosts = 0;
+	GError* err = NULL;
+	gint ret = 0;
+
+	mock_stdin("../../../library/test/worrtest");
+
+	ret = wsh_exp_stdin(&hosts, &num_hosts, &err);
+
+	g_assert_no_error(err);
+	g_assert(num_hosts == 3);
+	g_assert(ret == 0);
+	g_assert_cmpstr(hosts[0], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[1], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[2], ==, "rancor.csh.rit.edu");
+	g_strfreev(hosts);
+
+	close(STDIN_FILENO);
+}
+
 static void wsh_exp_filename_success(void) {
 	gchar** hosts = NULL;
 	gsize num_hosts = 0;
@@ -125,6 +169,20 @@ static void wsh_exp_filename_success(void) {
 	g_assert_cmpstr(hosts[1], ==, "rancor.csh.rit.edu");
 	g_assert_cmpstr(hosts[2], ==, "rancor.csh.rit.edu");
 	g_strfreev(hosts);
+
+	hosts = NULL;
+	num_hosts = 0;
+	mock_stdin("../../../library/test/worrtest");
+
+	ret = wsh_exp_filename(&hosts, &num_hosts, "-", &err);
+	g_assert_no_error(err);
+	g_assert(num_hosts == 3);
+	g_assert(ret == 0);
+	g_assert_cmpstr(hosts[0], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[1], ==, "rancor.csh.rit.edu");
+	g_assert_cmpstr(hosts[2], ==, "rancor.csh.rit.edu");
+	g_strfreev(hosts);
+	close(STDIN_FILENO);
 }
 
 #ifdef WITH_RANGE
@@ -170,6 +228,10 @@ int main(int argc, char** argv) {
 	                wsh_exp_exec_filename_success);
 	g_test_add_func("/Library/Expansion/ExecFileNonexistant",
 	                wsh_exp_exec_filename_no_file);
+	g_test_add_func("/Library/Expansion/StdinEmpty",
+	                wsh_exp_stdin_empty);
+	g_test_add_func("/Library/Expansion/StdinSuccess",
+	                wsh_exp_stdin_success);
 
 	g_test_add_func("/Library/Expansion/FileSuccess", wsh_exp_filename_success);
 

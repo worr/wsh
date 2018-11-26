@@ -65,6 +65,20 @@ gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
                       GError** err);
 
 /**
+ * @brief Gets hosts by reading from stdin
+ *
+ * @param[out] hosts Should be a pointer to NULL. On return, it will be a list of hosts.
+ *                    Should be freed with g_strgreev()
+ *
+ * @param[out] num_hosts Number of hosts returned.
+ *
+ * @param[out] err GError object containing any error information.
+ *
+ * @returns 0 if success, anything else on failure
+ */
+gint wsh_exp_stdin(gchar*** hosts, gsize* num_hosts, GError** err);
+
+/**
  * @brief Expands host from a flat, non-executable file.
  *
  * @param[out] hosts Should be a pointer to NULL. On return it will be a list of hosts.

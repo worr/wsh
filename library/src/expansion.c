@@ -24,6 +24,7 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 static inline void cleanup_hostnames(gchar** hosts, gsize num_hosts) {
 	for (gsize i = 0; i < num_hosts; i++)
@@ -60,9 +61,42 @@ gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
                       GError** err) {
 	if (err) g_assert_no_error(*err);
 
+	if (strncmp("-", filename, 2) == 0)
+		return wsh_exp_stdin(hosts, num_hosts, err);
+
 	if (g_file_test(filename, G_FILE_TEST_IS_EXECUTABLE))
 		return wsh_exp_exec_filename(hosts, num_hosts, filename, err);
+
 	return wsh_exp_flat_filename(hosts, num_hosts, filename, err);
+}
+
+gint wsh_exp_stdin(gchar*** hosts, gsize* num_hosts, GError** err) {
+	if (err) g_assert_no_error(*err);
+
+	gchar* buf = NULL;
+	gsize siz = 0;
+	GIOChannel* chan = NULL;
+	gint ret = EXIT_SUCCESS;
+
+	chan = g_io_channel_unix_new(STDIN_FILENO);
+
+	if (g_io_channel_read_to_end(chan, &buf, &siz, err) != G_IO_STATUS_NORMAL) {
+		goto bad;
+	}
+
+	*hosts = g_strsplit(buf, "\n", 0);
+	if (!**hosts || ! g_strcmp0(**hosts, "")) {
+		goto bad;
+	}
+
+	*num_hosts = g_strv_length(*hosts) - 1;
+	cleanup_hostnames(*hosts, *num_hosts);
+	ret = EXIT_SUCCESS;
+
+bad:
+	g_free(chan);
+	g_free(buf);
+	return ret;
 }
 
 gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,

@@ -173,21 +173,24 @@ static void test_construct_sudo_cmd(struct test_wsh_run_cmd_data* fixture,
 	req->sudo = TRUE;
 	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
+	g_assert_cmpstr(res, ==,
+	                "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "worr";
 	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u worr "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
+	g_assert_cmpstr(res, ==,
+	                "sudo -sA -u worr "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 
 	req->username = "";
 	req->use_shell = TRUE;
 	res = wsh_construct_sudo_cmd(req, &err);
-	g_assert_cmpstr(res, ==, "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
+	g_assert_cmpstr(res, ==,
+	                "sudo -sA -u root "LIBEXEC_PATH"/wsh-killer 0 /bin/sh -c '/bin/ls'");
 	g_assert_no_error(err);
 	g_free(res);
 

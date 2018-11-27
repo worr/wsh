@@ -75,11 +75,11 @@ void wshc_init_output(wshc_output_info_t** out) {
 
 	(*out)->output = g_hash_table_new_full(g_str_hash, g_str_equal,
 	                                       (GDestroyNotify)g_free,
-                                           (GDestroyNotify)free_output);
+	                                       (GDestroyNotify)free_output);
 
 	(*out)->failed_hosts = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                                 (GDestroyNotify)g_free,
-                                                 (GDestroyNotify)g_free);
+	                       (GDestroyNotify)g_free,
+	                       (GDestroyNotify)g_free);
 
 	(*out)->stderr_tty = isatty(STDERR_FILENO);
 	(*out)->stdout_tty = isatty(STDOUT_FILENO);
@@ -141,7 +141,7 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
 
 	if (out->stdout_tty)
 		wsh_client_print_header(stdout, "%s: exit code: %d\n\n", hostname,
-                                res->exit_status);
+		                        res->exit_status);
 
 	g_mutex_unlock(out->mut);
 
@@ -355,8 +355,8 @@ void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
 
 	g_mutex_lock(out->mut);
 	g_hash_table_insert(out->failed_hosts,
-                        g_strndup(host, sysconf(_SC_HOST_NAME_MAX)),
-                        g_strndup(message, WSHC_ERROR_MAX_LEN));
+	                    g_strndup(host, sysconf(_SC_HOST_NAME_MAX)),
+	                    g_strndup(message, WSHC_ERROR_MAX_LEN));
 	g_mutex_unlock(out->mut);
 }
 

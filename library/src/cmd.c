@@ -76,7 +76,7 @@ static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
 
 // All this should do is log the status code and add it to our data struct
 static gboolean check_exit_status(GPid pid, gint status,
-                                      struct cmd_data* data) {
+                                  struct cmd_data* data) {
 	g_assert(data != NULL);
 
 	wsh_cmd_res_t* res = data->res;
@@ -86,7 +86,7 @@ static gboolean check_exit_status(GPid pid, gint status,
 
 	res->exit_status = WEXITSTATUS(status);
 	wsh_log_server_cmd_status(req->cmd_string, req->username, req->host, req->cwd,
-							  res->exit_status);
+	                          res->exit_status);
 
 	g_spawn_close_pid(pid);
 
@@ -99,7 +99,7 @@ static gboolean check_exit_status(GPid pid, gint status,
 }
 
 static gboolean check_stream(GIOChannel* out, GIOCondition cond,
-                                 struct cmd_data* data, gboolean std_err) {
+                             struct cmd_data* data, gboolean std_err) {
 	g_assert(data != NULL);
 
 	wsh_cmd_res_t* res = data->res;
@@ -154,17 +154,17 @@ check_stream_err:
 }
 
 static gboolean check_stdout(GIOChannel* out, GIOCondition cond,
-                          struct cmd_data* user_data) {
+                             struct cmd_data* user_data) {
 	return check_stream(out, cond, user_data, FALSE);
 }
 
 static gboolean check_stderr(GIOChannel* out, GIOCondition cond,
-                          struct cmd_data* user_data) {
+                             struct cmd_data* user_data) {
 	return check_stream(out, cond, user_data, TRUE);
 }
 
 static gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
-                         struct cmd_data* data) {
+                                struct cmd_data* data) {
 	g_assert(data != NULL);
 
 	wsh_cmd_req_t* req = data->req;
@@ -205,7 +205,8 @@ write_stdin_err:
 	return FALSE;
 }
 
-static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** err) {
+static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell,
+                               GError** err) {
 	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
 	const char* username = req->username;
 	const char* cmd_string = req->cmd_string;
@@ -219,13 +220,14 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** 
 	}
 
 	gchar* timeout = g_strdup_printf("%" PRIu64, req->timeout);
-        gchar* ret = NULL;
+	gchar* ret = NULL;
 	if (req->use_shell) {
-		ret = g_strconcat(SUDO_SHELL_CMD, username, " "LIBEXEC_PATH"/wsh-killer ", timeout,
-		" ", shell, " -c '", cmd_string, "'", NULL);
+		ret = g_strconcat(SUDO_SHELL_CMD, username, " "LIBEXEC_PATH"/wsh-killer ",
+		                  timeout,
+		                  " ", shell, " -c '", cmd_string, "'", NULL);
 	} else {
 		ret = g_strconcat(SUDO_CMD, username, " "LIBEXEC_PATH"/wsh-killer ",
-		timeout, " ''", cmd_string, "''", NULL);
+		                  timeout, " ''", cmd_string, "''", NULL);
 	}
 
 	g_free(shell);
@@ -259,7 +261,8 @@ static gchar* get_shell(const gchar* username, GError** err) {
 	}
 
 	if (result == NULL) {
-		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid user", user);
+		*err = g_error_new(WSH_CMD_ERROR, WSH_CMD_PW_ERR, "%s is not a valid user",
+		                   user);
 		return NULL;
 	}
 
@@ -289,10 +292,10 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 		gchar* ret = NULL;
 		if (req->use_shell) {
 			ret = g_strconcat(LIBEXEC_PATH"/wsh-killer ", timeout_str, " ",
-		                         shell_str, " -c '", req->cmd_string, "'", NULL);
+			                  shell_str, " -c '", req->cmd_string, "'", NULL);
 		} else {
 			ret = g_strconcat(LIBEXEC_PATH"/wsh-killer ", timeout_str, " ",
-		                         " ''", req->cmd_string, "''", NULL);
+			                  " ''", req->cmd_string, "''", NULL);
 		}
 
 		g_free(shell_str);

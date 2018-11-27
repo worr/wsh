@@ -135,7 +135,7 @@ gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
                         void* passwd_mem) {
 	struct termios old_flags, new_flags;
 	struct sigaction sa, saveint, savehup, savequit, saveterm, savetstp, savettin,
-			savettou;
+		       savettou;
 	gint save_errno = 0;
 
 	if (tcgetattr(fileno(stdin), &old_flags))
@@ -217,8 +217,8 @@ gboolean wsh_client_get_dark_bg(void) {
 		return FALSE;
 
 	if (strncmp(term_env, "linux", 6) == 0 ||
-        strncmp(term_env, "putty", 6) == 0 ||
-        strncmp(term_env, "screen.linux", 13) == 0) {
+	        strncmp(term_env, "putty", 6) == 0 ||
+	        strncmp(term_env, "screen.linux", 13) == 0) {
 		_wsh_client_bg_dark = bg_dark;
 		return TRUE;
 	}
@@ -227,7 +227,7 @@ gboolean wsh_client_get_dark_bg(void) {
 	gchar* semi = NULL;
 	if (colorfgbg && (semi = strchr(colorfgbg, ';'))) {
 		if (((semi[1] >= '0'&& semi[1] <= '6') || semi[1] == '8')
-            && semi[2] == '\0') {
+		        && semi[2] == '\0') {
 			_wsh_client_bg_dark = bg_dark;
 			return TRUE;
 		}
@@ -281,7 +281,8 @@ void wsh_client_reset_colors(void) {
 	_wsh_client_colors = colors_undecided;
 }
 
-static void color_print(const char* color, FILE* file, const char* format, va_list args) {
+static void color_print(const char* color, FILE* file, const char* format,
+                        va_list args) {
 	gboolean colors = wsh_client_has_colors();
 	if (colors && isatty(fileno(file)))
 		g_fprintf(file, "%s", color);

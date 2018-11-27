@@ -385,8 +385,8 @@ static void failed_host_output(void) {
 	gchar* host = "test host";
 	gchar* message = "testing";
 	gchar* expected_err =
-		g_strdup_printf("*The following hosts failed:\n*%s: %s\n*",
-                  host, message);
+	    g_strdup_printf("*The following hosts failed:\n*%s: %s\n*",
+	                    host, message);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
 	g_test_trap_subprocess("/Client/TestWriteFailedHosts/subprocess", 0, 0);
@@ -588,9 +588,9 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestVerboseOutput/subprocess",
 	                verbose_output_subprocess);
 	g_test_add_func("/Client/TestErrorsOnlyEmpty/subprocess",
-					errors_only_subprocess);
+	                errors_only_subprocess);
 	g_test_add_func("/Client/TestErrorsOnly/subprocess",
-					errors_only_nonnull_subprocess);
+	                errors_only_nonnull_subprocess);
 #endif
 
 	g_test_add_func("/Client/TestAddFailedHost", add_failed_host);

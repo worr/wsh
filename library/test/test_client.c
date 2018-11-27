@@ -130,8 +130,10 @@ int main(int argc, char** argv) {
 
 	g_test_add_func("/Library/Client/TestGetBg", get_bg);
 	g_test_add_func("/Library/Client/TestHasColorsSuccess", has_colors_success);
-	g_test_add_func("/Library/Client/TestHasColorsSetupTermFail", has_colors_setupterm_fail);
-	g_test_add_func("/Library/Client/TestHasColorsHasColorsFail", has_colors_has_colors_fail);
+	g_test_add_func("/Library/Client/TestHasColorsSetupTermFail",
+	                has_colors_setupterm_fail);
+	g_test_add_func("/Library/Client/TestHasColorsHasColorsFail",
+	                has_colors_has_colors_fail);
 	g_test_add_func("/Library/Client/TestGetPass", my_getpass);
 
 	return g_test_run();

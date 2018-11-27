@@ -54,53 +54,68 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 		wshc_verbose_print(cmd_info->out, "Using password authentication\n");
 	}
 
-	wshc_verbose_print(cmd_info->out, "Initiating connection to %s\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Initiating connection to %s\n",
+	                   host_info->hostname);
 	if (wsh_ssh_host(&session, &err)) {
 		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
-		wshc_verbose_print(cmd_info->out, "Connection failed on %s: %s\n", host_info->hostname, err->message);
+		wshc_verbose_print(cmd_info->out, "Connection failed on %s: %s\n",
+		                   host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
-	wshc_verbose_print(cmd_info->out, "Connection to %s successful\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Connection to %s successful\n",
+	                   host_info->hostname);
 
-	wshc_verbose_print(cmd_info->out, "Verifying host key for %s\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Verifying host key for %s\n",
+	                   host_info->hostname);
 	if (wsh_verify_host_key(&session, FALSE, FALSE, &err)) {
 		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
-		wshc_verbose_print(cmd_info->out, "Host key verification for %s failed: %s\n", host_info->hostname, err->message);
+		wshc_verbose_print(cmd_info->out, "Host key verification for %s failed: %s\n",
+		                   host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
-	wshc_verbose_print(cmd_info->out, "Host verification for %s successful\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Host verification for %s successful\n",
+	                   host_info->hostname);
 
-	wshc_verbose_print(cmd_info->out, "Authenticating to %s\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Authenticating to %s\n",
+	                   host_info->hostname);
 	if (wsh_ssh_authenticate(&session, &err)) {
 		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
-		wshc_verbose_print(cmd_info->out, "Failed to authenticate to %s: %s\n", host_info->hostname, err->message);
+		wshc_verbose_print(cmd_info->out, "Failed to authenticate to %s: %s\n",
+		                   host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
-	wshc_verbose_print(cmd_info->out, "Authenticated to %s successfully\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Authenticated to %s successfully\n",
+	                   host_info->hostname);
 
 	if (cmd_info->script) {
-		wshc_verbose_print(cmd_info->out, "Initializing scp subsystem for %s\n", host_info->hostname);
+		wshc_verbose_print(cmd_info->out, "Initializing scp subsystem for %s\n",
+		                   host_info->hostname);
 		if (wsh_ssh_scp_init(&session, "~")) {
 			wshc_add_failed_host(cmd_info->out, host_info->hostname, "Could not init scp");
-			wshc_verbose_print(cmd_info->out, "Failed to init scp on %s\n", host_info->hostname);
+			wshc_verbose_print(cmd_info->out, "Failed to init scp on %s\n",
+			                   host_info->hostname);
 			return;
 		}
-		wshc_verbose_print(cmd_info->out, "Initialized scp subsystem on %s\n", host_info->hostname);
+		wshc_verbose_print(cmd_info->out, "Initialized scp subsystem on %s\n",
+		                   host_info->hostname);
 
-		wshc_verbose_print(cmd_info->out, "Transferring script %s to %s\n", cmd_info->script, host_info->hostname);
+		wshc_verbose_print(cmd_info->out, "Transferring script %s to %s\n",
+		                   cmd_info->script, host_info->hostname);
 		if (wsh_ssh_scp_file(&session, cmd_info->script, TRUE, &err)) {
 			wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
-			wshc_verbose_print(cmd_info->out, "Failed to transfer script %s to %s\n", cmd_info->script, host_info->hostname);
+			wshc_verbose_print(cmd_info->out, "Failed to transfer script %s to %s\n",
+			                   cmd_info->script, host_info->hostname);
 			g_error_free(err);
 			err = NULL;
 		}
-		wshc_verbose_print(cmd_info->out, "Transferred script %s to %s successfully\n", cmd_info->script, host_info->hostname);
+		wshc_verbose_print(cmd_info->out, "Transferred script %s to %s successfully\n",
+		                   cmd_info->script, host_info->hostname);
 
 		wsh_ssh_scp_cleanup(&session);
 	}
@@ -108,40 +123,42 @@ void wshc_try_ssh(wshc_host_info_t* host_info,
 	wshc_verbose_print(cmd_info->out, "Execing wshd on %s\n", host_info->hostname);
 	if (wsh_ssh_exec_wshd(&session, &err)) {
 		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
-		wshc_verbose_print(cmd_info->out, "Failed to exec wshd on %s: %s\n", host_info->hostname, err->message);
+		wshc_verbose_print(cmd_info->out, "Failed to exec wshd on %s: %s\n",
+		                   host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
 	wshc_verbose_print(cmd_info->out, "Successfully launched wshd %s\n",
-	              host_info->hostname);
+	                   host_info->hostname);
 
 	wshc_verbose_print(cmd_info->out, "Sending command info to wshd on %s\n",
-	              host_info->hostname);
+	                   host_info->hostname);
 	if (wsh_ssh_send_cmd(&session, cmd_info->req, &err)) {
 		wshc_verbose_print(cmd_info->out, "Failed to send command to %s: %s\n",
-		              host_info->hostname, err->message);
+		                   host_info->hostname, err->message);
 		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
 	wshc_verbose_print(cmd_info->out,
-	              "Successfully sent command info to wshd on %s\n",
-	              host_info->hostname);
+	                   "Successfully sent command info to wshd on %s\n",
+	                   host_info->hostname);
 
 	wshc_verbose_print(cmd_info->out,
-	              "Waiting for response from %s\n", host_info->hostname);
+	                   "Waiting for response from %s\n", host_info->hostname);
 	if (wsh_ssh_recv_cmd_res(&session, host_info->res, &err)) {
 		wshc_verbose_print(cmd_info->out,
-		              "Failed to receive a command from %s: %s\n",
-					  host_info->hostname, err->message);
+		                   "Failed to receive a command from %s: %s\n",
+		                   host_info->hostname, err->message);
 		wshc_add_failed_host(cmd_info->out, host_info->hostname, err->message);
 		g_error_free(err);
 		err = NULL;
 		return;
 	}
-	wshc_verbose_print(cmd_info->out, "Got response from %s\n", host_info->hostname);
+	wshc_verbose_print(cmd_info->out, "Got response from %s\n",
+	                   host_info->hostname);
 
 	wsh_log_client_cmd_status(cmd_info->req->cmd_string, cmd_info->req->username,
 	                          host_info->hostname, cmd_info->req->cwd, (*host_info->res)->exit_status);

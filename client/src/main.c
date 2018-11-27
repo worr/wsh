@@ -113,7 +113,7 @@ static void build_wsh_cmd_req(wsh_cmd_req_t* req, gchar* password, gchar* cmd) {
 	req->cwd = cwd ? cwd : "";
 	req->host = g_strdup(g_get_host_name());
 	req->cmd_string = cmd;
-        req->use_shell = use_shell;
+	req->use_shell = use_shell;
 }
 
 static void free_wsh_cmd_req_fields(wsh_cmd_req_t* req) {

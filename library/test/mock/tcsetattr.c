@@ -25,7 +25,8 @@
 int tcsetattr_ret;
 extern int errno;
 
-int tcsetattr(int fildes, int optional_actions, const struct termios *termios_p) {
+int tcsetattr(int fildes, int optional_actions,
+              const struct termios *termios_p) {
 	errno = tcsetattr_ret;
 	return tcsetattr_ret;
 }

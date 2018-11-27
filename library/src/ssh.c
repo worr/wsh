@@ -55,9 +55,9 @@ gint wsh_ssh_check_args(gchar **opts, GError **err) {
 		gchar *offset = g_utf8_strchr(opt, -1, '=');
 		if (! offset) {
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_OPT_INVALID,
-							   "ssh option improperly formatted: %s\n"
-							   "separate option and value with =",
-							   opt);
+			                   "ssh option improperly formatted: %s\n"
+			                   "separate option and value with =",
+			                   opt);
 			return -1;
 		}
 
@@ -66,8 +66,8 @@ gint wsh_ssh_check_args(gchar **opts, GError **err) {
 		g_strstrip(newopt);
 		if (! g_hash_table_contains(ssh_opt_table, newopt)) {
 			*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_OPT_NOT_SUPPORTED,
-							   "ssh option is not supported by libssh: %s",
-							   newopt);
+			                   "ssh option is not supported by libssh: %s",
+			                   newopt);
 			g_free(newopt);
 			return -1;
 		}
@@ -117,19 +117,19 @@ gint wsh_ssh_init(void) {
 
 	ssh_opt_table = g_hash_table_new(g_str_hash, g_str_equal);
 	(void) g_hash_table_insert(ssh_opt_table, "connecttimeout",
-		(gpointer)SSH_OPTIONS_TIMEOUT);
+	                           (gpointer)SSH_OPTIONS_TIMEOUT);
 	(void) g_hash_table_insert(ssh_opt_table, "loglevel",
-		(gpointer)SSH_OPTIONS_LOG_VERBOSITY_STR);
+	                           (gpointer)SSH_OPTIONS_LOG_VERBOSITY_STR);
 	(void) g_hash_table_insert(ssh_opt_table, "hostkeyalgorithms",
-		(gpointer)SSH_OPTIONS_HOSTKEYS);
+	                           (gpointer)SSH_OPTIONS_HOSTKEYS);
 	(void) g_hash_table_insert(ssh_opt_table, "compression",
-		(gpointer)SSH_OPTIONS_COMPRESSION);
+	                           (gpointer)SSH_OPTIONS_COMPRESSION);
 	(void) g_hash_table_insert(ssh_opt_table, "stricthostkeychecking",
-		(gpointer)SSH_OPTIONS_STRICTHOSTKEYCHECK);
+	                           (gpointer)SSH_OPTIONS_STRICTHOSTKEYCHECK);
 	(void) g_hash_table_insert(ssh_opt_table, "kexalgorithms",
-		(gpointer)SSH_OPTIONS_KEY_EXCHANGE);
+	                           (gpointer)SSH_OPTIONS_KEY_EXCHANGE);
 	(void) g_hash_table_insert(ssh_opt_table, "gssapidelegatecredentials",
-		(gpointer)SSH_OPTIONS_GSSAPI_DELEGATE_CREDENTIALS);
+	                           (gpointer)SSH_OPTIONS_GSSAPI_DELEGATE_CREDENTIALS);
 
 #ifdef DEBUG
 	char* filename = getenv("WSH_SSH_PCAP");

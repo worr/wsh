@@ -146,7 +146,8 @@ gint ssh_write_knownhost() {
 	return ssh_write_knownhost_ret;
 }
 
-gint ssh_options_set(ssh_session session, enum ssh_options_e type, const void* value) {
+gint ssh_options_set(ssh_session session, enum ssh_options_e type,
+                     const void* value) {
 	if (type == SSH_OPTIONS_STRICTHOSTKEYCHECK)
 		ssh_strict_hostkey_checking = *(int*)value;
 	if (type == SSH_OPTIONS_TIMEOUT)
@@ -154,7 +155,8 @@ gint ssh_options_set(ssh_session session, enum ssh_options_e type, const void* v
 	return 0;
 }
 
-int ssh_options_get(ssh_session session, enum ssh_options_e type, void** value) {
+int ssh_options_get(ssh_session session, enum ssh_options_e type,
+                    void** value) {
 	if (type == SSH_OPTIONS_STRICTHOSTKEYCHECK)
 		*value = &ssh_strict_hostkey_checking;
 	if (type == SSH_OPTIONS_TIMEOUT)

@@ -26,7 +26,8 @@
 
 extern int tcsetattr_ret;
 
-int tcsetattr(int fildes, int optional_actions, const struct termios *termios_p);
+int tcsetattr(int fildes, int optional_actions,
+              const struct termios *termios_p);
 
 #endif
 

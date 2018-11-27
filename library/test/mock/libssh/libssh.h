@@ -106,6 +106,7 @@ ssh_session ssh_new();
 void set_ssh_write_knownhost_res(gint ret);
 gint ssh_write_knownhost();
 gint ssh_options_set();
+gint ssh_options_get();
 void ssh_options_parse_config();
 void set_ssh_userauth_list_ret(gint ret);
 gint ssh_userauth_list();

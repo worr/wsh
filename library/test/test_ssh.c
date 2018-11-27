@@ -49,6 +49,7 @@ static guint8 encoded_res[17]
     = { 0x0a, 0x03, 0x66, 0x6f, 0x6f, 0x0a, 0x03, 0x62, 0x61, 0x72, 0x12, 0x03, 0x62, 0x61, 0x7a, 0x18, 0x00 };
 
 static void host_not_reachable(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_ERROR);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -68,6 +69,7 @@ static void host_not_reachable(void) {
 }
 
 static void change_host_key(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_CHANGED);
 
@@ -90,6 +92,7 @@ static void change_host_key(void) {
 }
 
 static void fail_add_host_key(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_NOT_KNOWN);
 	set_ssh_write_knownhost_res(SSH_ERROR);
@@ -113,6 +116,7 @@ static void fail_add_host_key(void) {
 }
 
 static void add_host_key(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_NOT_KNOWN);
 	set_ssh_write_knownhost_res(SSH_OK);
@@ -136,6 +140,7 @@ static void add_host_key(void) {
 }
 
 static void authenticate_password_unsuccessfully(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PASSWORD);
@@ -161,6 +166,7 @@ static void authenticate_password_unsuccessfully(void) {
 }
 
 static void authenticate_password_denied(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PASSWORD);
@@ -186,6 +192,7 @@ static void authenticate_password_denied(void) {
 }
 
 static void authenticate_password_successful(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PASSWORD);
@@ -211,6 +218,7 @@ static void authenticate_password_successful(void) {
 }
 
 static void authenticate_pubkey_unsuccessful(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PUBLICKEY);
@@ -236,6 +244,7 @@ static void authenticate_pubkey_unsuccessful(void) {
 }
 
 static void authenticate_pubkey_denied(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PUBLICKEY);
@@ -261,6 +270,7 @@ static void authenticate_pubkey_denied(void) {
 }
 
 static void authenticate_pubkey_successful(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_PUBLICKEY);
@@ -286,6 +296,7 @@ static void authenticate_pubkey_successful(void) {
 }
 
 static void authenticate_kbdint_unsuccessful(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_INTERACTIVE);
@@ -311,6 +322,7 @@ static void authenticate_kbdint_unsuccessful(void) {
 }
 
 static void authenticate_kbdint_denied(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_INTERACTIVE);
@@ -336,6 +348,7 @@ static void authenticate_kbdint_denied(void) {
 }
 
 static void authenticate_kbdint_successful(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_is_server_known_res(SSH_SERVER_KNOWN_OK);
 	set_ssh_userauth_list_ret(SSH_AUTH_METHOD_INTERACTIVE);
@@ -361,6 +374,7 @@ static void authenticate_kbdint_successful(void) {
 }
 
 static void exec_wshd_channel_failure(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_ERROR);
 
@@ -382,6 +396,7 @@ static void exec_wshd_channel_failure(void) {
 }
 
 static void exec_wshd_channel_exec_failure(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_ERROR);
@@ -404,6 +419,7 @@ static void exec_wshd_channel_exec_failure(void) {
 }
 
 static void exec_wshd_poll_failure(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
@@ -429,6 +445,7 @@ static void exec_wshd_poll_failure(void) {
 }
 
 static void exec_wshd_success(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
@@ -455,6 +472,7 @@ static void exec_wshd_success(void) {
 }
 
 static void send_cmd_write_failure(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
@@ -496,6 +514,7 @@ static void send_cmd_write_failure(void) {
 }
 
 static void send_cmd_write_success(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
@@ -538,6 +557,7 @@ static void send_cmd_write_success(void) {
 }
 
 static void recv_result_success(void) {
+	wsh_ssh_init();
 	set_ssh_connect_res(SSH_OK);
 	set_ssh_channel_open_session_ret(SSH_OK);
 	set_ssh_channel_request_exec_ret(SSH_OK);
@@ -590,6 +610,7 @@ static void wsh_ssh_init_success(void) {
 }
 
 static void scp_alloc_fails(void) {
+	wsh_ssh_init();
 	set_ssh_scp_new_ret(NULL);
 
 	wsh_ssh_session_t* session = g_slice_new(wsh_ssh_session_t);
@@ -598,6 +619,7 @@ static void scp_alloc_fails(void) {
 }
 
 static void scp_init_fails(void) {
+	wsh_ssh_init();
 	set_ssh_scp_new_ret((gpointer)1);
 	set_ssh_scp_init_ret(SSH_ERROR);
 
@@ -607,6 +629,7 @@ static void scp_init_fails(void) {
 }
 
 static void scp_init_success(void) {
+	wsh_ssh_init();
 	set_ssh_scp_new_ret((gpointer)1);
 	set_ssh_scp_init_ret(SSH_OK);
 
@@ -616,6 +639,7 @@ static void scp_init_success(void) {
 }
 
 static void ssh_args(void) {
+	wsh_ssh_init();
 	GError *err = NULL;
 	gchar *valid_args[] = {
 		"connecttimeout=5",
@@ -629,7 +653,6 @@ static void ssh_args(void) {
 
 	g_assert(! wsh_ssh_check_args(valid_args, &err));
 	g_assert_no_error(err);
-
 
 	gchar *invalid_args[] = {
 		"connecttimeout",
@@ -655,6 +678,7 @@ static void ssh_args(void) {
 }
 
 static void ssh_alloc_fail(void) {
+	wsh_ssh_init();
 	set_ssh_new_res(0);
 
 	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
@@ -666,6 +690,31 @@ static void ssh_alloc_fail(void) {
 	gint ret = wsh_ssh_host(session, &err);
 
 	g_assert(ret == -1);
+}
+
+static void apply_args(void) {
+	wsh_ssh_init();
+	set_ssh_new_res(0);
+
+	char* val = NULL;
+	const gchar* args[] = {
+		"connecttimeout=5",
+		"stricthostkeychecking = no",
+		NULL,
+	};
+
+	wsh_ssh_session_t* session = g_slice_new0(wsh_ssh_session_t);
+	session->hostname = remote;
+	session->username = username;
+	session->password = password;
+	session->port = port;
+
+	wsh_ssh_apply_args(session, args);
+
+	ssh_options_get(session->session, SSH_OPTIONS_TIMEOUT, &val);
+	g_assert_cmpstr(val, ==, "5");
+	ssh_options_get(session->session, SSH_OPTIONS_STRICTHOSTKEYCHECK, &val);
+	g_assert(*val == 0);
 }
 
 int main(int argc, char** argv) {
@@ -729,6 +778,7 @@ int main(int argc, char** argv) {
 	                scp_init_success);
 
 	g_test_add_func("/Library/SSH/CheckArgs", ssh_args);
+	g_test_add_func("/Library/SSH/ApplyArgs", apply_args);
 
 	g_test_add_func("/Library/SSH/SSHAllocFailure", ssh_alloc_fail);
 

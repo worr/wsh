@@ -87,11 +87,21 @@ void wsh_ssh_apply_args(wsh_ssh_session_t *session, const gchar **opts) {
 	for (const gchar *opt = opts[0]; opt; opt = *(opts++)) {
 		gchar **opt_parts = g_strsplit(opt, "=", 2);
 		char *newopt = g_utf8_strdown(opt_parts[0], strlen(opt_parts[0]));
-		g_strstrip(newopt);
-		g_strstrip(opt_parts[1]);
+		char* key = g_strstrip(newopt);
+		char* val = g_strstrip(opt_parts[1]);
+		int intval = -1;
 
-		gpointer constant = g_hash_table_lookup(ssh_opt_table, newopt);
-		ssh_options_set(session->session, (long)constant, opt_parts[1]);
+		gpointer constant = g_hash_table_lookup(ssh_opt_table, key);
+
+		// if an option is either yes/no, then it needs to be an int
+		intval = strncasecmp("yes", val, 3) == 0 ? 1 : -1;
+		intval = strncasecmp("no", val, 2) == 0 ? 0 : -1;
+
+		if (intval == -1) {
+			ssh_options_set(session->session, (long)constant, val);
+		} else {
+			ssh_options_set(session->session, (long)constant, &intval);
+		}
 
 		g_free(newopt);
 		g_strfreev(opt_parts);
@@ -142,7 +152,7 @@ static void set_options(wsh_ssh_session_t* session) {
 	ssh_options_set(session->session, SSH_OPTIONS_USER, session->username);
 	ssh_options_parse_config(session->session, NULL);
 
-	//wsh_ssh_apply_args(session, session->ssh_opts);
+	wsh_ssh_apply_args(session, session->ssh_opts);
 }
 
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {

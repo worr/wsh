@@ -53,6 +53,9 @@ gint ssh_scp_write_ret;
 gint ssh_channel_poll_timeout_ret;
 gint ssh_new_ret = 1;
 
+gint ssh_strict_hostkey_checking = 1;
+gchar ssh_connect_timeout[4] = { 0 };
+
 void* ssh_channel_read_set;
 guint8 ssh_channel_read_size[4] = { 0x00, 0x00, 0x00, 0x11, };
 
@@ -139,7 +142,19 @@ gint ssh_write_knownhost() {
 	return ssh_write_knownhost_ret;
 }
 
-gint ssh_options_set() {
+gint ssh_options_set(ssh_session session, enum ssh_options_e type, const void* value) {
+	if (type == SSH_OPTIONS_STRICTHOSTKEYCHECK)
+		ssh_strict_hostkey_checking = *(int*)value;
+	if (type == SSH_OPTIONS_TIMEOUT)
+		strlcpy(ssh_connect_timeout, value, sizeof(ssh_connect_timeout));
+	return 0;
+}
+
+int ssh_options_get(ssh_session session, enum ssh_options_e type, void** value) {
+	if (type == SSH_OPTIONS_STRICTHOSTKEYCHECK)
+		*value = &ssh_strict_hostkey_checking;
+	if (type == SSH_OPTIONS_TIMEOUT)
+		*value = ssh_connect_timeout;
 	return 0;
 }
 

@@ -93,7 +93,7 @@ static void has_colors_has_colors_fail(void) {
 }
 
 static void my_getpass(void) {
-#ifdef TRAVIS								\
+#ifdef TRAVIS
 	g_test_skip("XXX: broken on travis; need to repro");
 	return;
 #endif

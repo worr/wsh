@@ -63,6 +63,10 @@ gint ssh_get_publickey() {
 	return 0;
 }
 
+gint ssh_get_server_publickey() {
+	return 0;
+}
+
 void ssh_key_free() {
 }
 

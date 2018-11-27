@@ -27,6 +27,11 @@
 #include <glib.h>
 #include <libssh/libssh.h>
 
+/* for older versions of libssh */
+#ifndef HAVE_SSH_GET_SERVER_PUBLICKEY
+# define ssh_get_server_publickey ssh_get_publickey
+#endif
+
 #include "cmd.h"
 
 GQuark WSH_SSH_ERROR;		/**< GQuark for SSH Error reporting */

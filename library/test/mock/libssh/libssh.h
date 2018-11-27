@@ -59,6 +59,7 @@ typedef void* ssh_pcap_file;
 typedef void* ssh_key;
 
 gint ssh_get_publickey();
+gint ssh_get_server_publickey();
 void ssh_key_free();
 
 enum ssh_options_e {

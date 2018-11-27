@@ -201,7 +201,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 	state = ssh_is_server_known(session->session);
 
 	ssh_key key = NULL;
-	if (ssh_get_publickey(session->session, &key)) {
+	if (ssh_get_server_publickey(session->session, &key) != SSH_OK) {
 		*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_HOST_KEY_ERROR,
 		                   "error getting hostkey: %s",
 		                   ssh_get_error(session->session));

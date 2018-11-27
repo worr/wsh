@@ -227,6 +227,9 @@ static void collate_output(void) {
 	ret = wshc_collate_output(out, &printable_output, &output_size);
 
 	g_assert(ret == EXIT_SUCCESS);
+	g_assert(g_atomic_int_get(&out->num_success) == 2);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 
 	gchar** testable_output = g_strsplit(printable_output, "\n", 10);
 	for (gchar** p = expected_out; *p != NULL; p++)
@@ -255,6 +258,9 @@ static void hostname_output_subprocess(void) {
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
 	gint ret = wshc_write_output(out, "localhost", &res);
+	g_assert(g_atomic_int_get(&out->num_success) == 1);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 	exit(ret);
 }
 #endif
@@ -288,6 +294,9 @@ static void hostname_output(void) {
 	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		g_setenv("TERM", "linux", TRUE); // guarantee dark bg
 		gint ret = wshc_write_output(out, "localhost", &res);
+		g_assert(g_atomic_int_get(&out->num_success) == 1);
+		g_assert(g_atomic_int_get(&out->num_errored) == 0);
+		g_assert(g_atomic_int_get(&out->num_failed) == 0);
 		exit(ret);
 	}
 #endif
@@ -316,6 +325,9 @@ static void hostname_output_piped_subprocess(void) {
 	out->type = WSHC_OUTPUT_TYPE_HOSTNAME;
 
 	gint ret = wshc_write_output(out, "localhost", &res);
+	g_assert(g_atomic_int_get(&out->num_success) == 1);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 	exit(ret);
 }
 #endif
@@ -347,6 +359,9 @@ static void hostname_output_piped(void) {
 	if (g_test_trap_fork(0,
 	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
 		gint ret = wshc_write_output(out, "localhost", &res);
+		g_assert(g_atomic_int_get(&out->num_success) == 1);
+		g_assert(g_atomic_int_get(&out->num_errored) == 0);
+		g_assert(g_atomic_int_get(&out->num_failed) == 0);
 		exit(ret);
 	}
 #endif
@@ -366,6 +381,9 @@ static void add_failed_host(void) {
 	wshc_add_failed_host(out, host, message);
 	g_assert(g_hash_table_lookup(out->failed_hosts, host));
 	g_assert_cmpstr(message, ==, g_hash_table_lookup(out->failed_hosts, host));
+	g_assert(g_atomic_int_get(&out->num_success) == 0);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 1);
 }
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
@@ -377,6 +395,9 @@ static void failed_host_output_subprocess(void) {
 	set_isatty_ret(1);
 	wshc_init_output(&out);
 	wshc_add_failed_host(out, host, message);
+	g_assert(g_atomic_int_get(&out->num_success) == 0);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 1);
 	wshc_write_failed_hosts(out);
 }
 #endif
@@ -396,6 +417,9 @@ static void failed_host_output(void) {
 	wshc_init_output(&out);
 
 	wshc_add_failed_host(out, host, message);
+	g_assert(g_atomic_int_get(&out->num_success) == 0);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 1);
 
 	if (g_test_trap_fork(0, 0)) {
 		wshc_write_failed_hosts(out);
@@ -456,6 +480,10 @@ static void errors_only_subprocess(void) {
 	out->type = WSHC_OUTPUT_TYPE_COLLATED;
 
 	wshc_write_output(out, "testhost", &res);
+
+	g_assert(g_atomic_int_get(&out->num_success) == 2);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 }
 #endif
 
@@ -484,6 +512,10 @@ static void errors_only(void) {
 	out->type = WSHC_OUTPUT_TYPE_COLLATED;
 
 	wshc_write_output(out, "testhost", &res);
+
+	g_assert(g_atomic_int_get(&out->num_success) == 2);
+	g_assert(g_atomic_int_get(&out->num_errored) == 0);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 #endif
 
 	g_test_trap_assert_passed();
@@ -512,6 +544,10 @@ static void errors_only_nonnull_subprocess(void) {
 	out->type = WSHC_OUTPUT_TYPE_COLLATED;
 
 	wshc_write_output(out, "testhost", &res);
+
+	g_assert(g_atomic_int_get(&out->num_success) == 0);
+	g_assert(g_atomic_int_get(&out->num_errored) == 2);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 }
 #endif
 
@@ -541,6 +577,10 @@ static void errors_only_nonnull(void) {
 	out->type = WSHC_OUTPUT_TYPE_COLLATED;
 
 	wshc_write_output(out, "testhost", &res);
+
+	g_assert(g_atomic_int_get(&out->num_success) == 0);
+	g_assert(g_atomic_int_get(&out->num_errored) == 2);
+	g_assert(g_atomic_int_get(&out->num_failed) == 0);
 #endif
 
 	g_test_trap_assert_passed();

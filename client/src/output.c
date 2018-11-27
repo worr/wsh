@@ -157,6 +157,12 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
 		return EXIT_SUCCESS;
 	}
 
+	if (res->exit_status != 0) {
+		g_atomic_int_inc(&out->num_errored);
+	} else {
+		g_atomic_int_inc(&out->num_success);
+	}
+
 	/* If we only want to capture errors, exit quickly on success */
 	if (out->errors_only && !res->exit_status)
 		return EXIT_SUCCESS;
@@ -352,6 +358,8 @@ void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
 	g_assert(out);
 	g_assert(host);
 	g_assert(message);
+
+	g_atomic_int_inc(&out->num_failed);
 
 	g_mutex_lock(out->mut);
 	g_hash_table_insert(out->failed_hosts,

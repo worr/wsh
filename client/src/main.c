@@ -435,9 +435,25 @@ int main(int argc, char** argv) {
 
 	gchar* output = NULL;
 	gsize output_len = 0;
-	wshc_collate_output(out_info, &output, &output_len);
-	if (output) g_print("%s", output);
+	if (collate_output) {
+		wshc_collate_output(out_info, &output, &output_len);
+
+		if (output) {
+			g_print("%s", output);
+		}
+	}
+
 	wshc_write_failed_hosts(out_info);
+
+	if (collate_output) {
+		wsh_client_print_header(stdout, "\nSummary\n");
+		g_print("Attempted: %u\n", num_hosts);
+		g_print("Failed: %u\n", g_atomic_int_get(&out_info->num_failed));
+		g_print("Errored (non-0 exit code): %u\n",
+		        g_atomic_int_get(&out_info->num_errored));
+		g_print("Succeeded: %u\n", g_atomic_int_get(&out_info->num_success));
+	}
+
 	wshc_cleanup_output(&out_info);
 
 	return ret;

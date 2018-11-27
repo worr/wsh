@@ -49,6 +49,7 @@ static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
 
 	// Allocate space for a new string pointer and new string
 	if (*buf != NULL) {
+		// XXX: this is an realloc opportunity
 		gchar** buf2 = g_malloc_n(*buf_len + 2, sizeof(gchar*));
 		g_memmove(buf2, *buf, sizeof(gchar*) **buf_len + 1);
 		g_free(*buf);
@@ -61,7 +62,8 @@ static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
 	(*buf)[*buf_len + 1] = NULL;
 
 	// memmove() the string into the struct
-	g_memmove((*buf)[*buf_len], line, strlen(line + 1));
+	g_memmove((*buf)[*buf_len], line, strlen(line) + 1);
+	(*buf)[*buf_len] = g_strstrip((*buf)[*buf_len]);
 
 	(*buf_len)++;
 }

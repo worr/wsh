@@ -115,6 +115,17 @@ static void test_run_stdout(struct test_wsh_run_cmd_data* fixture,
 	g_assert_no_error(res->err);
 	g_assert(res->exit_status == 0);
 	g_assert(res->std_output_len == 0);
+
+	res->std_output = NULL;
+	res->std_output_len = 0;
+
+	req->cmd_string = "/bin/echo -n foo";
+	req->use_shell = TRUE;
+	wsh_run_cmd(res, req);
+	g_assert_no_error(res->err);
+	g_assert(res->exit_status == 0);
+	g_assert(res->std_output_len == 1);
+	g_assert_cmpstr(res->std_output[0], ==, "foo");
 }
 
 static void test_run_stderr(struct test_wsh_run_cmd_data* fixture,

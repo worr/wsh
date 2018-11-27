@@ -32,6 +32,7 @@
 #cmakedefine HAVE_EXPLICIT_BZERO
 #cmakedefine HAVE_CLOSEFROM
 #cmakedefine HAVE_SSH_GET_SERVER_PUBLICKEY
+#cmakedefine TRAVIS
 
 /* curses */
 #cmakedefine CURSES_LIBRARIES

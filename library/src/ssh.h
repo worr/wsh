@@ -29,7 +29,9 @@
 
 /* for older versions of libssh */
 #ifndef HAVE_SSH_GET_SERVER_PUBLICKEY
+/** @cond */
 # define ssh_get_server_publickey ssh_get_publickey
+/** @endcond */
 #endif
 
 #include "cmd.h"

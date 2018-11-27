@@ -8,7 +8,7 @@ compiler:
 script:
    - mkdir -p build/doc
    - cd build
-   - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DBUILD_CLIENT=ON -DBUILD_SERVER=ON -DCOVERAGE=On ..
+   - cmake -DTRAVIS=On -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DBUILD_CLIENT=ON -DBUILD_SERVER=ON -DCOVERAGE=On ..
    - make
    - ctest -V
    - make doc

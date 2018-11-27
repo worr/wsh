@@ -217,7 +217,7 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell, GError** 
 		username = "root";
 	}
 
-	gchar* timeout = g_strdup_printf("%zu", req->timeout);
+	gchar* timeout = g_strdup_printf("%llu", req->timeout);
         gchar* ret = NULL;
 	if (req->use_shell) {
 		ret = g_strconcat(SUDO_SHELL_CMD, username, " "LIBEXEC_PATH"/wsh-killer ", timeout,
@@ -283,7 +283,7 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 
 	// If not sudo, we still need to enable the wsh killer
 	if (! req->sudo) {
-		gchar* timeout_str = g_strdup_printf("%zu", req->timeout);
+		gchar* timeout_str = g_strdup_printf("%llu", req->timeout);
 
 		gchar* ret = NULL;
 		if (req->use_shell) {

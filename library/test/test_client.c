@@ -96,10 +96,11 @@ static void my_getpass(void) {
 	setvbuf_ret = -1;
 
 	gchar target[4096] = { 0 };
+	gint ret = 0;
 
     // XXX: Re-enable test when I have access to a linux machine that triggers
 #if 0
-	gint ret = wsh_client_getpass(target, sizeof(target), "", target);
+	ret = wsh_client_getpass(target, sizeof(target), "", target);
 	g_assert(ret == -1);
 	g_assert(*target == 0);
 #endif

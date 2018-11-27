@@ -146,7 +146,7 @@ gint ssh_options_set(ssh_session session, enum ssh_options_e type, const void* v
 	if (type == SSH_OPTIONS_STRICTHOSTKEYCHECK)
 		ssh_strict_hostkey_checking = *(int*)value;
 	if (type == SSH_OPTIONS_TIMEOUT)
-		strlcpy(ssh_connect_timeout, value, sizeof(ssh_connect_timeout));
+		g_strlcpy(ssh_connect_timeout, value, sizeof(ssh_connect_timeout));
 	return 0;
 }
 

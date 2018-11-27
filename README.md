@@ -1,9 +1,9 @@
 # wsh
 
-[![Travis](https://img.shields.io/travis/worr/wsh.svg?maxAge=2592000)](https://travis-ci.org/worr/wsh)
-[![Coveralls](https://img.shields.io/coveralls/worr/wsh.svg?maxAge=2592000)](https://coveralls.io/github/worr/wsh)
-[![Coverity Scan](https://img.shields.io/coverity/scan/10090.svg?maxAge=2592000)](https://scan.coverity.com/projects/worr-wsh)
-[![Gratipay User](https://img.shields.io/gratipay/user/worr.svg?maxAge=2592000)](https://gratipay.com/~worr/)
+[![Travis](https://img.shields.io/travis/worr/wsh.svg)](https://travis-ci.org/worr/wsh)
+[![Coveralls](https://img.shields.io/coveralls/worr/wsh.svg)](https://coveralls.io/github/worr/wsh)
+[![Coverity Scan](https://img.shields.io/coverity/scan/10090.svg)](https://scan.coverity.com/projects/worr-wsh)
+[![Gitter](https://img.shields.io/gitter/room/worr/wsh.svg)](https://gitter.im/worr/wsh)
 
 wsh is a shell-like program made for devops and sysadmins that need to 
 administer several machines at once. With `wsh`, you can ssh into multiple 
@@ -79,10 +79,4 @@ fab -H $(paste -s hosts -d,) -D -P -- uname -a  176.96s user 90.55s system 332% 
 
 # Where can I get help?
 
-The mailing list:
-
-* https://groups.google.com/forum/#!forum/wsh-users
-
-Or the IRC channel on Freenode
-
-* #wsh
+File an issue, or ask me on gitter!

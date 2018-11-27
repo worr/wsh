@@ -93,12 +93,12 @@ static void has_colors_has_colors_fail(void) {
 }
 
 static void my_getpass(void) {
-	setvbuf_ret = EOF;
+	setvbuf_ret = -1;
 
 	gchar target[4096] = { 0 };
 
 	gint ret = wsh_client_getpass(target, sizeof(target), "", target);
-	g_assert(ret == EOF);
+	g_assert(ret == -1);
 	g_assert(*target == 0);
 
 	setvbuf_ret = 0;

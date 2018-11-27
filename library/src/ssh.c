@@ -132,10 +132,13 @@ gint wsh_ssh_init(void) {
 		(gpointer)SSH_OPTIONS_GSSAPI_DELEGATE_CREDENTIALS);
 
 #ifdef DEBUG
-	pfile = ssh_pcap_file_new();
-	if (ssh_pcap_file_open(pfile, "/home/worr/ssh.pcap")) {
-		g_printerr("%s\n", strerror(errno));
-		return -1;
+	char* filename = getenv("WSH_SSH_PCAP");
+	if (filename != NULL) {
+		pfile = ssh_pcap_file_new();
+		if (ssh_pcap_file_open(pfile, filename)) {
+			g_printerr("%s\n", strerror(errno));
+			return -1;
+		}
 	}
 #endif
 

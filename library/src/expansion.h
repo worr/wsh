@@ -42,6 +42,7 @@
  *
  * @returns 0 if success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query,
                    GError** err);
 #endif
@@ -76,6 +77,7 @@ gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
  *
  * @returns 0 if success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_exp_stdin(gchar*** hosts, gsize* num_hosts, GError** err);
 
 /**
@@ -92,6 +94,7 @@ gint wsh_exp_stdin(gchar*** hosts, gsize* num_hosts, GError** err);
  *
  * @returns 0 if success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,
                            const gchar* filename, GError** err);
 
@@ -109,6 +112,7 @@ gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,
  *
  * @returns 0 if success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts,
                            const gchar* filename, GError** err);
 

@@ -26,6 +26,7 @@
 #include <string.h>
 #include <unistd.h>
 
+__attribute__((nonnull))
 static inline void cleanup_hostnames(gchar** hosts, gsize num_hosts) {
 	for (gsize i = 0; i < num_hosts; i++)
 		g_strstrip(hosts[i]);
@@ -34,9 +35,9 @@ static inline void cleanup_hostnames(gchar** hosts, gsize num_hosts) {
 #ifdef WITH_RANGE
 #include "range_expansion.h"
 
+__attribute__((nonnull))
 gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query,
                    GError** err) {
-	if (err) g_assert_no_error(*err);
 	g_assert(hosts);
 	g_assert(num_hosts);
 	g_assert(range_query);
@@ -57,10 +58,9 @@ gint wsh_exp_range(gchar*** hosts, gsize* num_hosts, const gchar* range_query,
 }
 #endif
 
+__attribute__((nonnull))
 gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
                       GError** err) {
-	if (err) g_assert_no_error(*err);
-
 	if (strncmp("-", filename, 2) == 0)
 		return wsh_exp_stdin(hosts, num_hosts, err);
 
@@ -70,8 +70,8 @@ gint wsh_exp_filename(gchar*** hosts, gsize* num_hosts, const gchar* filename,
 	return wsh_exp_flat_filename(hosts, num_hosts, filename, err);
 }
 
+__attribute__((nonnull))
 gint wsh_exp_stdin(gchar*** hosts, gsize* num_hosts, GError** err) {
-	if (err) g_assert_no_error(*err);
 
 	gchar* buf = NULL;
 	gsize siz = 0;
@@ -99,6 +99,7 @@ bad:
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_exp_flat_filename(gchar*** hosts, gsize* num_hosts,
                            const gchar* filename, GError** err) {
 	gchar* file_contents = NULL;
@@ -121,6 +122,7 @@ bad:
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_exp_exec_filename(gchar*** hosts, gsize* num_hosts,
                            const gchar* filename, GError** err) {
 	gchar* output = NULL;

@@ -37,7 +37,8 @@
  *
  * @returns size of message
  */
-guint32 wshd_get_message_size(GIOChannel* std_input, GError* err);
+__attribute__((nonnull))
+guint32 wshd_get_message_size(GIOChannel* std_input, GError** err);
 
 /**
  * @brief Get an incoming message
@@ -46,7 +47,8 @@ guint32 wshd_get_message_size(GIOChannel* std_input, GError* err);
  * @param[out] req Where the request will land
  * @param[out] err Description of any error condition
  */
-void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err);
+__attribute__((nonnull))
+void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError** err);
 
 #endif
 

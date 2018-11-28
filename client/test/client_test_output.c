@@ -46,27 +46,6 @@ gint close_t() {
 }
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
-static void init_output_failure_subprocess(void) {
-	wshc_init_output(NULL);
-	exit(0);
-}
-#endif
-
-static void init_output_failure(void) {
-#if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_trap_subprocess("/Client/TestInitOutputFail/subprocess", 0, 0);
-#else
-	if (g_test_trap_fork(0,
-	                     G_TEST_TRAP_SILENCE_STDOUT|G_TEST_TRAP_SILENCE_STDERR)) {
-		wshc_init_output(NULL);
-		exit(0);
-	}
-#endif
-
-	g_test_trap_assert_failed();
-}
-
-#if GLIB_CHECK_VERSION(2, 38, 0)
 static void init_output_success_subprocess(void) {
 	wshc_output_info_t* out;
 	wshc_init_output(&out);
@@ -596,7 +575,6 @@ int main(int argc, char** argv) {
 	g_thread_init(NULL);
 #endif
 
-	g_test_add_func("/Client/TestInitOutputFail", init_output_failure);
 	g_test_add_func("/Client/TestInitOutputSuccess", init_output_success);
 
 	g_test_add_func("/Client/TestCleanupOutputFail", cleanup_output_failure);
@@ -611,8 +589,6 @@ int main(int argc, char** argv) {
 	g_test_add_func("/Client/TestHostnameOutputPiped", hostname_output_piped);
 
 #if GLIB_CHECK_VERSION(2, 38, 0)
-	g_test_add_func("/Client/TestInitOutputFail/subprocess",
-	                init_output_failure_subprocess);
 	g_test_add_func("/Client/TestInitOutputSuccess/subprocess",
 	                init_output_success_subprocess);
 	g_test_add_func("/Client/TestCleanupOutputFail/subprocess",

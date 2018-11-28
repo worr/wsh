@@ -70,7 +70,7 @@ int main(int argc, char** argv, char** env) {
 		}
 	} while (errno == EINTR);
 
-	wshd_get_message(in, &req, err);
+	wshd_get_message(in, &req, &err);
 	if (err != NULL) {
 		ret = err->code;
 		goto wshd_error;
@@ -99,7 +99,7 @@ wshd_error:
 		}
 	} while (errno == EINTR);
 
-	wshd_send_message(out, res, err);
+	wshd_send_message(out, res, &err);
 	if (err != NULL)
 		ret = err->code;
 

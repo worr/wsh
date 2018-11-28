@@ -43,6 +43,7 @@ static ssh_pcap_file pfile;
 
 static GHashTable *ssh_opt_table = NULL;
 
+__attribute__((nonnull (2)))
 gint wsh_ssh_check_args(gchar **opts, GError **err) {
 	g_assert(ssh_opt_table);
 
@@ -78,6 +79,7 @@ gint wsh_ssh_check_args(gchar **opts, GError **err) {
 	return 0;
 }
 
+__attribute__((nonnull (1)))
 void wsh_ssh_apply_args(wsh_ssh_session_t *session, const gchar **opts) {
 	g_assert(ssh_opt_table);
 
@@ -149,6 +151,7 @@ gint wsh_ssh_cleanup(void) {
 	return ssh_finalize();
 }
 
+__attribute__((nonnull))
 static void set_options(wsh_ssh_session_t* session) {
 	ssh_options_set(session->session, SSH_OPTIONS_HOST, session->hostname);
 	ssh_options_set(session->session, SSH_OPTIONS_PORT, &(session->port));
@@ -158,6 +161,7 @@ static void set_options(wsh_ssh_session_t* session) {
 	wsh_ssh_apply_args(session, session->ssh_opts);
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session == NULL);
 	g_assert(session->hostname != NULL);
@@ -193,6 +197,7 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err) {
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
                          gboolean force_add, GError** err) {
 	g_assert(session->session != NULL);
@@ -260,6 +265,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session != NULL);
 
@@ -274,6 +280,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err) {
 	return 0;
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session->session != NULL);
 	g_assert(session->hostname != NULL);
@@ -374,6 +381,7 @@ wsh_ssh_authenticate_failure:
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err) {
 	g_assert(session != NULL);
 	g_assert(session->session != NULL);
@@ -421,6 +429,7 @@ wsh_ssh_exec_wshd_error:
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req,
                       GError** err) {
 	g_assert(session != NULL);
@@ -476,6 +485,7 @@ wsh_ssh_send_cmd_error:
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
                           GError** err) {
 	g_assert(session != NULL);
@@ -537,6 +547,7 @@ wsh_ssh_recv_cmd_res_error:
 	return ret;
 }
 
+__attribute__((nonnull))
 void wsh_ssh_disconnect(wsh_ssh_session_t* session) {
 	g_assert(session != NULL);
 	g_assert(session->session != NULL);
@@ -552,6 +563,7 @@ void wsh_ssh_disconnect(wsh_ssh_session_t* session) {
 	session->session = NULL;
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_scp_init(wsh_ssh_session_t* session, const gchar* location) {
 	g_assert(session != NULL);
 	g_assert(session->session != NULL);
@@ -566,6 +578,7 @@ gint wsh_ssh_scp_init(wsh_ssh_session_t* session, const gchar* location) {
 	return ssh_scp_init(session->scp);
 }
 
+__attribute__((nonnull))
 void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session) {
 	g_assert(session != NULL);
 	g_assert(session->scp != NULL);
@@ -575,6 +588,7 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session) {
 }
 
 // There are too many steps to scping a file
+__attribute__((nonnull))
 static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file,
                            gboolean executable, GError** err) {
 	gchar* contents = NULL;
@@ -603,6 +617,7 @@ static gint scp_write_file(wsh_ssh_session_t* session, const gchar* file,
 }
 
 // Recursively pushes files and dirs to the remote host
+__attribute__((nonnull))
 static gint scp_write_dir(wsh_ssh_session_t* session, const gchar* dir,
                           GError** err) {
 	gint ret = EXIT_SUCCESS;
@@ -659,6 +674,7 @@ wsh_scp_error:
 	return ret;
 }
 
+__attribute__((nonnull))
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file,
                       gboolean executable, GError** err) {
 	g_assert(session != NULL);

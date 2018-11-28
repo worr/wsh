@@ -43,9 +43,8 @@ const guint MAX_CMD_ARGS = 255;
 const gchar* SUDO_SHELL_CMD = "sudo -sA -u ";
 const gchar* SUDO_CMD = "sudo -A -u ";
 
-static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
-                         gsize* buf_len) {
-	g_assert(res != NULL);
+__attribute__((nonnull))
+static void add_line(const gchar* line, gchar*** buf, gsize* buf_len) {
 
 	// Allocate space for a new string pointer and new string
 	if (*buf != NULL) {
@@ -64,15 +63,18 @@ static void wsh_add_line(wsh_cmd_res_t* res, const gchar* line, gchar*** buf,
 	(*buf_len)++;
 }
 
-static void wsh_add_line_stdout(wsh_cmd_res_t* res, const gchar* line) {
-	wsh_add_line(res, line, &res->std_output, &res->std_output_len);
+__attribute__((nonnull))
+static void add_line_stdout(wsh_cmd_res_t* res, const gchar* line) {
+	add_line(line, &res->std_output, &res->std_output_len);
 }
 
-static void wsh_add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
-	wsh_add_line(res, line, &res->std_error, &res->std_error_len);
+__attribute__((nonnull))
+static void add_line_stderr(wsh_cmd_res_t* res, const gchar* line) {
+	add_line(line, &res->std_error, &res->std_error_len);
 }
 
 // All this should do is log the status code and add it to our data struct
+__attribute__((nonnull))
 static gboolean check_exit_status(GPid pid, gint status,
                                   struct cmd_data* data) {
 	g_assert(data != NULL);
@@ -96,6 +98,7 @@ static gboolean check_exit_status(GPid pid, gint status,
 	return !data->cmd_exited;
 }
 
+__attribute__((nonnull))
 static gboolean check_stream(GIOChannel* out, GIOCondition cond,
                              struct cmd_data* data, gboolean std_err) {
 	g_assert(data != NULL);
@@ -123,9 +126,9 @@ static gboolean check_stream(GIOChannel* out, GIOCondition cond,
 			}
 
 			if (buf && std_err)
-				wsh_add_line_stderr(res, buf);
+				add_line_stderr(res, buf);
 			else if (buf)
-				wsh_add_line_stdout(res, buf);
+				add_line_stdout(res, buf);
 
 			stat = g_io_channel_read_line(out, &buf, &buf_len, NULL, &res->err);
 		}
@@ -151,16 +154,19 @@ check_stream_err:
 	return !data->out_closed;
 }
 
+__attribute__((nonnull))
 static gboolean check_stdout(GIOChannel* out, GIOCondition cond,
                              struct cmd_data* user_data) {
 	return check_stream(out, cond, user_data, FALSE);
 }
 
+__attribute__((nonnull))
 static gboolean check_stderr(GIOChannel* out, GIOCondition cond,
                              struct cmd_data* user_data) {
 	return check_stream(out, cond, user_data, TRUE);
 }
 
+__attribute__((nonnull))
 static gboolean wsh_write_stdin(GIOChannel* in, GIOCondition cond,
                                 struct cmd_data* data) {
 	g_assert(data != NULL);
@@ -203,6 +209,7 @@ write_stdin_err:
 	return FALSE;
 }
 
+__attribute__((nonnull))
 static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell,
                                GError** err) {
 	WSH_CMD_ERROR = g_quark_from_string("wsh_cmd_error");
@@ -210,7 +217,7 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell,
 	const char* cmd_string = req->cmd_string;
 
 	g_assert(cmd_string != NULL);
-	g_assert(*err == NULL);
+	g_assert_no_error(*err);
 	// Construct cmd to escalate privs assuming use of sudo
 	// XXX: su support
 	if (username == NULL || strlen(username) == 0) {
@@ -236,6 +243,7 @@ static gchar* sudo_constructor(const wsh_cmd_req_t* req, gchar* shell,
 	return ret;
 }
 
+__attribute__((nonnull))
 static gchar* get_shell(const gchar* username, GError** err) {
 	struct passwd *result, pwd;
 	gchar *buf = NULL;
@@ -273,6 +281,7 @@ static gchar* get_shell(const gchar* username, GError** err) {
 }
 
 // retval should be g_free'd
+__attribute__((nonnull))
 gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	g_assert(req != NULL);
 
@@ -307,6 +316,7 @@ gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err) {
 	return sudo_constructor(req, shell_str, err);
 }
 
+__attribute__((nonnull))
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req) {
 	g_assert(res != NULL);
 	g_assert(res->err == NULL);

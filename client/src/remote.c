@@ -31,6 +31,7 @@
 #include "ssh.h"
 #include "pack.h"
 
+__attribute__((nonnull))
 void wshc_try_ssh(wshc_host_info_t* host_info,
                   const wshc_cmd_info_t* cmd_info) {
 	g_assert(cmd_info != NULL);

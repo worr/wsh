@@ -111,6 +111,7 @@ gint wsh_ssh_cleanup(void);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err);
 
 /**
@@ -123,6 +124,7 @@ gint wsh_ssh_host(wsh_ssh_session_t* session, GError** err);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
                          gboolean force_add, GError** err);
 
@@ -134,6 +136,7 @@ gint wsh_verify_host_key(wsh_ssh_session_t* session, gboolean add_hostkey,
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err);
 
 /**
@@ -144,6 +147,7 @@ gint wsh_add_host_key(wsh_ssh_session_t* session, GError** err);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err);
 
 /**
@@ -154,6 +158,7 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err);
 
 /**
@@ -165,6 +170,7 @@ gint wsh_ssh_exec_wshd(wsh_ssh_session_t* session, GError** err);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req,
                       GError** err);
 
@@ -177,6 +183,7 @@ gint wsh_ssh_send_cmd(wsh_ssh_session_t* session, const wsh_cmd_req_t* req,
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
                           GError** err);
 
@@ -185,6 +192,7 @@ gint wsh_ssh_recv_cmd_res(wsh_ssh_session_t* session, wsh_cmd_res_t** res,
  *
  * @param[in] session wsh_ssh_session_t to disconnect from
  */
+__attribute__((nonnull))
 void wsh_ssh_disconnect(wsh_ssh_session_t* session);
 
 /**
@@ -197,6 +205,7 @@ void wsh_ssh_disconnect(wsh_ssh_session_t* session);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_scp_init(wsh_ssh_session_t* session, const gchar* location);
 
 /**
@@ -204,6 +213,7 @@ gint wsh_ssh_scp_init(wsh_ssh_session_t* session, const gchar* location);
  *
  * @param[in] session wsh_ssh_session_t whose scp subsystem needs to be cleaned up
  */
+__attribute__((nonnull))
 void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
 
 /**
@@ -216,6 +226,7 @@ void wsh_ssh_scp_cleanup(wsh_ssh_session_t* session);
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file,
                       gboolean executable, GError** err);
 
@@ -228,6 +239,7 @@ gint wsh_ssh_scp_file(wsh_ssh_session_t* session, const gchar* file,
  * @param[in] timeout The maximum time in ms that we'll wait for output
  * @param[in] is_stderr Are we looking for stderrr?
  */
+__attribute__((nonnull))
 gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout,
                                   gboolean is_stderr);
 #endif
@@ -240,6 +252,7 @@ gint wsh_ssh_channel_poll_timeout(wsh_ssh_session_t* session, gint timeout,
  *
  * @returns 0 on success, anything else on failure
  */
+__attribute__((nonnull (2)))
 gint wsh_ssh_check_args(gchar **opts, GError **err);
 
 /**
@@ -248,6 +261,7 @@ gint wsh_ssh_check_args(gchar **opts, GError **err);
  * @param[in] session a wsh_ssh_session_t describing current state of session
  * @param[in] opts String array of options, NULL-terminated. format: opt=val
  */
+__attribute__((nonnull (1)))
 void wsh_ssh_apply_args(wsh_ssh_session_t *session, const gchar **opts);
 
 #endif

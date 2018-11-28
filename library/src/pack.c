@@ -29,6 +29,7 @@
 #include "types.h"
 
 // buf MUST be g_free()d
+__attribute__((nonnull))
 void wsh_pack_request(guint8** buf, guint32* buf_len,
                       const wsh_cmd_req_t* req) {
 	AuthInfo ai = AUTH_INFO__INIT;
@@ -63,6 +64,7 @@ void wsh_pack_request(guint8** buf, guint32* buf_len,
 }
 
 // req ought to be allocated
+__attribute__((nonnull))
 void wsh_unpack_request(wsh_cmd_req_t** req, const guint8* buf,
                         guint32 buf_len) {
 	CommandRequest* cmd_req;
@@ -119,6 +121,7 @@ void wsh_free_unpacked_request(wsh_cmd_req_t** req) {
 	*req = NULL;
 }
 
+__attribute__((nonnull))
 void wsh_pack_response(guint8** buf, guint32* buf_len,
                        const wsh_cmd_res_t* res) {
 	CommandReply cmd_res = COMMAND_REPLY__INIT;
@@ -136,6 +139,7 @@ void wsh_pack_response(guint8** buf, guint32* buf_len,
 	command_reply__pack(&cmd_res, *buf);
 }
 
+__attribute__((nonnull))
 void wsh_unpack_response(wsh_cmd_res_t** res, const guint8* buf,
                          guint32 buf_len) {
 	CommandReply* cmd_res;

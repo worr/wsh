@@ -82,6 +82,7 @@ static volatile sig_atomic_t signos[NSIG];
 static GMutex client_mtx;
 static int initialized;
 
+__attribute__((nonnull))
 gint wsh_client_lock_password_pages(void** passwd_mem) {
 	do {
 		if (errno == EINTR)
@@ -107,6 +108,7 @@ gint wsh_client_lock_password_pages(void** passwd_mem) {
 	return EXIT_SUCCESS;
 }
 
+__attribute__((nonnull))
 gint wsh_client_unlock_password_pages(void* passwd_mem) {
 	do {
 		if (errno == EINTR)
@@ -131,6 +133,8 @@ gint wsh_client_unlock_password_pages(void* passwd_mem) {
 static void pw_int_handler(int sig) {
 	signos[sig] = 1;
 }
+
+__attribute__((nonnull))
 gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
                         void* passwd_mem) {
 	struct termios old_flags, new_flags;
@@ -281,6 +285,7 @@ void wsh_client_reset_colors(void) {
 	_wsh_client_colors = colors_undecided;
 }
 
+__attribute__((nonnull))
 static void color_print(const char* color, FILE* file, const char* format,
                         va_list args) {
 	gboolean colors = wsh_client_has_colors();
@@ -293,6 +298,7 @@ static void color_print(const char* color, FILE* file, const char* format,
 		g_fprintf(file, "%s", "\x1b[39m");
 }
 
+__attribute__((nonnull format(printf, 1, 2)))
 void wsh_client_print_error(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
@@ -303,6 +309,7 @@ void wsh_client_print_error(const char* format, ...) {
 	va_end(args);
 }
 
+__attribute__((nonnull format(printf, 1, 2)))
 void wsh_client_print_success(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
@@ -310,6 +317,7 @@ void wsh_client_print_success(const char* format, ...) {
 	va_end(args);
 }
 
+__attribute__((nonnull format(printf, 2, 3)))
 void wsh_client_print_header(FILE* file, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
@@ -329,6 +337,7 @@ void wsh_client_clear_colors(void) {
 }
 
 // A wsh client will need lots of fds
+__attribute__((nonnull))
 gint wsh_client_init_fds(GError **err) {
 	g_assert(err != NULL);
 	g_assert(*err == NULL);
@@ -357,6 +366,7 @@ gint wsh_client_init_fds(GError **err) {
 }
 
 // It turns out that ncurses isn't thread-safe
+__attribute__((nonnull))
 gint wsh_client_init(GError **err) {
 	int ret = -1;
 

@@ -65,14 +65,14 @@ static void test_get_message_size(void) {
 	size.size = g_htonl(0);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_flush(in, NULL);
-	recv = wshd_get_message_size(mock_stdout, err);
+	recv = wshd_get_message_size(mock_stdout, &err);
 	g_assert_no_error(err);
 	g_assert(recv == g_ntohl(size.size));
 
 	size.size = g_htonl(200);
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_flush(in, NULL);
-	recv = wshd_get_message_size(mock_stdout, err);
+	recv = wshd_get_message_size(mock_stdout, &err);
 	g_assert_no_error(err);
 	g_assert(recv == g_ntohl(size.size));
 }
@@ -96,7 +96,7 @@ static void test_get_message(void) {
 	g_io_channel_write_chars(in, size.buf, 4, &writ, NULL);
 	g_io_channel_write_chars(in, encoded_req, encoded_req_len, &writ, NULL);
 	g_io_channel_flush(in, NULL);
-	wshd_get_message(mock_stdout, &req, err);
+	wshd_get_message(mock_stdout, &req, &err);
 
 	g_assert_no_error(err);
 	g_assert_cmpstr(req->cmd_string, ==, req_cmd);

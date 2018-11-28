@@ -61,6 +61,7 @@ static void free_output(wshc_host_output_t* out) {
 	g_slice_free(wshc_host_output_t, out);
 }
 
+__attribute__((nonnull))
 void wshc_init_output(wshc_output_info_t** out) {
 	g_assert(out);
 
@@ -85,6 +86,7 @@ void wshc_init_output(wshc_output_info_t** out) {
 	(*out)->stdout_tty = isatty(STDOUT_FILENO);
 }
 
+__attribute__((nonnull))
 void wshc_cleanup_output(wshc_output_info_t** out) {
 	g_assert(*out);
 
@@ -102,6 +104,7 @@ void wshc_cleanup_output(wshc_output_info_t** out) {
 	*out = NULL;
 }
 
+__attribute__((nonnull))
 static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname,
                              const wsh_cmd_res_t* res) {
 	// Freed on destruction
@@ -117,6 +120,7 @@ static gint write_output_mem(wshc_output_info_t* out, const gchar* hostname,
 	return EXIT_SUCCESS;
 }
 
+__attribute__((nonnull))
 static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
                             const wsh_cmd_res_t* res) {
 	g_mutex_lock(out->mut);
@@ -149,6 +153,7 @@ static gint hostname_output(wshc_output_info_t* out, const gchar* hostname,
 }
 
 // This is the user's entrypoint into output crap
+__attribute__((nonnull))
 gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
                        const wsh_cmd_res_t* res) {
 	/* If there's an error, output it immediately */
@@ -177,6 +182,7 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
 	}
 }
 
+__attribute__((nonnull))
 static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
 	if (col->exit_code != out->exit_code)
 		return FALSE;
@@ -214,6 +220,7 @@ static gboolean cmp(struct collate* col, wshc_host_output_t* out) {
 	return TRUE;
 }
 
+__attribute__((nonnull))
 static void hash_compare(gchar* hostname, wshc_host_output_t* out,
                          GSList** clist) {
 	for (GSList* p = *clist; p != NULL && p->data != NULL; p = p->next) {
@@ -234,6 +241,7 @@ static void hash_compare(gchar* hostname, wshc_host_output_t* out,
 	*clist = g_slist_prepend(*clist, c);
 }
 
+__attribute__((nonnull))
 static void construct_out(struct collate* c, struct f_collate* f) {
 	// If both are null, let's not bother with any of this
 	if (*c->error == NULL && *c->output == NULL) return;
@@ -335,6 +343,7 @@ static void construct_out(struct collate* c, struct f_collate* f) {
  * f_collate is a struct containing the output buffer and the size of the output
  * buffer
  */
+__attribute__((nonnull))
 gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
                          gsize* output_size) {
 	g_assert(output);
@@ -353,6 +362,7 @@ gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
 	return EXIT_SUCCESS;
 }
 
+__attribute__((nonnull))
 void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
                           const gchar* message) {
 	g_assert(out);
@@ -373,6 +383,7 @@ static void print_host(const gchar* key, const gchar* val,
 	wsh_client_print_error("%s: %s\n", key, val);
 }
 
+__attribute__((nonnull))
 void wshc_write_failed_hosts(wshc_output_info_t* out) {
 	g_assert(out);
 
@@ -383,6 +394,7 @@ void wshc_write_failed_hosts(wshc_output_info_t* out) {
 	}
 }
 
+__attribute__((nonnull format(printf, 2, 3)))
 void wshc_verbose_print(wshc_output_info_t* out, const gchar* format, ...) {
 	if (out->verbose) {
 		gboolean colors = wsh_client_has_colors();

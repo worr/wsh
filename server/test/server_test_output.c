@@ -58,7 +58,7 @@ static void test_send_message(void) {
 	in = g_io_channel_unix_new(fds[0]);
 	out = g_io_channel_unix_new(fds[1]);
 
-	wshd_send_message(out, &res, err);
+	wshd_send_message(out, &res, &err);
 
 	g_io_channel_set_encoding(in, NULL, NULL);
 	g_io_channel_read_chars(in, msg_size.buf, 4, &read, NULL);

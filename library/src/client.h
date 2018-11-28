@@ -45,6 +45,7 @@ typedef enum {
  *
  * @returns 0 on success, errno on error
  */
+__attribute__((nonnull))
 gint wsh_client_lock_password_pages(void** passwd_mem);
 
 /**
@@ -54,6 +55,7 @@ gint wsh_client_lock_password_pages(void** passwd_mem);
  *
  * @returns 0 on success, errno on error
  */
+__attribute__((nonnull))
 gint wsh_client_unlock_password_pages(void* passwd_mem);
 
 /**
@@ -66,6 +68,7 @@ gint wsh_client_unlock_password_pages(void* passwd_mem);
  *
  * @returns 0 on success, errno on error
  */
+__attribute__((nonnull))
 gint wsh_client_getpass(gchar* target, gsize target_len, const gchar* prompt,
                         void* passwd_mem);
 
@@ -98,6 +101,7 @@ void wsh_client_reset_colors(void);
  *
  * @param[in] format Format string to print
  */
+__attribute__((nonnull format(printf, 1, 2)))
 void wsh_client_print_error(const char* format, ...);
 
 /**
@@ -105,6 +109,7 @@ void wsh_client_print_error(const char* format, ...);
  *
  * @param[in] format Format string to print
  */
+__attribute__((nonnull format(printf, 1, 2)))
 void wsh_client_print_success(const char* format, ...);
 
 /**
@@ -113,6 +118,7 @@ void wsh_client_print_success(const char* format, ...);
  * @param[in] file Open file stream to print to
  * @param[in] format Format string to print
  */
+__attribute__((nonnull format(printf, 2, 3)))
 void wsh_client_print_header(FILE* file, const char* format, ...);
 
 /**
@@ -127,6 +133,7 @@ void wsh_client_clear_colors(void);
  *
  * @returns 0 on success, non-zero on error
  */
+__attribute__((nonnull))
 gint wsh_client_init_fds(GError **err);
 
 /**
@@ -136,6 +143,7 @@ gint wsh_client_init_fds(GError **err);
  *
  * @returns 0 on success, non-zero on error
  */
+__attribute__((nonnull))
 gint wsh_client_init(GError **err);
 
 #endif

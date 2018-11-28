@@ -32,40 +32,43 @@
 #include "pack.h"
 #include "types.h"
 
-guint32 wshd_get_message_size(GIOChannel* std_input, GError* err) {
+__attribute__((nonnull))
+guint32 wshd_get_message_size(GIOChannel* std_input, GError** err) {
 	wsh_message_size_t out;
 	gsize read;
 
-	g_io_channel_set_encoding(std_input, NULL, &err);
-	if (err != NULL) return -1;
+	g_io_channel_set_encoding(std_input, NULL, err);
+	if (*err != NULL) return -1;
 
-	g_io_channel_read_chars(std_input, out.buf, 4, &read, &err);
+	g_io_channel_read_chars(std_input, out.buf, 4, &read, err);
 	out.size = g_ntohl(out.size);
 
 	return out.size;
 }
 
-void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req, GError* err) {
+__attribute__((nonnull))
+void wshd_get_message(GIOChannel* std_input, wsh_cmd_req_t** req,
+                      GError** err) {
 	guint32 msg_size;
 	guint8* buf;
 	gsize read;
 
-	g_io_channel_set_encoding(std_input, NULL, &err);
-	if (err != NULL) return;
+	g_io_channel_set_encoding(std_input, NULL, err);
+	if (*err != NULL) return;
 
 	msg_size = wshd_get_message_size(std_input, err);
-	if (err != NULL) return;
+	if (*err != NULL) return;
 
 	buf = g_malloc0(msg_size);
 
-	g_io_channel_read_chars(std_input, buf, msg_size, &read, &err);
+	g_io_channel_read_chars(std_input, buf, msg_size, &read, err);
 	if (read != msg_size) {
 		gchar* err_msg = g_strdup_printf("Expected %d byts, got %zu\n", msg_size, read);
 		wsh_log_message(err_msg);
 		g_free(err_msg);
 	}
 
-	if (err != NULL) goto wshd_get_message_err;
+	if (*err != NULL) goto wshd_get_message_err;
 
 	wsh_unpack_request(req, buf, msg_size);
 

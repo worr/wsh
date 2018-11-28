@@ -75,6 +75,7 @@ typedef enum {
  *
  * @returns 0 on success, anything else on error
  */
+__attribute__((nonnull))
 gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
 
 /**
@@ -85,7 +86,9 @@ gint wsh_run_cmd(wsh_cmd_res_t* res, wsh_cmd_req_t* req);
  *
  * @returns the final command to be executed or NULL if invalid
  */
-gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req, GError** err);
+__attribute__((nonnull))
+gchar* wsh_construct_sudo_cmd(const wsh_cmd_req_t* req,
+                              GError** err) __attribute__((nonnull (1)));
 
 #endif
 

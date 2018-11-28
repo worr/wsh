@@ -62,6 +62,7 @@ void wsh_exit_logger(void);
  *
  * @param[in] message Message to send to syslog
  */
+__attribute__((nonnull))
 void wsh_log_message(const gchar* message);
 
 /**
@@ -70,6 +71,7 @@ void wsh_log_message(const gchar* message);
  * @param[in] msg_num The error_message that we're sending
  * @param[in] message A message to append
  */
+__attribute__((nonnull))
 void wsh_log_error(gint msg_num, gchar* message);
 
 /**
@@ -80,6 +82,7 @@ void wsh_log_error(gint msg_num, gchar* message);
  * @param[in] source the host that ran the command
  * @param[in] cwd The directory that the command was run in
  */
+__attribute__((nonnull))
 void wsh_log_server_cmd(const gchar* command, const gchar* user,
                         const gchar* source, const gchar* cwd);
 
@@ -91,6 +94,7 @@ void wsh_log_server_cmd(const gchar* command, const gchar* user,
  * @param[in] dests The set of destinations that we're requesting the command run on
  * @param[in] cwd The directory the user wants it to execute in
  */
+__attribute__((nonnull))
 void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests,
                         const gchar* cwd);
 
@@ -103,6 +107,7 @@ void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests,
  * @param[in] cwd The directory the command was executed in
  * @param[in] status The return code of the command
  */
+__attribute__((nonnull))
 void wsh_log_server_cmd_status(const gchar* command, const gchar* user,
                                const gchar* source, const gchar* cwd, gint status);
 
@@ -115,6 +120,7 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user,
  * @param[in] cwd The directory the command was run from
  * @param[in] status The return code of the command
  */
+__attribute__((nonnull))
 void wsh_log_client_cmd_status(const gchar* command, const gchar* user,
                                const gchar* dest, const gchar* cwd, gint status);
 

@@ -67,6 +67,7 @@ typedef struct {
  *
  * @note Expects not to be threaded
  */
+__attribute__((nonnull))
 void wshc_init_output(wshc_output_info_t** out);
 
 /**
@@ -76,6 +77,7 @@ void wshc_init_output(wshc_output_info_t** out);
  *
  * @note Expects not to be threaded
  */
+__attribute__((nonnull))
 void wshc_cleanup_output(wshc_output_info_t** out);
 
 /**
@@ -88,6 +90,7 @@ void wshc_cleanup_output(wshc_output_info_t** out);
  *
  * @return 0 on success, anything else on failure
  */
+__attribute__((nonnull))
 gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
                        const wsh_cmd_res_t* res);
 
@@ -100,6 +103,7 @@ gint wshc_write_output(wshc_output_info_t* out, const gchar* hostname,
  *
  * @note Expects not to be threaded
  */
+__attribute__((nonnull))
 gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
                          gsize* output_size);
 
@@ -111,6 +115,7 @@ gint wshc_collate_output(wshc_output_info_t* out, gchar** output,
  * @param[in] host The hostname that failed
  * @param[in] message The error that caused the failure
  */
+__attribute__((nonnull))
 void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
                           const gchar* message);
 
@@ -119,6 +124,7 @@ void wshc_add_failed_host(wshc_output_info_t* out, const gchar* host,
  *
  * @param[in] out Our output metadata
  */
+__attribute__((nonnull))
 void wshc_write_failed_hosts(wshc_output_info_t* out);
 
 /**
@@ -127,6 +133,7 @@ void wshc_write_failed_hosts(wshc_output_info_t* out);
  * @param[in] out Output metadata struct
  * @param[in] format printf-style format string
  */
+__attribute__((nonnull format(printf, 2, 3)))
 void wshc_verbose_print(wshc_output_info_t* out, const gchar* format, ...);
 
 #endif

@@ -51,6 +51,7 @@ typedef struct {
  * @param[in,out] host_info Information about the host
  * @param[in] cmd_info Information needed to run commands
  */
+__attribute__((nonnull))
 void wshc_try_ssh(wshc_host_info_t* host_info, const wshc_cmd_info_t* cmd_info);
 
 #endif

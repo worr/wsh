@@ -36,7 +36,9 @@
  * @param[in] res Command result to write
  * @param[out] err Description of error condition
  */
-void wshd_send_message(GIOChannel* std_output, wsh_cmd_res_t* res, GError* err);
+__attribute__((nonnull (1, 2)))
+void wshd_send_message(GIOChannel* std_output, wsh_cmd_res_t* res,
+                       GError** err);
 
 #endif
 

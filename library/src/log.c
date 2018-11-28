@@ -57,17 +57,20 @@ void wsh_exit_logger(void) {
 	closelog();
 }
 
+__attribute__((nonnull))
 void wsh_log_message(const gchar* message) {
 	syslog(LOG_INFO, "%s: %s", type == WSH_LOGGER_CLIENT ? "CLIENT" : "SERVER",
 	       message);
 }
 
+__attribute__((nonnull))
 void wsh_log_error(gint msg_num, gchar* message) {
 	syslog(LOG_ERR, "%s ERROR %d: %s: %s",
 	       type == WSH_LOGGER_CLIENT ? "CLIENT" : "SERVER", msg_num, err_messages[msg_num],
 	       message);
 }
 
+__attribute__((nonnull))
 void wsh_log_server_cmd(const gchar* command, const gchar* user,
                         const gchar* source, const gchar* cwd) {
 	g_assert(type != WSH_LOGGER_CLIENT);
@@ -94,6 +97,7 @@ void wsh_log_server_cmd(const gchar* command, const gchar* user,
 	g_slice_free1(str_len + 1, msg);
 }
 
+__attribute__((nonnull))
 void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests,
                         const gchar* cwd) {
 	g_assert(type != WSH_LOGGER_SERVER);
@@ -126,6 +130,7 @@ void wsh_log_client_cmd(const gchar* command, const gchar* user, gchar** dests,
 	g_slice_free1(str_len + 1, msg);
 }
 
+__attribute__((nonnull))
 void wsh_log_server_cmd_status(const gchar* command, const gchar* user,
                                const gchar* source, const gchar* cwd, gint status) {
 	g_assert(type != WSH_LOGGER_CLIENT);
@@ -153,6 +158,7 @@ void wsh_log_server_cmd_status(const gchar* command, const gchar* user,
 	g_slice_free1(str_len + 1, msg);
 }
 
+__attribute__((nonnull))
 void wsh_log_client_cmd_status(const gchar* command, const gchar* user,
                                const gchar* dest, const gchar* cwd, gint status) {
 	g_assert(type != WSH_LOGGER_SERVER);

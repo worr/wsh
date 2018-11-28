@@ -446,7 +446,7 @@ int main(int argc, char** argv) {
 
 	if (collate_output) {
 		wsh_client_print_header(stdout, "\nSummary\n");
-		g_print("Attempted: %u\n", num_hosts);
+		g_print("Attempted: %lu\n", num_hosts);
 		g_print("Failed: %u\n", g_atomic_int_get(&out_info->num_failed));
 		g_print("Errored (non-0 exit code): %u\n",
 		        g_atomic_int_get(&out_info->num_errored));

@@ -314,15 +314,14 @@ int main(int argc, char** argv) {
 	cmd_info.port = port;
 	cmd_info.script = script;
 
-	if (num_hosts < 20) // 20 will be our magic number for hosts
+	// 20 will be our magic number for hosts
+	if (num_hosts < 20 || collate_output) {
 		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
-	else
+		collate_output = TRUE;
+	} else {
+		hostname_output = TRUE;
 		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
-
-	if (hostname_output)
-		out_info->type = WSHC_OUTPUT_TYPE_HOSTNAME;
-	else if (collate_output)
-		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
+	}
 
 	// If not a tty, collated output is worthless
 	if (!isatty(STDIN_FILENO) || !isatty(STDERR_FILENO))

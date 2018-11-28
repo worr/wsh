@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
 	cmd_info.script = script;
 
 	// 20 will be our magic number for hosts
-	if (num_hosts < 20 || collate_output) {
+	if (!hostname_output && (num_hosts < 20 || collate_output)) {
 		out_info->type = WSHC_OUTPUT_TYPE_COLLATED;
 		collate_output = TRUE;
 	} else {

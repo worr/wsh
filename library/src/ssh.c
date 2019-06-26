@@ -301,6 +301,11 @@ gint wsh_ssh_authenticate(wsh_ssh_session_t* session, GError** err) {
 					                   "Error authenticating with pubkey: %s",
 					                   ssh_get_error(session->session));
 					goto wsh_ssh_authenticate_failure;
+				case SSH_AUTH_PARTIAL:
+					*err = g_error_new(WSH_SSH_ERROR, WSH_SSH_PUBKEY_AUTH_ERR,
+					                   "Partial authentication with pubkey: %s",
+					                   ssh_get_error(session->session));
+					goto wsh_ssh_authenticate_failure;
 				case SSH_AUTH_DENIED:
 					pubkey_denied = TRUE;
 				default:

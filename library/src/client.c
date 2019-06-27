@@ -353,11 +353,13 @@ gint wsh_client_init_fds(GError **err) {
 	}
 
 	// Raise rlimits to max allowed for user
-	rlp.rlim_cur = rlp.rlim_max - 1;
-	if (setrlimit(RLIMIT_NOFILE, &rlp)) {
-		*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
-		                   "setrlimit: %s", strerror(errno));
-		return 2;
+	if (rlp.rlim_max != RLIM_INFINITY) {
+		rlp.rlim_cur = rlp.rlim_max - 1;
+		if (setrlimit(RLIMIT_NOFILE, &rlp)) {
+			*err = g_error_new(WSH_CLIENT_ERROR, WSH_CLIENT_RLIMIT_ERR,
+			                   "setrlimit: %s", strerror(errno));
+			return 2;
+		}
 	}
 
 	(void) closefrom(STDERR_FILENO + 1);

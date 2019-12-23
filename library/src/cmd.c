@@ -57,7 +57,7 @@ static void add_line(const gchar* line, gchar*** buf, gsize* buf_len) {
 	(*buf)[*buf_len + 1] = NULL;
 
 	// memmove() the string into the struct
-	g_memmove((*buf)[*buf_len], line, strlen(line) + 1);
+	memmove((*buf)[*buf_len], line, strlen(line) + 1);
 	(*buf)[*buf_len] = g_strstrip((*buf)[*buf_len]);
 
 	(*buf_len)++;

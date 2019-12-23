@@ -294,7 +294,7 @@ static void construct_out(struct collate* c, struct f_collate* f) {
 	          WSHC_STDOUT_TAIL_SIZE + WSHC_STDERR_TAIL_SIZE;
 	while (*f->size == 0 || new_len + strlen(*f->out) > *f->size) {
 		gchar* new_output = g_slice_alloc0(*f->size + WSHC_ALLOC_LEN);
-		g_memmove(new_output, *f->out, *f->size);
+		memmove(new_output, *f->out, *f->size);
 		if (*f->size)
 			g_slice_free1(*f->size, *f->out);
 		*f->out = new_output;

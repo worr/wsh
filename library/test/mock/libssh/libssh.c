@@ -263,10 +263,10 @@ void set_ssh_channel_read_set(void* buf) {
 gint ssh_channel_read(ssh_channel channel, void* buf, guint32 buf_len,
                       gboolean is_stderr) {
 	if (buf_len == 4) {
-		g_memmove(buf, ssh_channel_read_size, buf_len);
+		memmove(buf, ssh_channel_read_size, buf_len);
 	} else {
 		if (ssh_channel_read_set != NULL)
-			g_memmove(buf, ssh_channel_read_set, buf_len);
+			memmove(buf, ssh_channel_read_set, buf_len);
 		else buf = NULL;
 	}
 

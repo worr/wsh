@@ -118,12 +118,12 @@ endif( IS_DIRECTORY /usr/pkg/lib )
 
 # Function tests
 if( HAVE_C11 )
-	check_function_exists( memset_s HAVE_MEMSET_S )
+	check_symbol_exists( memset_s string.h HAVE_MEMSET_S )
 endif( HAVE_C11 )
-check_function_exists( explicit_bzero HAVE_EXPLICIT_BZERO )
-check_function_exists( g_get_num_processors HAVE_G_GETNUM_PROCESSORS )
-check_function_exists( closefrom HAVE_CLOSEFROM )
-check_function_exists( ssh_get_server_publickey HAVE_SSH_GET_SERVER_PUBLICKEY )
+check_symbol_exists( explicit_bzero string.h HAVE_EXPLICIT_BZERO )
+check_symbol_exists( g_get_num_processors glib.h HAVE_G_GETNUM_PROCESSORS )
+check_symbol_exists( closefrom "stdlib.h;unistd.h" HAVE_CLOSEFROM )
+check_symbol_exists( ssh_get_server_publickey libssh/libssh.h HAVE_SSH_GET_SERVER_PUBLICKEY )
 
 configure_file( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
 

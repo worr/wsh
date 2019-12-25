@@ -49,5 +49,9 @@
 #define LIBEXEC_PATH "${LIBEXEC_PATH}"
 #endif
 
+#ifdef __SUNPRO_C
+#define __attribute__(...)
+#endif
+
 #endif
 

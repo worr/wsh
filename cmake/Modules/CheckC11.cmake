@@ -6,6 +6,6 @@ macro( check_c11 )
 	set( CMAKE_REQUIRED_FLAGS "" )
 
 	if( HAVE_C11 )
-		add_definitions( -D__STDC_WANT_LIB_EXT1__ )
+		list(APPEND CMAKE_REQUIRED_DEFINITIONS -D__STDC_WANT_LIB_EXT1__ )
 	endif( HAVE_C11 )
 endmacro( check_c11 )

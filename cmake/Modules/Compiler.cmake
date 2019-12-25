@@ -52,6 +52,6 @@ if( CLANG OR GCC )
 
 	check_c_compiler_flag( -fstack-protector-all HAVE_STACK_PROTECTOR_ALL )
 	if ( HAVE_STACK_PROTECTOR_ALL )
-		add_definitions( -fstack-protector-all )
+		list( APPEND CMAKE_REQUIRED_DEFINITIONS -fstack-protector-all )
 	endif( HAVE_STACK_PROTECTOR_ALL )
 endif( CLANG OR GCC )

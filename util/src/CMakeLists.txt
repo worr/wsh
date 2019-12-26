@@ -4,7 +4,7 @@ if( NOT HAVE_MEMSET_S )
 endif( NOT HAVE_MEMSET_S )
 
 add_executable( wsh-add-hostkeys wsh_add_hostkeys.c )
-add_executable( wsh-askpass memset_s.c wsh_askpass.c )
+add_executable( wsh-askpass ${WSH_ASKPASS_SOURCES} )
 add_executable( wscp wscp.c )
 add_executable( wsh-killer wsh_killer.c )
 

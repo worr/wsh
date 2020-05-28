@@ -132,6 +132,10 @@ gint wsh_ssh_init(void) {
 	                           (gpointer)SSH_OPTIONS_KEY_EXCHANGE);
 	(void) g_hash_table_insert(ssh_opt_table, "gssapidelegatecredentials",
 	                           (gpointer)SSH_OPTIONS_GSSAPI_DELEGATE_CREDENTIALS);
+#if LIBSSH_VERSION_INT >= SSH_VERSION_INT(0, 8, 0)
+	(void) g_hash_table_insert(ssh_opt_table, "macs",
+	                           (gpointer)SSH_OPTIONS_HMAC_S_C);
+#endif
 
 #ifdef DEBUG
 	char* filename = getenv("WSH_SSH_PCAP");
